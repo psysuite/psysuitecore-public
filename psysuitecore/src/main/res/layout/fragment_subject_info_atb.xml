@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".fragments.AnswerDialogFragment">
+
+
+    <TextView
+            android:id="@+id/labInteractive"
+            android:layout_width="120dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="36dp"
+            android:text="@string/atb_interactivity"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/labWhiteNoise" />
+
+    <TextView
+            android:id="@+id/labCondition"
+            android:layout_width="179dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="28dp"
+            android:text="@string/condition"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/labGender" />
+
+    <ImageButton
+            android:id="@+id/bt_clear"
+            android:layout_width="121dp"
+            android:layout_height="63dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginBottom="28dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintBottom_toTopOf="@+id/bt_cancel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:srcCompat="@android:drawable/ic_menu_revert" />
+
+    <ImageButton
+            android:id="@+id/bt_confirm"
+            android:layout_width="130dp"
+            android:layout_height="62dp"
+            android:layout_marginEnd="28dp"
+            android:layout_marginBottom="28dp"
+            android:background="@android:color/transparent"
+            app:layout_constraintBottom_toTopOf="@+id/bt_cancel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:srcCompat="@drawable/green_tick" />
+
+    <TextView
+            android:id="@+id/labAge"
+            android:layout_width="119dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="28dp"
+            android:text="@string/age"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/labName" />
+
+    <TextView
+            android:id="@+id/labName"
+            android:layout_width="120dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="44dp"
+            android:text="@string/name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+            android:id="@+id/txtAge"
+            android:layout_width="135dp"
+            android:layout_height="47dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="16dp"
+            android:ems="10"
+            android:inputType="none|number"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtName" />
+
+    <EditText
+            android:id="@+id/txtName"
+            android:layout_width="135dp"
+            android:layout_height="46dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="12dp"
+            android:ems="10"
+            android:inputType="textPersonName"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+            android:id="@+id/radioGroupGender"
+            android:layout_width="135dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="12dp"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/txtAge">
+
+        <RadioButton
+                android:id="@+id/rb_male"
+                android:layout_width="69dp"
+                android:layout_height="45dp"
+                android:text="@string/tid_rb_male_text" />
+
+        <RadioButton
+                android:id="@+id/rb_female"
+                android:layout_width="67dp"
+                android:layout_height="45dp"
+                android:text="@string/tid_rb_female_text" />
+    </RadioGroup>
+
+    <Button
+            android:id="@+id/bt_cancel"
+            android:layout_width="353dp"
+            android:layout_height="51dp"
+            android:layout_marginBottom="48dp"
+            android:text="Cancel"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.492"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    <Spinner
+            android:id="@+id/spCondition"
+            android:layout_width="340dp"
+            android:layout_height="31dp"
+            android:layout_marginTop="12dp"
+            android:textAlignment="viewEnd"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.394"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/labCondition" />
+
+    <Switch
+            android:id="@+id/swInteractive"
+            android:layout_width="137dp"
+            android:layout_height="27dp"
+            android:layout_marginTop="28dp"
+            android:layout_marginEnd="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/swWhiteNoise" />
+
+    <TextView
+            android:id="@+id/labWhiteNoise"
+            android:layout_width="176dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/whitenoise"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/spCondition" />
+
+    <Switch
+            android:id="@+id/swWhiteNoise"
+            android:layout_width="69dp"
+            android:layout_height="35dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="12dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/spCondition" />
+
+    <TextView
+            android:id="@+id/labGender"
+            android:layout_width="120dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="28dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/gender"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/labAge" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
