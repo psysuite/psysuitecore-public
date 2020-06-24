@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import iit.uvip.psysuite.core.common.TestBasic
 import kotlinx.android.parcel.Parcelize
+import org.albaspazio.core.accessory.Device
 import org.albaspazio.core.accessory.existFile
 import org.albaspazio.core.accessory.readText
 import org.albaspazio.core.accessory.saveText
@@ -26,7 +27,9 @@ open class SubjectBasicParcel(
     open var gender: Int = -1,
     open var nextTrailModality: Int = -1,
     open var canRecordAudio:Boolean = false,
-    open var testClass:String = ""
+    open var testClass:String = "",
+    open var device:Device? = null
+
 
 ) : Parcelable {
 
@@ -53,10 +56,10 @@ open class SubjectBasicParcel(
             return try {
                 loadJsonText(jsontext)
             } catch (e: Exception) {
-                SubjectBasicParcel()
+                this
             }
         }
-        return SubjectBasicParcel()
+        return this
     }
 
     private fun loadJsonText(jsontext:String): SubjectBasicParcel {
