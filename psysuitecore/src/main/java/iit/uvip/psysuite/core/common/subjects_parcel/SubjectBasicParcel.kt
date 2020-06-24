@@ -1,12 +1,10 @@
 package iit.uvip.psysuite.core.common.subjects_parcel
 
 import android.content.Context
-import android.os.Parcel
 import android.os.Parcelable
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import iit.uvip.psysuite.core.common.TestBasic
-import kotlinx.android.parcel.Parceler
 import kotlinx.android.parcel.Parcelize
 import org.albaspazio.core.accessory.existFile
 import org.albaspazio.core.accessory.readText
@@ -29,61 +27,15 @@ open class SubjectBasicParcel(
     open var nextTrailModality: Int = -1,
     open var canRecordAudio:Boolean = false,
     open var testClass:String = ""
+
 ) : Parcelable {
 
-    private constructor(parcel: Parcel) : this(
-        parcel.readInt(),
-        parcel.readString()!!,
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt(),
-        parcel.readInt() > 0,
-        parcel.readString()!!
-    )
-
-    companion object : Parceler<SubjectBasicParcel> {
-
-        override fun SubjectBasicParcel.write(parcel: Parcel, flags: Int) {
-            parcel.writeInt(type)
-            parcel.writeString(label)
-            parcel.writeInt(age)
-            parcel.writeInt(gender)
-            parcel.writeInt(nextTrailModality)
-            if (canRecordAudio) parcel.writeInt(1)
-            else                parcel.writeInt(0)
-            parcel.writeString(testClass)
-        }
-
-        override fun create(parcel: Parcel) = SubjectBasicParcel(parcel)
-
+    companion object  {
         @JvmStatic val CURR_SUBJ_FILE:String = "curr_subject"
-
-        private fun loadJsonText(jsontext:String): SubjectBasicParcel {
-
-            val moshi           = Moshi.Builder().build()
-            val jsonAdapter     = moshi.adapter(SubjectBasicParcel::class.java)
-            return jsonAdapter.fromJson(jsontext)!!
-        }
-
-        fun loadSubject(): SubjectBasicParcel{
-            val subj = existFile(CURR_SUBJ_FILE + TestBasic.FILE_EXTENSION)
-            if(subj.first){
-                val jsontext = readText(CURR_SUBJ_FILE + TestBasic.FILE_EXTENSION)
-                return try {
-                    loadJsonText(jsontext)
-                }
-                catch (e:Exception){
-                    SubjectBasicParcel()
-                }
-            }
-            return SubjectBasicParcel()
-        }
 
         fun validate(lab:String, ag:String):String{
             var res = ""
-
             if (lab.isBlank()) res = res + "\n" + "il nome è vuoto"
-
             try {
                 ag.toInt()
             }
@@ -92,6 +44,26 @@ open class SubjectBasicParcel(
             }
             return res
         }
+    }
+
+    open fun loadSubject(): SubjectBasicParcel {
+        val subj = existFile(CURR_SUBJ_FILE + TestBasic.FILE_EXTENSION)
+        if (subj.first) {
+            val jsontext = readText(CURR_SUBJ_FILE + TestBasic.FILE_EXTENSION)
+            return try {
+                loadJsonText(jsontext)
+            } catch (e: Exception) {
+                SubjectBasicParcel()
+            }
+        }
+        return SubjectBasicParcel()
+    }
+
+    private fun loadJsonText(jsontext:String): SubjectBasicParcel {
+
+        val moshi           = Moshi.Builder().build()
+        val jsonAdapter     = moshi.adapter(this.javaClass)
+        return jsonAdapter.fromJson(jsontext)!!
     }
 
     override fun equals(other: Any?): Boolean {
@@ -111,7 +83,7 @@ open class SubjectBasicParcel(
     open fun writeJson(context:Context, filename:String = CURR_SUBJ_FILE){
 
         val moshi       = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
-        val jsonAdapter = moshi.adapter(SubjectBasicParcel::class.java)
+        val jsonAdapter = moshi.adapter(this.javaClass)
 
         return try {
             val json_subject = jsonAdapter.toJson(this)
