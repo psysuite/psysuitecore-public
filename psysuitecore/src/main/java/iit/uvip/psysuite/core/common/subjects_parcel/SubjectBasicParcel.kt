@@ -38,7 +38,8 @@ open class SubjectBasicParcel(
         @JvmStatic val CURR_SUBJ_FILE:String = "curr_subject"
 
         @JvmStatic val SUBJECTFILE_EXIST:Int = 1
-        @JvmStatic val ERROR:Int = 2
+        @JvmStatic val ERROR_SUBJECT_INCOMPLETE:Int = 2
+        @JvmStatic val ERROR_GENERIC:Int = 3
 
         fun validate(lab:String, ag:String):String{
             var res = ""
@@ -92,8 +93,14 @@ open class SubjectBasicParcel(
         return "${label}_${type}_${getFullDateString()}${TestBasic.RES_EXTENSION}"
     }
 
-    fun composeSubjectFileName():String{
+    private fun composeSubjectFileName():String{
+        if(label.isBlank() || type == -1)   return ""
+
         return "${label}_${type}_${getDateString()}${TestBasic.FILE_EXTENSION}"
+    }
+
+    fun getAbsoluteSubjectFilePath(): String{
+        return getAbsoluteFilePath(subjectFileName).second
     }
 
     // =============================================================================================================
@@ -106,11 +113,15 @@ open class SubjectBasicParcel(
 
         return try {
                     subjectFileName = composeSubjectFileName()
-
-                    if(existSubjectFile()) SUBJECTFILE_EXIST
+                    if(subjectFileName.isEmpty()){
+                        ERROR_SUBJECT_INCOMPLETE
+                    }
                     else {
+                        if (existSubjectFile()) SUBJECTFILE_EXIST
+                        else {
                             saveText(context, subjectFileName, jsonAdapter.toJson(this))        // var jsontext = context!!.resources.openRawResource(R.raw.script_001).bufferedReader().use { it.readText() }
                             0
+                        }
                     }
         }
         catch (e: Exception){

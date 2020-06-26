@@ -24,6 +24,7 @@ import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.fragment_test.*
+import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.accessory.getTimeDifference
 import org.albaspazio.core.accessory.showToast
 import org.albaspazio.core.fragments.BaseFragment
@@ -93,7 +94,7 @@ class TestFragment : BaseFragment(
         speechRecognitionManager    = SpeechRecognitionManager(requireContext())
         speechManager               = SpeechManager(resources, requireContext())
 
-        vibrator                    = org.albaspazio.core.accessory.VibrationManager(requireContext()).init()
+        vibrator                    = VibrationManager(requireContext()).init()
 
         val test: SubjectBasicParcel? = arguments?.getParcelable(TestBasic.TESTINFO_BUNDLE_LABEL) ?: return
         when(test!!.type)
@@ -282,8 +283,8 @@ class TestFragment : BaseFragment(
 
         answerDialogFragment = AnswerDialogFragment.newInstance("Some Title")
         (answerDialogFragment as AnswerDialogFragment).setTargetFragment(this , TARGET_FRAGMENT_REQUEST_CODE)
-        (answerDialogFragment as AnswerDialogFragment).arguments = b
-        (answerDialogFragment as AnswerDialogFragment).setCancelable(false)
+        (answerDialogFragment as AnswerDialogFragment).arguments    = b
+        (answerDialogFragment as AnswerDialogFragment).isCancelable = false
         (answerDialogFragment as AnswerDialogFragment).show(parentFragmentManager, ANSWER_DIALOG_TAG)
         isAnswerDialogOn = true
     }

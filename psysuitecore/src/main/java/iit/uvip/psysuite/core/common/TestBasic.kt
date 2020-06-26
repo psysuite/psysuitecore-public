@@ -4,7 +4,6 @@ import android.app.DownloadManager
 import android.content.Context
 import android.os.Environment
 import android.os.Handler
-import android.os.Parcel
 import android.os.Parcelable
 import com.jakewharton.rxrelay2.PublishRelay
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
@@ -171,40 +170,17 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
     }
 }
 
-data class TaskCode(val label: String, val id: Int) : Parcelable {
-
-    private constructor(parcel: Parcel) : this(
-        label   = parcel.readString()!!,
-        id      = parcel.readInt()
-    )
-
-    companion object {
-
-        @JvmField
-        val CREATOR = object : Parcelable.Creator<TaskCode> {
-            override fun createFromParcel(parcel: Parcel) = TaskCode(parcel)
-            override fun newArray(size: Int) = arrayOfNulls<TaskCode>(size)
-        }
-    }
+@Parcelize
+data class TaskCode(val label: String, val id: Int) : Parcelable{
 
     override fun toString(): String {
         return label
     }
-
-    override fun describeContents(): Int {
-        // TODO Auto-generated method stub
-        return 0
-    }
-
-    override fun writeToParcel(dest: Parcel, flags: Int) {
-        dest.writeString(label)
-        dest.writeInt(id)
-    }
 }
-
-data class Stimulus(val type: Int, val delay: Long) {}
-
-data class Stimulus2(val a:Long, val t:Long, val v:Long) {}
 
 @Parcelize
 data class TestResult(var code:Int=-1, var res_files:ArrayList<String> = arrayListOf()) : Parcelable
+
+data class Stimulus(val type: Int, val delay: Long)
+data class Stimulus2(val a:Long, val t:Long, val v:Long)
+
