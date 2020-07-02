@@ -5,6 +5,7 @@ import android.media.MediaPlayer
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.TaskCode
 import iit.uvip.psysuite.core.common.TestBasic
+import iit.uvip.psysuite.core.common.TrialBasic
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
 import org.albaspazio.core.accessory.showToast
 
@@ -51,14 +52,13 @@ class TestMMD(ctx: Context, override val data: SubjectBasicParcel) : TestBasic(c
         createResultFile(data, TrialMMD.LOG_HEADER)
     }
 
-    override fun show(trialid:Int, isRepeat:Boolean){
-        mTrial = mTrials[trialid]
+    override fun show(trial: TrialBasic, isRepeat:Boolean){
 
-        if(isRepeat)    mTrial.repetitions++
+        if(isRepeat)    trial.repetitions++
 
-        val resname = when(mTrial.type == 0){
-            true -> "mmc" + (mTrial as TrialMMD).audio_id + "_same"
-            false -> "mmc" + (mTrial as TrialMMD).audio_id
+        val resname = when(trial.type == 0){
+            true -> "mmc" + (trial as TrialMMD).audio_id + "_same"
+            false -> "mmc" + (trial as TrialMMD).audio_id
         }
         deliverStimulus(resname)
     }

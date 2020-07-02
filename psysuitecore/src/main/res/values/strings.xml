@@ -40,6 +40,7 @@
     <string name="empty_subject_parcel">SOGGETTO E\' VUOTO</string>
     <string name="critical_error">ERRORE IRRECUPERABILE</string>
     <string name="restart_app_suggestion">E\' consigliabile riavviare l\'app</string>
+    <string name="contact_developer">E\' consigliabile riavviare l\'app\nin caso l\'errore persista, contattare lo sviluppatore all\'indirizzo:\npsysuite.uvip@gmail.com</string>
 
 
     <!-- ATB -->
@@ -65,13 +66,14 @@
     <string name="start_atvb">Audio-Tactile-Visual Binding (ATV-B)</string>
 
     <string name="atvb_subtask_time_single">Singolo Stimolo</string>
+    <string name="atvb_subtask_time_single2">Singolo Stimolo bilanciato</string>
     <string name="atvb_subtask_time_double">Doppio Stimolo</string>
     <string name="atvb_subtask_time_double2">Doppio Stimolo bilanciato</string>
 
-
     <string name="atvb_rb1_text">si</string>
     <string name="atvb_rb3_text">no</string>
-    <string name="atvb_question">Sono uguali?</string>
+    <string name="atvb_question_equal">Sono uguali?</string>
+    <string name="atvb_question_synchro">Sono simultanei?</string>
 
 
     <!-- TID -->

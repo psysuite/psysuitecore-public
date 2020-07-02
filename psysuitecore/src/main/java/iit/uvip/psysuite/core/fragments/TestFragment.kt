@@ -26,6 +26,7 @@ import io.reactivex.rxkotlin.subscribeBy
 import kotlinx.android.synthetic.main.fragment_test.*
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.accessory.getTimeDifference
+import org.albaspazio.core.accessory.showAlert
 import org.albaspazio.core.accessory.showToast
 import org.albaspazio.core.fragments.BaseFragment
 import org.albaspazio.core.fragments.setNavigationResult
@@ -118,10 +119,17 @@ class TestFragment : BaseFragment(
             TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), mSubjectParcel as SubjectATBParcel, vibrator)
 
             TestBasic.TEST_ATVB_TIME_SINGLESTIM,
+            TestBasic.TEST_ATVB_TIME_SINGLESTIM2,
             TestBasic.TEST_ATVB_TIME_DOUBLESTIM,
             TestBasic.TEST_ATVB_TIME_DOUBLESTIM2    -> mTest = TestATVB(requireContext(), mSubjectParcel as SubjectATBParcel, vibrator, circleView)
 
         }
+
+        if(!this::mTest.isInitialized){
+            showAlert(requireActivity(), resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
+            return
+        }
+
         bt_next.visibility  = View.INVISIBLE
         bt_abort.visibility = View.INVISIBLE
         bt_pause.visibility = View.INVISIBLE
@@ -133,7 +141,7 @@ class TestFragment : BaseFragment(
         }
 
         mHandler.postDelayed({
-            mTest.show(mTest.currTrial)
+            mTest.start()
         }, 1000L)
     }
 
@@ -155,8 +163,8 @@ class TestFragment : BaseFragment(
             if(isPaused){
                 bt_pause.text = resources.getString(R.string.pause)
                 bt_pause.visibility = View.INVISIBLE
-                mTest.nextTrial()
-                if(mTest.abortMode != TestBasic.TEST_ABORT_ALWAYS)  bt_abort.visibility = View.INVISIBLE
+                if(mTest.nextTrial() == TestBasic.EVENT_TEST_END)   onTestEnded()
+                else                                                onBeforeTrialShow()
             }
             else{
                 mHandler.removeCallbacksAndMessages(null)
@@ -185,11 +193,12 @@ class TestFragment : BaseFragment(
     // if result_file != "".... means it really exists
     private fun navigateBack(result_code:Int, result_file:String){
 
+        // data class TestResult      (code:Int=-1, mailsubject:String, mailbody:String,                       res_files:ArrayList<String> = arrayListOf(),  testClass:String)
         setNavigationResult(TestResult(result_code, mTest.mTestLabel, mSubjectParcel!!.composeSubjectFileName(), arrayListOf(result_file), mTest.javaClass.name), TestBasic.TEST_BUNDLE_RESULT_LABEL)
         Navigation.findNavController(requireView()).popBackStack()
     }
 
-    // here I manage all trial-by-trial behaviours
+    // here I manage all trial-by-trial behaviours invoked by Tests
     private fun setEventsFlow(){
         mTest.testEvent
         .observeOn(AndroidSchedulers.mainThread())
@@ -216,21 +225,21 @@ class TestFragment : BaseFragment(
             bt_next.visibility      = View.INVISIBLE
             bt_pause.visibility     = View.INVISIBLE
 
-            mTest.nextTrial()
-
-            if(mTest.currTrial == TestBasic.EVENT_TEST_END) onTestEnded()
-            else {
-                when(mTest.showTrialsID) {
-                    TestBasic.TEST_SHOWTRIALS_ALWAYS    -> showTrialId(false)
-                    TestBasic.TEST_SHOWTRIALS_TRIALEND  -> showTrialId(true)
-                }
-                if(mTest.abortMode == TestBasic.TEST_ABORT_TRIALEND){
-                    bt_abort.visibility = View.INVISIBLE
-                }
-            }
+            if(mTest.nextTrial() == TestBasic.EVENT_TEST_END)   onTestEnded()
+            else                                                onBeforeTrialShow()
         }
     }
+
+    // called by TestBasic.EVENT_SHOW_NEXT_BUTTON
+    private fun showNext() {
+        bt_next.visibility = View.VISIBLE
+
+        if(mTest.abortMode == TestBasic.TEST_ABORT_ALWAYS || mTest.abortMode == TestBasic.TEST_ABORT_TRIALEND)
+            bt_abort.visibility = View.VISIBLE
+    }
+
     //---------------------------------------------------------------------------------------------------------------------------------------
+    // called by: 1) onActivityResult after answer, 2) speechrecognition result
     private fun onNext(prev_result: String = "", elapsed: Int = -1){
 
         // dont' know whether an answer dialog was present or it was listening for vocal response or it was playbacking something. stop all!
@@ -241,14 +250,19 @@ class TestFragment : BaseFragment(
         closeAnswerDialog()
 
         // call next trial & check whether it was the last => test ended
-        if(mTest.nextTrial(prev_result, elapsed) == TestBasic.EVENT_TEST_END)    onTestEnded()
+        if(mTest.nextTrial(prev_result, elapsed) == TestBasic.EVENT_TEST_END)   onTestEnded()
+        else                                                                    onBeforeTrialShow()
     }
     //---------------------------------------------------------------------------------------------------------------------------------------
-    private fun showNext() {
-        bt_next.visibility = View.VISIBLE
-
-        if(mTest.abortMode == TestBasic.TEST_ABORT_ALWAYS || mTest.abortMode == TestBasic.TEST_ABORT_TRIALEND)
-            bt_abort.visibility = View.VISIBLE
+    // manage TrialID text and abort button, called after mTest.nextTrial if test is not finished
+    private fun onBeforeTrialShow(){
+        when(mTest.showTrialsID) {
+            TestBasic.TEST_SHOWTRIALS_ALWAYS    -> showTrialId(false)
+            TestBasic.TEST_SHOWTRIALS_TRIALEND  -> showTrialId(true)
+            TestBasic.TEST_SHOWTRIALS_NEVER     -> txtTrialId.visibility = View.INVISIBLE
+        }
+        if(mTest.abortMode == TestBasic.TEST_ABORT_ALWAYS)  bt_abort.visibility = View.VISIBLE
+        else                                                bt_abort.visibility = View.INVISIBLE
     }
     //---------------------------------------------------------------------------------------------------------------------------------------
     private fun showShortAbort(){
@@ -258,10 +272,11 @@ class TestFragment : BaseFragment(
         mHandler.postDelayed({
             bt_abort.visibility = View.INVISIBLE
             bt_pause.visibility = View.INVISIBLE
-            mTest.nextTrial()
+            if(mTest.nextTrial() == TestBasic.EVENT_TEST_END) onTestEnded()
+            else                                              onBeforeTrialShow()
         }, 1000L)
     }
-    //---------------------------------------------------------------------------------------------------------------------------------------
+
     private fun showTrialId(remove:Boolean=false){
         txtTrialId.visibility   = View.VISIBLE
         txtTrialId.text         = resources.getString(R.string.trial_id, (mTest.currTrial + 1).toString())
@@ -271,7 +286,10 @@ class TestFragment : BaseFragment(
             }, 1000L)
         }
     }
-    //---------------------------------------------------------------------------------------------------------------------------------------
+
+    //=======================================================================================================================================
+    // ANSWERS
+    //=======================================================================================================================================
     // create answer dialog and process response (repeat same trial or show next one
     private fun showAnswerDialog(){
 
@@ -290,9 +308,10 @@ class TestFragment : BaseFragment(
     }
 
     private fun closeAnswerDialog(){
-
-        (answerDialogFragment as AnswerDialogFragment).dismiss() //        val dialogFragment:DialogFragment? = parentFragmentManager.findFragmentByTag(ANSWER_DIALOG_TAG) as DialogFragment
-        isAnswerDialogOn = false
+        if(isAnswerDialogOn) {
+            (answerDialogFragment as AnswerDialogFragment).dismiss() //        val dialogFragment:DialogFragment? = parentFragmentManager.findFragmentByTag(ANSWER_DIALOG_TAG) as DialogFragment
+            isAnswerDialogOn = false
+        }
     }
 
     // answer !
@@ -307,23 +326,22 @@ class TestFragment : BaseFragment(
                     val elapsedTime = data.getIntExtra(EVENT_TIME_TO_ANSWER, -1)
                     onNext(result!!, elapsedTime)
                 }
-                TestBasic.EVENT_TRIAL_REPEAT    -> mTest.show(mTest.currTrial, true)
+                TestBasic.EVENT_TRIAL_REPEAT    -> mTest.repeatTrial()
                 TestBasic.EVENT_TRIAL_ABORT     -> onAbortTest()
             }
         }
     }
 
-    //---------------------------------------------------------------------------------------------------------------------------------------
-    // create answer dialog and process response (repeat same trial or show next one
+    //----------------------------------------------------------------------------------------------
+    // start recognizing and process response (repeat same trial or show next one)
     private fun listenForVocalAnswer(valid_results:List<String> = listOf()) {
-        abortRecognition = false
-        bt_abort?.visibility = View.VISIBLE
-        onsetDate           = Date()
+        abortRecognition        = false
+        bt_abort?.visibility    = View.VISIBLE
+        onsetDate               = Date()
         speechRecognitionManager.getSpeechInput()
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeBy(
                 onSuccess = {
-
                     when (it.first) {
                         SpeechRecognitionManager.REC_SUCCESS -> {
                             Log.d("", "recognized word $it")

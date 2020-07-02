@@ -6,6 +6,7 @@ import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.StimulusTypeDelay
 import iit.uvip.psysuite.core.common.TaskCode
 import iit.uvip.psysuite.core.common.TestBasic
+import iit.uvip.psysuite.core.common.TrialBasic
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.accessory.showToast
 
@@ -109,7 +110,7 @@ class TestATB(ctx: Context,
         tone1sec = MediaPlayer.create(ctx, ctx.resources.getIdentifier("tone200hz_1sec", "raw", ctx.packageName))
         tone2sec = MediaPlayer.create(ctx, ctx.resources.getIdentifier("tone200hz_2sec", "raw", ctx.packageName))
 
-        mQuestion       = ctx.resources.getString(R.string.atvb_question)
+        mQuestion       = ctx.resources.getString(R.string.atvb_question_equal)
         validAnswers    = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
 
         initTest()
@@ -173,10 +174,9 @@ class TestATB(ctx: Context,
         if(mTestLabel.isEmpty())    showToast("Should not happen. given test code was not recognized", ctx)
     }
 
-    override fun show(trialid:Int, isRepeat:Boolean){
-        mTrial = mTrials[trialid]
+    override fun show(trial: TrialBasic, isRepeat:Boolean){
 
-        if(isRepeat)    mTrial.repetitions++
+        if(isRepeat)    trial.repetitions++
 
         noise?.setVolume(0.4f, 0.4f)
         noise?.start()
@@ -185,8 +185,8 @@ class TestATB(ctx: Context,
 
             TEST_ATB_TIME_INF -> {
                 mStimuliHandler.postDelayed({
-                    firstTrain(mTrial.type)     // schedule first 3 stimuli
-                    secondTrain(mTrial.type)    // schedule second 2 stimuli
+                    firstTrain(trial.type)     // schedule first 3 stimuli
+                    secondTrain(trial.type)    // schedule second 2 stimuli
                 }, 1000L)
             }
             TEST_ATB_TIME -> {
@@ -196,7 +196,7 @@ class TestATB(ctx: Context,
                 }, 1000L)
                 mStimuliHandler.postDelayed({
                     testEvent.accept(EVENT_STIMULI_START)
-                    showStimuliSingle(mTrial.type, (mTrial as TrialATB).delay, sendTrialEnd=true)
+                    showStimuliSingle(trial.type, (trial as TrialATB).delay, sendTrialEnd=true)
                 }, (1000L + 2*curStimDuration))
             }
         }

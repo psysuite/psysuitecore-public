@@ -85,20 +85,23 @@ open class SubjectBasicParcel(
         return label.hashCode()
     }
 
-    fun existSubjectFile():Boolean{
-        return existFileStartingWith(label, allowedext = listOf(".json"))
+    open fun existSubjectFile():Boolean{
+        return existFileStartingWith("${label}_${type}", allowedext = listOf(".json"))
     }
 
+    // label_type_datetime.txt
     open fun composeResultFileName():String{
         return "${label}_${type}_${getFullDateString()}${TestBasic.RES_EXTENSION}"
     }
 
+    // label_type_date.json
     open fun composeSubjectFileName():String{
         if(label.isBlank() || type == -1)   return ""
 
         return "${label}_${type}_${getDateString()}${TestBasic.FILE_EXTENSION}"
     }
 
+    // return filename or "" if file does not exist
     fun getAbsoluteSubjectFilePath(): String{
         return getAbsoluteFilePath(subjectFileName).second
     }

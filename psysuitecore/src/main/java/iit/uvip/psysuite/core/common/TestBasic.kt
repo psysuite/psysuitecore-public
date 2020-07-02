@@ -38,9 +38,9 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
         @JvmStatic val TEST_SHOWTRIALS_TRIALEND         = 1         //  SHOWTRIALS_TRIALEND
         @JvmStatic val TEST_SHOWTRIALS_ALWAYS           = 2         //  SHOWTRIALS_ALWAYS
 
-        @JvmStatic val TEST_ABORT_ANSWER                = 0         //  SHOWTRIALS_NEVER
-        @JvmStatic val TEST_ABORT_TRIALEND              = 1         //  SHOWTRIALS_TRIALEND
-        @JvmStatic val TEST_ABORT_ALWAYS                = 2         //  SHOWTRIALS_ALWAYS
+        @JvmStatic val TEST_ABORT_ANSWER                = 0         //  never show abort button (it is displayed in the answer dialog)
+        @JvmStatic val TEST_ABORT_TRIALEND              = 1         //  show abort button at each trial end (when answer dialog does not appear)
+        @JvmStatic val TEST_ABORT_ALWAYS                = 2         //  keep abort button always active
 
         @JvmStatic val TEST_NEXTTRIAL_NOCHOOSE          = -1        //  goes directly to next trial, does not allow user to modify it
         @JvmStatic val TEST_NEXTTRIAL_AUTO              = 0         //  user can select to go directly to next trial
@@ -89,6 +89,7 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
         @JvmStatic val TEST_ATVB_TIME_SINGLESTIM    = 140
         @JvmStatic val TEST_ATVB_TIME_DOUBLESTIM    = 141
         @JvmStatic val TEST_ATVB_TIME_DOUBLESTIM2    = 142
+        @JvmStatic val TEST_ATVB_TIME_SINGLESTIM2    = 143
         //-----------------------------------------------------------------------------------------
 
         @JvmStatic val TEST_ABORT                       = 230
@@ -110,21 +111,30 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
     var nTrials:Int                             = 0
     var currTrial:Int                           = 0
     var mTestLabel: String                      = ""
-
-    private var mResultFile: String             = ""
-
     var validAnswers: MutableList<String>       = mutableListOf()
 
-    // they are just proxy for properties (implemented / edited) in each subclass
     protected lateinit var mTrial: TrialBasic
+    private var mResultFile: String             = ""
+
+    // they are just proxy for properties (implemented / edited) in each subclass
     protected var mTrials:MutableList<TrialBasic>    = mutableListOf()
     protected var mStimuliHandler: Handler  = Handler()
 
     protected abstract fun initTest()
     abstract fun onTrialEnd()
 
-    abstract fun show(trialid:Int, isRepeat:Boolean=false)
+    abstract fun show(trial:TrialBasic, isRepeat:Boolean=false)
 
+
+    fun start(){
+        currTrial   = 0
+        mTrial      = mTrials[currTrial]
+        show(mTrial)
+    }
+
+    fun repeatTrial(){
+        show(mTrial, true)
+    }
     // ===============================================================================================================
     protected fun getTestTitle(_type:Int):String{
         return "${ctx.resources.getString(R.string.app_name)} - ${ctx.resources.getString(R.string.lab_test_res)}: $mTestLabel"
@@ -160,10 +170,16 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
         else
         {
             saveText(ctx, mResultFile, mTrial.Log(), overwrite = false, notifyDm = false)
-            currTrial++
-            show(currTrial)
+            mTrial = getNewTrial()
+            show(mTrial)
         }
         return currTrial
+    }
+
+    // in its basic form it does not do anything special. can be overridden to implement quest-based trial values
+    open fun getNewTrial():TrialBasic{
+        currTrial++
+        return mTrials[currTrial]
     }
 
     fun abortTest(deletelog:Boolean=false, dir:String= Environment.DIRECTORY_DOWNLOADS){

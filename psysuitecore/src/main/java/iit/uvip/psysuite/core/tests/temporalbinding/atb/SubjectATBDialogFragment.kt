@@ -44,7 +44,8 @@ class SubjectATBDialogFragment : SubjectBasicDialogFragment(), AdapterView.OnIte
              TestBasic.TEST_ATB_TIME,
              TestBasic.TEST_ATVB_TIME_DOUBLESTIM,
              TestBasic.TEST_ATVB_TIME_DOUBLESTIM2,
-             TestBasic.TEST_ATVB_TIME_SINGLESTIM    -> {
+             TestBasic.TEST_ATVB_TIME_SINGLESTIM,
+             TestBasic.TEST_ATVB_TIME_SINGLESTIM2    -> {
                 swInteractive.visibility = View.GONE
                 labInteractive.visibility = View.GONE
              }
@@ -72,7 +73,8 @@ class SubjectATBDialogFragment : SubjectBasicDialogFragment(), AdapterView.OnIte
             TestBasic.TEST_ATB_TIME,
             TestBasic.TEST_ATVB_TIME_DOUBLESTIM,
             TestBasic.TEST_ATVB_TIME_DOUBLESTIM2,
-            TestBasic.TEST_ATVB_TIME_SINGLESTIM ->   if(subject.canRecordAudio)  TestBasic.TEST_NEXTTRIAL_ANSWER //TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER
+            TestBasic.TEST_ATVB_TIME_SINGLESTIM,
+            TestBasic.TEST_ATVB_TIME_SINGLESTIM2 ->  if(subject.canRecordAudio)  TestBasic.TEST_NEXTTRIAL_ANSWER //TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER
                                                      else                        TestBasic.TEST_NEXTTRIAL_ANSWER
 
             else                                ->   subject.nextTrailModality

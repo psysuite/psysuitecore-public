@@ -4,10 +4,7 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.widget.ImageView
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.Stimulus3delay
-import iit.uvip.psysuite.core.common.StimulusTypeDelay
-import iit.uvip.psysuite.core.common.TaskCode
-import iit.uvip.psysuite.core.common.TestBasic
+import iit.uvip.psysuite.core.common.*
 import iit.uvip.psysuite.core.tests.temporalbinding.atb.SubjectATBParcel
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.accessory.showToast
@@ -189,22 +186,27 @@ class TestATVB(
 
     private val amplitude = 100
 
+
+    private var allQuestions:MutableList<String> = mutableListOf()
+
     companion object {
 
-        @JvmStatic val recipients:Array<String> = arrayOf(  "uvip.apptester@gmail.com", "monica.gori.parmiggiani@gmail.com") // "psysuite.uvip@gmail.com",
+        @JvmStatic val recipients:Array<String> = arrayOf(  "uvip.apptester@gmail.com") //, "monica.gori.parmiggiani@gmail.com") // "psysuite.uvip@gmail.com",
 
         @JvmStatic val TEST_BASIC_LABEL     = "ATVB"
         @JvmStatic val NUM_REPETITIONS      = 10
         @JvmStatic val NUM_REPETITIONS2     = 5
 
         fun getConditionsInfo(ctx: Context): List<TaskCode> {
-            return mutableListOf(TaskCode(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_single), TEST_ATVB_TIME_SINGLESTIM),
+            return mutableListOf(TaskCode(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_single),  TEST_ATVB_TIME_SINGLESTIM),
+                                 TaskCode(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_single2), TEST_ATVB_TIME_SINGLESTIM2),
                                  TaskCode(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_double), TEST_ATVB_TIME_DOUBLESTIM),
                                  TaskCode(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_double2), TEST_ATVB_TIME_DOUBLESTIM2))
         }
 
         fun getNextTrialModes():List<List<Int>>{
-            return listOf(  listOf(TEST_NEXTTRIAL_AUTO, TEST_NEXTTRIAL_BUTTON),
+            return listOf(  listOf(TEST_NEXTTRIAL_ANSWER),
+                            listOf(TEST_NEXTTRIAL_ANSWER),
                             listOf(TEST_NEXTTRIAL_ANSWER),
                             listOf(TEST_NEXTTRIAL_ANSWER)) //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
         }
@@ -227,7 +229,10 @@ class TestATVB(
         tone1sec        = MediaPlayer.create(ctx, ctx.resources.getIdentifier("tone200hz_1sec", "raw", ctx.packageName))
         tone2sec        = MediaPlayer.create(ctx, ctx.resources.getIdentifier("tone200hz_2sec", "raw", ctx.packageName))
 
-        mQuestion       = ctx.resources.getString(R.string.atvb_question)
+
+        allQuestions    = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro),
+                                        ctx.resources.getString(R.string.atvb_question_equal))
+
         validAnswers    = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
 
         initTest()
@@ -243,11 +248,23 @@ class TestATVB(
                 createTrials_Time()
                 createResultFile(data, TrialATVB.LOG_HEADER)
             }
+            TEST_ATVB_TIME_SINGLESTIM2,
             TEST_ATVB_TIME_DOUBLESTIM2   -> {
                 curISI          = ISI           // 2000L
                 curStimDuration = STIM_DURATION // 1000L
                 createTrials_Time2()
                 createResultFile(data, TrialATVB2.LOG_HEADER)
+            }
+        }
+        when (data.type) {
+            TEST_ATVB_TIME_SINGLESTIM,
+            TEST_ATVB_TIME_SINGLESTIM2   -> {
+                mQuestion       = allQuestions[0]
+            }
+            TEST_ATVB_TIME_DOUBLESTIM,
+            TEST_ATVB_TIME_DOUBLESTIM2   -> {
+                createResultFile(data, TrialATVB2.LOG_HEADER)
+                mQuestion       = allQuestions[1]
             }
         }
         // mTrials list
@@ -264,11 +281,9 @@ class TestATVB(
     }
 
     // get new trial info. start noise. schedule stimulations
-    override fun show(trialid: Int, isRepeat: Boolean) {
+    override fun show(trial: TrialBasic, isRepeat: Boolean) {
 
-        mTrial = mTrials[trialid]
-
-        if (isRepeat) mTrial.repetitions++
+        if (isRepeat) trial.repetitions++
 
         noise?.setVolume(0.5f, 0.5f)
         noise?.start()
@@ -278,7 +293,13 @@ class TestATVB(
             TEST_ATVB_TIME_SINGLESTIM -> {
                 mStimuliHandler.postDelayed({
                     testEvent.accept(EVENT_STIMULI_START)
-                    showStimuliSingle(mTrial.type, (mTrial as TrialATVB).delay, sendTrialEnd=true)
+                    showStimuliSingle(trial.type, (mTrial as TrialATVB).delay, sendTrialEnd=true)
+                }, 1000L)
+            }
+            TEST_ATVB_TIME_SINGLESTIM2 -> {
+                mStimuliHandler.postDelayed({
+                    testEvent.accept(EVENT_STIMULI_START)
+                    showThreeStimuliSingle((trial as TrialATVB2).a, (trial as TrialATVB2).t, (trial as TrialATVB2).v, sendTrialEnd=true)
                 }, 1000L)
             }
             TEST_ATVB_TIME_DOUBLESTIM -> {
@@ -288,7 +309,7 @@ class TestATVB(
                 }, 1000L)
                 mStimuliHandler.postDelayed({
                     testEvent.accept(EVENT_STIMULI_START)
-                    showStimuliSingle(mTrial.type, (mTrial as TrialATVB).delay, sendTrialEnd=true)
+                    showStimuliSingle(trial.type, (trial as TrialATVB).delay, sendTrialEnd=true)
                 }, (1000L + 2*curStimDuration))
             }
             TEST_ATVB_TIME_DOUBLESTIM2 -> {
@@ -298,7 +319,7 @@ class TestATVB(
                 }, 1000L)
                 mStimuliHandler.postDelayed({
                     testEvent.accept(EVENT_STIMULI_START)
-                    showThreeStimuliSingle((mTrial as TrialATVB2).a, (mTrial as TrialATVB2).t, (mTrial as TrialATVB2).v, sendTrialEnd=true)
+                    showThreeStimuliSingle((trial as TrialATVB2).a, (trial as TrialATVB2).t, (trial as TrialATVB2).v, sendTrialEnd=true)
                 }, (1000L + 2*curStimDuration))
             }
         }

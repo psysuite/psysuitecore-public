@@ -4,6 +4,7 @@ import iit.uvip.psysuite.core.common.TestBasic
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectLongitParcel
 import kotlinx.android.parcel.Parcelize
 import org.albaspazio.core.accessory.Device
+import org.albaspazio.core.accessory.existFileStartingWith
 import org.albaspazio.core.accessory.getDateString
 import org.albaspazio.core.accessory.getFullDateString
 
@@ -31,6 +32,11 @@ class SubjectTIDParcel(
         if(label.isBlank() || group == -1 || type == -1 || session == -1)   return ""
 
         return "${label}_${group}_${session}_${type}_${getDateString()}${TestBasic.FILE_EXTENSION}"
+    }
+
+
+    override fun existSubjectFile():Boolean{
+        return existFileStartingWith("${label}_${group}_${session}_${type}", allowedext = listOf(".json"))
     }
 
     override fun composeResultFileName():String{

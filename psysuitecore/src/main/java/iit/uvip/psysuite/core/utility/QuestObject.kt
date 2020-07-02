@@ -86,7 +86,7 @@ class QuestObject() {
         return 50F
     }
 
-    fun getNewValue(res:Boolean):Float{
+    fun getNewValue(success:Boolean):Float{
         return 50F
     }
     /*

@@ -7,6 +7,7 @@ import android.widget.ImageView
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.TaskCode
 import iit.uvip.psysuite.core.common.TestBasic
+import iit.uvip.psysuite.core.common.TrialBasic
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.accessory.showToast
@@ -128,22 +129,21 @@ class TestBIS(
     // + (mTrial.position + FIRST_STIMULUS_DELAY)       => 2nd stim
     // + (LAST_STIMULUS_DELAY + FIRST_STIMULUS_DELAY)   => 3rd stim
     // + (QUESTION_DELAY + FIRST_STIMULUS_DELAY)        => event : show question
-    override fun show(trialid:Int, isRepeat:Boolean){
-        mTrial = mTrials[trialid]
+    override fun show(trial:TrialBasic, isRepeat:Boolean){
 
         if(isRepeat)    mTrial.repetitions++
 
         mStimuliHandler.postDelayed({
-            deliverStimulus(mTrial as TrialBIS, TRIAL_STAGE_1)
+            deliverStimulus(trial as TrialBIS, TRIAL_STAGE_1)
             testEvent.accept(EVENT_STIMULI_START)
         }, FIRST_STIMULUS_DELAY.toLong())
 
         mStimuliHandler.postDelayed({
-            deliverStimulus(mTrial as TrialBIS, TRIAL_STAGE_2)
-        }, ((mTrial as TrialBIS).position + FIRST_STIMULUS_DELAY).toLong())
+            deliverStimulus(trial as TrialBIS, TRIAL_STAGE_2)
+        }, ((trial as TrialBIS).position + FIRST_STIMULUS_DELAY).toLong())
 
         mStimuliHandler.postDelayed({
-            deliverStimulus(mTrial as TrialBIS, TRIAL_STAGE_3)
+            deliverStimulus(trial as TrialBIS, TRIAL_STAGE_3)
         }, (TrialBIS.LAST_STIMULUS_DELAY + FIRST_STIMULUS_DELAY).toLong())
 
         mStimuliHandler.postDelayed({
