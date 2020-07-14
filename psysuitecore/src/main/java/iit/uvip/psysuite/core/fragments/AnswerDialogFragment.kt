@@ -2,6 +2,7 @@ package iit.uvip.psysuite.core.fragments
 
 import android.app.Activity
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,13 +12,15 @@ import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.TestBasic
 import kotlinx.android.synthetic.main.fragment_answer.*
 import org.albaspazio.core.accessory.getTimeDifference
-import org.albaspazio.core.accessory.showToast
+import org.albaspazio.core.ui.showToast
 import java.util.*
 
 
 class AnswerDialogFragment: DialogFragment()
 {
     val LOG_TAG = AnswerDialogFragment::class.java.simpleName
+
+    private var isDebug:Boolean = false
 
     private lateinit var mAnswers:ArrayList<String>
     lateinit var onsetDate:Date
@@ -62,6 +65,13 @@ class AnswerDialogFragment: DialogFragment()
             }
 
         onsetDate           = Date()
+
+
+        if(isDebug){
+            Handler().postDelayed({
+                sendResult(mAnswers[0], 100, TestBasic.EVENT_ANSWER_GIVEN)
+            }, 500L)
+        }
     }
 
     override fun onResume() {
@@ -82,7 +92,10 @@ class AnswerDialogFragment: DialogFragment()
                     val radioId = radioGroupIntervals.indexOfChild(radioGroupIntervals.findViewById(radioGroupIntervals.checkedRadioButtonId))
                     sendResult(mAnswers[radioId], elapsedms, TestBasic.EVENT_ANSWER_GIVEN)
                 }
-                false -> showToast("Seleziona un'opzione", requireContext())
+                false -> showToast(
+                    "Seleziona un'opzione",
+                    requireContext()
+                )
             }
         }
 

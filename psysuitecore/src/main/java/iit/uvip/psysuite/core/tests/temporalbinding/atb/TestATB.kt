@@ -8,7 +8,7 @@ import iit.uvip.psysuite.core.common.TaskCode
 import iit.uvip.psysuite.core.common.TestBasic
 import iit.uvip.psysuite.core.common.TrialBasic
 import org.albaspazio.core.accessory.VibrationManager
-import org.albaspazio.core.accessory.showToast
+import org.albaspazio.core.ui.showToast
 
 
 class TestATB(ctx: Context,
@@ -171,7 +171,10 @@ class TestATB(ctx: Context,
         getConditionsInfo(ctx).map {
             if (it.id == data.type) mTestLabel = it.label
         }
-        if(mTestLabel.isEmpty())    showToast("Should not happen. given test code was not recognized", ctx)
+        if(mTestLabel.isEmpty()) showToast(
+            "Should not happen. given test code was not recognized",
+            ctx
+        )
     }
 
     override fun show(trial: TrialBasic, isRepeat:Boolean){

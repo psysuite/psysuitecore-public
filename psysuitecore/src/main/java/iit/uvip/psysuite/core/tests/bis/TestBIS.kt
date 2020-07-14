@@ -10,7 +10,7 @@ import iit.uvip.psysuite.core.common.TestBasic
 import iit.uvip.psysuite.core.common.TrialBasic
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
 import org.albaspazio.core.accessory.VibrationManager
-import org.albaspazio.core.accessory.showToast
+import org.albaspazio.core.ui.showToast
 
 class TestBIS(
     ctx: Context,
@@ -119,7 +119,10 @@ class TestBIS(
         getConditionsInfo(ctx).map {
             if (it.id == data.type) mTestLabel = it.label
         }
-        if(mTestLabel.isEmpty())    showToast("Should not happen. given test code was not recognized", ctx)
+        if(mTestLabel.isEmpty()) showToast(
+            "Should not happen. given test code was not recognized",
+            ctx
+        )
 
         createResultFile(data, TrialBIS.LOG_HEADER)
     }

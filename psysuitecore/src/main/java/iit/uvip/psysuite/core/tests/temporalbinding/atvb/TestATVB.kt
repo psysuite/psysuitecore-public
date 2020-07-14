@@ -7,7 +7,7 @@ import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.*
 import iit.uvip.psysuite.core.tests.temporalbinding.atb.SubjectATBParcel
 import org.albaspazio.core.accessory.VibrationManager
-import org.albaspazio.core.accessory.showToast
+import org.albaspazio.core.ui.showToast
 import java.util.Collections.max
 
 class TestATVB(
@@ -50,9 +50,8 @@ class TestATVB(
     private val STIM_TYPE_TIME_T_AVx = 5
     private val STIM_TYPE_TIME_Tx_AV = 6
 
-    // 37 different elements
+    // 36 different elements
     private val lStimuli: List<StimulusTypeDelay> = listOf(
-        StimulusTypeDelay(STIM_TYPE_TIME_ATV, 0),
 
         StimulusTypeDelay(STIM_TYPE_TIME_A_TVx, 100),
         StimulusTypeDelay(STIM_TYPE_TIME_Ax_TV, 100),
@@ -96,7 +95,8 @@ class TestATVB(
         StimulusTypeDelay(STIM_TYPE_TIME_T_AVx, 1200),
         StimulusTypeDelay(STIM_TYPE_TIME_Tx_AV, 1200)
     )
-    // 37 different elements
+
+    // 72 different elements
     private val lStimuli3delay: List<Stimulus3delay> = listOf(
 
         Stimulus3delay( 100, 200, 0),
@@ -186,16 +186,13 @@ class TestATVB(
 
     private val amplitude = 100
 
-
     private var allQuestions:MutableList<String> = mutableListOf()
 
     companion object {
 
-        @JvmStatic val recipients:Array<String> = arrayOf(  "uvip.apptester@gmail.com") //, "monica.gori.parmiggiani@gmail.com") // "psysuite.uvip@gmail.com",
-
         @JvmStatic val TEST_BASIC_LABEL     = "ATVB"
-        @JvmStatic val NUM_REPETITIONS      = 10
-        @JvmStatic val NUM_REPETITIONS2     = 5
+        @JvmStatic val NUM_REPETITIONS      = 8
+        @JvmStatic val NUM_REPETITIONS2     = 4
 
         fun getConditionsInfo(ctx: Context): List<TaskCode> {
             return mutableListOf(TaskCode(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_single),  TEST_ATVB_TIME_SINGLESTIM),
@@ -210,6 +207,7 @@ class TestATVB(
                             listOf(TEST_NEXTTRIAL_ANSWER),
                             listOf(TEST_NEXTTRIAL_ANSWER)) //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
         }
+        @JvmStatic val recipients:Array<String> = arrayOf("uvip.apptester@gmail.com", "monica.gori.parmiggiani@gmail.com") // "psysuite.uvip@gmail.com",
 
         fun getEmailRecipients():Array<String>{
             return recipients
@@ -229,10 +227,7 @@ class TestATVB(
         tone1sec        = MediaPlayer.create(ctx, ctx.resources.getIdentifier("tone200hz_1sec", "raw", ctx.packageName))
         tone2sec        = MediaPlayer.create(ctx, ctx.resources.getIdentifier("tone200hz_2sec", "raw", ctx.packageName))
 
-
-        allQuestions    = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro),
-                                        ctx.resources.getString(R.string.atvb_question_equal))
-
+        allQuestions    = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro), ctx.resources.getString(R.string.atvb_question_equal))
         validAnswers    = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
 
         initTest()
@@ -273,11 +268,17 @@ class TestATVB(
         nTrials = mTrials.size
         currTrial = 0
 
+//        mListBlocks = mutableListOf((nTrials / 2F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
+        mListBlocks = mutableListOf(1)
+
         mTestLabel = ""
         getConditionsInfo(ctx).map {
             if (it.id == data.type) mTestLabel = it.label
         }
-        if(mTestLabel.isEmpty())    showToast("Should not happen. given test code was not recognized", ctx)
+        if(mTestLabel.isEmpty()) showToast(
+            "Should not happen. given test code was not recognized",
+            ctx
+        )
     }
 
     // get new trial info. start noise. schedule stimulations
@@ -299,7 +300,7 @@ class TestATVB(
             TEST_ATVB_TIME_SINGLESTIM2 -> {
                 mStimuliHandler.postDelayed({
                     testEvent.accept(EVENT_STIMULI_START)
-                    showThreeStimuliSingle((trial as TrialATVB2).a, (trial as TrialATVB2).t, (trial as TrialATVB2).v, sendTrialEnd=true)
+                    showThreeStimuliSingle((trial as TrialATVB2).a, trial.t, trial.v, sendTrialEnd=true)
                 }, 1000L)
             }
             TEST_ATVB_TIME_DOUBLESTIM -> {
@@ -319,7 +320,7 @@ class TestATVB(
                 }, 1000L)
                 mStimuliHandler.postDelayed({
                     testEvent.accept(EVENT_STIMULI_START)
-                    showThreeStimuliSingle((trial as TrialATVB2).a, (trial as TrialATVB2).t, (trial as TrialATVB2).v, sendTrialEnd=true)
+                    showThreeStimuliSingle((trial as TrialATVB2).a, trial.t, trial.v, sendTrialEnd=true)
                 }, (1000L + 2*curStimDuration))
             }
         }
@@ -429,6 +430,7 @@ class TestATVB(
         setTrialsID()   // set id according to their order
     }
 
+    // (72 + 6) * 5
     private fun createTrials_Time2() {
         var cnt = -1
         mTrials = mutableListOf()

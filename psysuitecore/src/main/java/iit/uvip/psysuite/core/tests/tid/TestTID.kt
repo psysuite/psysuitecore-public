@@ -9,7 +9,7 @@ import iit.uvip.psysuite.core.common.TestBasic
 import iit.uvip.psysuite.core.common.TrialBasic
 import iit.uvip.psysuite.core.utility.QuestObject
 import org.albaspazio.core.accessory.VibrationManager
-import org.albaspazio.core.accessory.showToast
+import org.albaspazio.core.ui.showToast
 
 // type     : audio/vibro
 // duration : ref:100 & test:[50-200] /  ref:2000 & test:[1000-4000]
@@ -152,7 +152,10 @@ class TestTID(ctx: Context,
         getConditionsInfo(ctx).map {
             if (it.id == data.type) mTestLabel = it.label
         }
-        if(mTestLabel.isEmpty())    showToast("Should not happen. given test code was not recognized", ctx)
+        if(mTestLabel.isEmpty()) showToast(
+            "Should not happen. given test code was not recognized",
+            ctx
+        )
 
         createResultFile(data, TrialTID.LOG_HEADER)
     }
@@ -241,18 +244,18 @@ class TestTID(ctx: Context,
 
         // S3
         mStimuliHandler.postDelayed({
-            deliverStimulus(trial as TrialTID)
-        }, FIRST_STIMULUS_DELAY + currStimDuration + (trial as TrialTID).delta1 + currStimDuration + currISI)
+            deliverStimulus(trial)
+        }, FIRST_STIMULUS_DELAY + currStimDuration + trial.delta1 + currStimDuration + currISI)
 
         // S4
         mStimuliHandler.postDelayed({
-            deliverStimulus(trial as TrialTID)
-        }, FIRST_STIMULUS_DELAY + currStimDuration + (trial as TrialTID).delta1 + currStimDuration + currISI + currStimDuration + (mTrial as TrialTID).delta2)
+            deliverStimulus(trial)
+        }, FIRST_STIMULUS_DELAY + currStimDuration + trial.delta1 + currStimDuration + currISI + currStimDuration + (mTrial as TrialTID).delta2)
 
         // send stimuli-end event
         mStimuliHandler.postDelayed({
             onTrialEnd()
-        }, FIRST_STIMULUS_DELAY + currStimDuration + (trial as TrialTID).delta1 + currStimDuration + currISI + currStimDuration + (trial as TrialTID).delta2 + currStimDuration + QUESTION_DELAY)
+        }, FIRST_STIMULUS_DELAY + currStimDuration + trial.delta1 + currStimDuration + currISI + currStimDuration + trial.delta2 + currStimDuration + QUESTION_DELAY)
     }
 
     private fun deliverStimulus(trial: TrialTID){

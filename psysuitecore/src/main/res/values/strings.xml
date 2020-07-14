@@ -11,6 +11,9 @@
     <string name="abort">interrompi test</string>
     <string name="pause">PAUSA</string>
     <string name="resume">RIPRENDI</string>
+    <string name="stop">STOP</string>
+    <string name="continue_label">CONTINUA</string>
+    <string name="block_ended">Questa parte del test è terminata\nVuoi continuare o interrompere per poi proseguire un\'altra volta?</string>
     <string name="test_ended">Il Test è terminato</string>
 
     <string name="name">NOME</string>

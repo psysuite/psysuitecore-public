@@ -59,7 +59,8 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
         @JvmStatic val EVENT_ANSWER_GIVEN               = 205
         @JvmStatic val EVENT_TRIAL_REPEAT               = 206
         @JvmStatic val EVENT_TRIAL_ABORT                = 207
-        @JvmStatic val EVENT_TEST_END                   = 208
+        @JvmStatic val EVENT_TEST_END                   = -100
+        @JvmStatic val EVENT_BLOCK_END                  = -101
         @JvmStatic val EVENT_SHOW_NEXT_BUTTON           = 209
         @JvmStatic val EVENT_UPDATE_TRIAL_ID            = 210
         @JvmStatic val EVENT_UPDATE_TRIAL_ID_REMOVE     = 211   // update trial id and remove it after 1 sec
@@ -94,10 +95,11 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
 
         @JvmStatic val TEST_ABORT                       = 230
         @JvmStatic val TEST_COMPLETED                   = 231
+        @JvmStatic val BLOCK_COMPLETED                  = 232
 
-        @JvmStatic val TEST_PRE                         = 232
-        @JvmStatic val TEST_POST                        = 233
-        @JvmStatic val TEST_TRAINING                    = 234
+        @JvmStatic val TEST_PRE                         = 233
+        @JvmStatic val TEST_POST                        = 234
+        @JvmStatic val TEST_TRAINING                    = 235
 
     }
 
@@ -117,8 +119,10 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
     private var mResultFile: String             = ""
 
     // they are just proxy for properties (implemented / edited) in each subclass
-    protected var mTrials:MutableList<TrialBasic>    = mutableListOf()
-    protected var mStimuliHandler: Handler  = Handler()
+    protected var mTrials:MutableList<TrialBasic>   = mutableListOf()
+    protected var mStimuliHandler: Handler          = Handler()
+
+    protected var mListBlocks:MutableList<Int>      = mutableListOf()
 
     protected abstract fun initTest()
     abstract fun onTrialEnd()
@@ -163,20 +167,29 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
 
         if (prev_result != "")  mTrial.setResponse(prev_result, elapsed)
 
-        if(currTrial == (nTrials - 1)) {
-            saveText(ctx, mResultFile, mTrial.Log(), overwrite = false, notifyDm = true)
-            return EVENT_TEST_END            // END !
-        }
-        else
-        {
-            saveText(ctx, mResultFile, mTrial.Log(), overwrite = false, notifyDm = false)
-            mTrial = getNewTrial()
-            show(mTrial)
-        }
+        return  if(currTrial == (nTrials - 1)) {
+                    saveText(ctx, mResultFile, mTrial.Log(), overwrite = false, notifyDm = true)
+                    EVENT_TEST_END            // END !
+                }
+                else if(mListBlocks.contains(currTrial)){
+                    saveText(ctx, mResultFile, mTrial.Log(), overwrite = false, notifyDm = false)
+                    EVENT_BLOCK_END
+                }
+                else
+                {
+                    saveText(ctx, mResultFile, mTrial.Log(), overwrite = false, notifyDm = false)
+                    doNextTrial()
+                }
+    }
+
+    // called by above nextTrial & TestFragment after user decided to continue after block end
+    fun doNextTrial():Int{
+        mTrial = getNewTrial()  // it also updates currTrial
+        show(mTrial)
         return currTrial
     }
 
-    // in its basic form it does not do anything special. can be overridden to implement quest-based trial values
+    // in the present basic form it does not do anything special. can be overridden to implement quest-based trial values
     open fun getNewTrial():TrialBasic{
         currTrial++
         return mTrials[currTrial]
