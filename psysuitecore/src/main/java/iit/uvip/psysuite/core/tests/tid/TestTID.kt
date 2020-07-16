@@ -1,8 +1,8 @@
 package iit.uvip.psysuite.core.tests.tid
 
+import android.app.Activity
 import android.content.Context
-import android.media.AudioManager
-import android.media.ToneGenerator
+import androidx.fragment.app.Fragment
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.TaskCode
 import iit.uvip.psysuite.core.common.TestBasic
@@ -17,10 +17,15 @@ import org.albaspazio.core.ui.showToast
 // TRIAL:
 //    FIRST_STIMULUS_DELAY=1500--------s1------delta1------s2-----ISI=1000ms-----s3------delta2-------s4-----QUESTION_DELAY=1500ms------domanda
 
+// show -> onTrialEnd -> EVENT_GIVE_ANSWER
+
 class TestTID(ctx: Context,
+              activity: Activity,
+              hostfragment: Fragment,
               override val data: SubjectTIDParcel,
-              private val vibrator: VibrationManager?
-) : TestBasic(ctx, data)
+              vibrator: VibrationManager?,
+              isDebug:Boolean
+) : TestBasic(ctx, activity, hostfragment, data, vibrator, isDebug = isDebug)
 {
     var LOG_TAG:String = TestTID::class.java.simpleName
 
@@ -49,9 +54,9 @@ class TestTID(ctx: Context,
         @JvmStatic val NUM_REP_X_LATENCY_X_BLOCK_LONG   = 8     // MUST BE ODD !!!
         @JvmStatic var NUM_TRIALS_X_BLOCK_LONG          = NUM_FIXED_LATENCIES_LONG * NUM_FIXED_LATENCIES_LONG
 
-        @JvmStatic val recipients:Array<String>         = arrayOf("uvip.apptester@gmail.com",
-                                                          "tonelli.alessia@gmail.com",
-                                                          "nicola.domenici@iit.it") // "psysuite.uvip@gmail.com",
+        @JvmStatic val recipients:Array<String>         = arrayOf(  "uvip.apptester@gmail.com",
+                                                                    "tonelli.alessia@gmail.com",
+                                                                    "nicola.domenici@iit.it") // "psysuite.uvip@gmail.com",
 
 //        @JvmStatic val TEST_STIMULUS_DURATION_1_MIN = 50
 //        @JvmStatic val TEST_STIMULUS_DURATION_1_MAX = 200
@@ -93,24 +98,25 @@ class TestTID(ctx: Context,
         }
     }
 
-    private var mToneGen    = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
-    private var mTone       = ToneGenerator.TONE_CDMA_ALERT_INCALL_LITE
+    private val shortLatencies:List<Long>   = listOf(100, 128, 157, 185, 214, 242, 271, 300)
+    private val longLatencies:List<Long>    = listOf(1000, 1280, 1570, 1850, 2140, 2420, 2710, 3000)
 
-    private val shortLatencies:List<Long>   = listOf(50, 70, 90, 110, 130, 150, 170, 200)
-    private val longLatencies:List<Long>    = listOf(1000, 1350, 1700, 2150, 2500, 3000, 3500, 4000)
-
-    // =======================================================================================================================================
-
+    // =============================================================================================================================
+    // INIT
+    // =============================================================================================================================
     init{
+        if(vibrator == null)   throw Exception("VIBRATOR_NOT_DEFINED")
+        else
+        {
+            nextTrailModality   = data.nextTrailModality
+            abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
+            showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
 
-        nextTrailModality   = data.nextTrailModality
-        abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
-        showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
+            mQuestion           = ctx.resources.getString(R.string.tid_question_text)
+            validAnswers        = mutableListOf(ctx.resources.getString(R.string.tid_rb1_text), ctx.resources.getString(R.string.tid_rb3_text))
 
-        mQuestion           = ctx.resources.getString(R.string.tid_question_text)
-        validAnswers        = mutableListOf(ctx.resources.getString(R.string.tid_rb1_text), ctx.resources.getString(R.string.tid_rb3_text))
-
-        initTest()
+            initTest()
+        }
     }
 
     override fun initTest(){
@@ -152,16 +158,14 @@ class TestTID(ctx: Context,
         getConditionsInfo(ctx).map {
             if (it.id == data.type) mTestLabel = it.label
         }
-        if(mTestLabel.isEmpty()) showToast(
-            "Should not happen. given test code was not recognized",
-            ctx
-        )
+        if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         createResultFile(data, TrialTID.LOG_HEADER)
     }
 
-    // -----------------------------------------------------------------------------------------------------------------
-    // set question and create trials list
+    // =============================================================================================================================
+    // CREATE TRIALS
+    // =============================================================================================================================    // set question and create trials list
     private fun createConstantTrials(duration:Long){
 
         var ref_delta = REF_STIM_DUR_SHORT
@@ -219,8 +223,46 @@ class TestTID(ctx: Context,
         mTrials.mapIndexed { index, trial -> trial.id = (index + 1) }
     }
 
-    // -----------------------------------------------------------------------------------------------------------------
-    // a trial has this temporal line:
+    // =============================================================================================================================
+    // MANAGE TRIALS END
+    // =============================================================================================================================
+    override fun onTrialEnd() {
+
+        when (nextTrailModality) {
+            TEST_NEXTTRIAL_VOICE_ANSWER         ->  testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
+            TEST_NEXTTRIAL_ANSWER               ->  testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
+            TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER  -> {
+                testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
+                testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
+            }
+        }
+    }
+
+    // in case of quest-based task, define new trial's nonref-delta & success
+    override fun getNewTrial():TrialBasic{
+
+        return  if(isUsingQuest) {
+            val newdelta: Float = mQuest.getNewValue(mTrial.success)
+            currTrial++
+            setTrialNonRefDelta(currTrial, newdelta)
+            mTrials[currTrial]
+        }
+        else super.getNewTrial()
+    }
+
+    // set next trial NON-ref delta and success value
+    private fun setTrialNonRefDelta(trial_id:Int, nonref_delta:Float){
+
+        if((mTrials[trial_id] as TrialTID).ref_first)       (mTrials[trial_id] as TrialTID).delta2 = nonref_delta.toInt()
+        else                                                (mTrials[trial_id] as TrialTID).delta1 = nonref_delta.toInt()
+
+        (mTrials[trial_id] as TrialTID).correct_answer =    if((mTrials[trial_id] as TrialTID).delta1 > (mTrials[trial_id] as TrialTID).delta2) validAnswers[0]
+        else                                                                                validAnswers[1]
+    }
+
+    // =============================================================================================================================
+    // DELIVER STIMULI
+    // =============================================================================================================================    // a trial has this temporal line:
     //    FIRST_STIMULUS_DELAY=--1500--s1--delta1-s2-----ISI=1000ms-----s3------delta2-------s4-----QUESTION_DELAY=1500ms------domanda
     //                                  |           |                    |                    |
     // S1:          FIRST_STIMULUS_DELAY
@@ -228,13 +270,12 @@ class TestTID(ctx: Context,
     // S3:          FIRST_STIMULUS_DELAY + duration + mTrial.delta1 + duration + ISI
     // S4:          FIRST_STIMULUS_DELAY + duration + mTrial.delta1 + duration + ISI + duration + mTrial.delta2
     // QUESTION:    FIRST_STIMULUS_DELAY + duration + mTrial.delta1 + duration + ISI + duration + mTrial.delta2 + duration + QUESTION_DELAY
-
     override fun show(trial:TrialBasic, isRepeat:Boolean){
 
         // S1
         mStimuliHandler.postDelayed({
             deliverStimulus(trial as TrialTID)
-            testEvent.accept(EVENT_STIMULI_START)
+            testEvent.accept(Pair(EVENT_STIMULI_START, null))
         }, FIRST_STIMULUS_DELAY)
 
         // S2
@@ -261,48 +302,14 @@ class TestTID(ctx: Context,
     private fun deliverStimulus(trial: TrialTID){
 
         when(trial.type) {
-            TEST_TID_SHORT_AUDIO, TEST_TID_LONG_AUDIO       -> mToneGen.startTone(mTone, trial.duration)
-            TEST_TID_SHORT_TACTILE, TEST_TID_LONG_TACTILE   -> vibrator?.vibrateSingle(trial.duration.toLong())
+            TEST_TID_SHORT_AUDIO, TEST_TID_LONG_AUDIO       -> deliverA1Stimulus(trial.duration.toLong())
+            TEST_TID_SHORT_TACTILE, TEST_TID_LONG_TACTILE   -> deliverTStimulus(trial.duration.toLong())
         }
     }
 
-    // ---------------------------------------------------------------------------------------------
-    override fun onTrialEnd() {
+    // =============================================================================================================================
+    // DEBUG
+    // =============================================================================================================================
 
-        when (nextTrailModality) {
-
-            TEST_NEXTTRIAL_BUTTON               ->  testEvent.accept(EVENT_SHOW_NEXT_BUTTON)
-            TEST_NEXTTRIAL_AUTO                 ->  testEvent.accept(EVENT_SHOW_1SECABORT)
-
-            TEST_NEXTTRIAL_VOICE_ANSWER         ->  testEvent.accept(EVENT_GIVE_VOCAL_ANSWER)
-            TEST_NEXTTRIAL_ANSWER               ->  testEvent.accept(EVENT_GIVE_ANSWER)
-            TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER  -> {
-                testEvent.accept(EVENT_GIVE_VOCAL_ANSWER)
-                testEvent.accept(EVENT_GIVE_ANSWER)
-            }
-        }
-    }
-
-    // in case of quest-based task, define new trial's  nonref-delta & success
-    override fun getNewTrial():TrialBasic{
-
-        return  if(isUsingQuest) {
-                    val newdelta: Float = mQuest.getNewValue(mTrial.success)
-                    currTrial++
-                    setTrialNonRefDelta(currTrial, newdelta)
-                    mTrials[currTrial]
-                }
-                else super.getNewTrial()
-    }
-
-    // set next trial NON-ref delta and success value
-    private fun setTrialNonRefDelta(trial_id:Int, nonref_delta:Float){
-
-        if((mTrials[trial_id] as TrialTID).ref_first)       (mTrials[trial_id] as TrialTID).delta2 = nonref_delta.toInt()
-        else                                                (mTrials[trial_id] as TrialTID).delta1 = nonref_delta.toInt()
-
-        (mTrials[trial_id] as TrialTID).correct_answer =    if((mTrials[trial_id] as TrialTID).delta1 > (mTrials[trial_id] as TrialTID).delta2) validAnswers[0]
-                                                            else                                                                                validAnswers[1]
-    }
-    // =====================================================================================
+    // =============================================================================================================================
 }

@@ -1,18 +1,23 @@
 package iit.uvip.psysuite.core.common
 
+import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.media.ToneGenerator
 import android.os.Environment
 import android.os.Handler
 import android.os.Parcelable
+import android.view.View
+import android.widget.ImageView
+import androidx.fragment.app.Fragment
 import com.jakewharton.rxrelay2.PublishRelay
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
 import kotlinx.android.parcel.Parcelize
-import org.albaspazio.core.accessory.deleteFile
-import org.albaspazio.core.accessory.existFile
-import org.albaspazio.core.accessory.getAbsoluteFilePath
-import org.albaspazio.core.accessory.saveText
+import org.albaspazio.core.accessory.*
+import org.albaspazio.core.ui.showAlert
 import java.io.File
 import java.util.*
 
@@ -22,7 +27,14 @@ must contain all the possible codes
 
  */
 
-abstract class TestBasic(protected val ctx: Context, protected open val data: SubjectBasicParcel) {
+abstract class TestBasic(protected val ctx: Context,
+                         protected val activity: Activity,
+                         protected val hostfragment: Fragment,
+                         protected open val data: SubjectBasicParcel,
+                         protected val vibrator: VibrationManager? = null,
+                         protected val mImageView: ImageView? = null,
+                         protected val isDebug:Boolean = false
+) {
 
     companion object {
 
@@ -52,8 +64,9 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
         //-----------------------------------------------------------------------------------------
         //
         //-----------------------------------------------------------------------------------------
-        @JvmStatic val EVENT_STIMULI_START              = 200
-        @JvmStatic val EVENT_STIMULI_END                = 201
+        @JvmStatic val EVENT_STIMULI_START              = 200   // unused
+        @JvmStatic val EVENT_STIMULI_END                = 201   // unused
+
         @JvmStatic val EVENT_GIVE_ANSWER                = 202
         @JvmStatic val EVENT_GIVE_VOCAL_ANSWER          = 203
         @JvmStatic val EVENT_ANSWER_GIVEN               = 205
@@ -62,9 +75,9 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
         @JvmStatic val EVENT_TEST_END                   = -100
         @JvmStatic val EVENT_BLOCK_END                  = -101
         @JvmStatic val EVENT_SHOW_NEXT_BUTTON           = 209
-        @JvmStatic val EVENT_UPDATE_TRIAL_ID            = 210
-        @JvmStatic val EVENT_UPDATE_TRIAL_ID_REMOVE     = 211   // update trial id and remove it after 1 sec
-        @JvmStatic val EVENT_SHOW_1SECABORT             = 212   // show abort button for 1 sec
+        @JvmStatic val EVENT_UPDATE_TRIAL_ID            = 210   // update trial id and possibly remove it after X msec
+        @JvmStatic val EVENT_SHOW_ABORT                 = 212   // show abort button for any ms sec
+        @JvmStatic val EVENT_SHOW_DEBUGINFO             = 213   // show debug info text
 
         //-----------------------------------------------------------------------------------------
         // TESTS UNIQUE CODES
@@ -89,8 +102,34 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
 
         @JvmStatic val TEST_ATVB_TIME_SINGLESTIM    = 140
         @JvmStatic val TEST_ATVB_TIME_DOUBLESTIM    = 141
-        @JvmStatic val TEST_ATVB_TIME_DOUBLESTIM2    = 142
-        @JvmStatic val TEST_ATVB_TIME_SINGLESTIM2    = 143
+        @JvmStatic val TEST_ATVB_TIME_DOUBLESTIM2   = 142
+        @JvmStatic val TEST_ATVB_TIME_SINGLESTIM2   = 143
+
+        @JvmStatic val TEST_SAMPLE                  = 150
+
+        //-----------------------------------------------------------------------------------------
+        // STIMULUS TYPES UNIQUE CODES
+        //-----------------------------------------------------------------------------------------
+        @JvmStatic val STIM_TYPE_A1                 = 1     // tone
+        @JvmStatic val STIM_TYPE_A2                 = 2     // resource
+        @JvmStatic val STIM_TYPE_T                  = 3     //
+        @JvmStatic val STIM_TYPE_V1                 = 4     // view made visible/invisible
+        @JvmStatic val STIM_TYPE_V2                 = 5     // imageview with different color frame (one as background)
+
+        @JvmStatic val STIM_TYPE_A1T                = 6     //
+        @JvmStatic val STIM_TYPE_A2T                = 7     //
+        @JvmStatic val STIM_TYPE_A1V1               = 8     //
+        @JvmStatic val STIM_TYPE_A2V1               = 9     //
+        @JvmStatic val STIM_TYPE_A1V2               = 10    //
+        @JvmStatic val STIM_TYPE_A2V2               = 11    //
+        @JvmStatic val STIM_TYPE_TV1                = 12    //
+        @JvmStatic val STIM_TYPE_TV2                = 13    //
+
+        @JvmStatic val STIM_TYPE_A1TV1              = 14    //
+        @JvmStatic val STIM_TYPE_A2TV1              = 15    //
+        @JvmStatic val STIM_TYPE_A1TV2              = 16    //
+        @JvmStatic val STIM_TYPE_A2TV2              = 17    //
+
         //-----------------------------------------------------------------------------------------
 
         @JvmStatic val TEST_ABORT                       = 230
@@ -103,7 +142,7 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
 
     }
 
-    val testEvent:PublishRelay<Int> = PublishRelay.create()
+    val testEvent:PublishRelay<Pair<Int,Any?>> = PublishRelay.create()
     var mQuestion:String            = ""
 
     var showTrialsID:Int        = 0     // define when display trial id(0: never, 1: only @ trial end, 2: always)
@@ -115,24 +154,32 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
     var mTestLabel: String                      = ""
     var validAnswers: MutableList<String>       = mutableListOf()
 
+    // they are just proxy for properties (implemented / edited / accessed) in each subclass
     protected lateinit var mTrial: TrialBasic
-    private var mResultFile: String             = ""
-
-    // they are just proxy for properties (implemented / edited) in each subclass
     protected var mTrials:MutableList<TrialBasic>   = mutableListOf()
-    protected var mStimuliHandler: Handler          = Handler()
-
     protected var mListBlocks:MutableList<Int>      = mutableListOf()
 
+    protected var mToneGen    = ToneGenerator(AudioManager.STREAM_SYSTEM, ToneGenerator.MAX_VOLUME)
+    protected var mTone       = ToneGenerator.TONE_CDMA_ALERT_INCALL_LITE
+    protected lateinit var currTone:MediaPlayer
+    protected var mStimuliHandler: Handler      = Handler()
+
+    private var mResultFile: String             = ""
+
+    // proxy for methods to be implemented in each subclass
     protected abstract fun initTest()
     abstract fun onTrialEnd()
-
     abstract fun show(trial:TrialBasic, isRepeat:Boolean=false)
 
+    // ===============================================================================================================
 
     fun start(){
         currTrial   = 0
         mTrial      = mTrials[currTrial]
+
+        if(isDebug)
+            testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))    // send debug info
+
         show(mTrial)
     }
 
@@ -140,29 +187,8 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
         show(mTrial, true)
     }
     // ===============================================================================================================
-    protected fun getTestTitle(_type:Int):String{
-        return "${ctx.resources.getString(R.string.app_name)} - ${ctx.resources.getString(R.string.lab_test_res)}: $mTestLabel"
-    }
-
-    protected fun createResultFile(subj:SubjectBasicParcel, header:String){
-        mResultFile = subj.composeResultFileName()
-        saveText(ctx, mResultFile, header)
-    }
-
-    fun getResultFile(): String{
-        return  if(existFile(mResultFile).first)    mResultFile
-                else                                ""
-    }
-
-    fun getAbsoluteResultFilePath(): String{
-        return getAbsoluteFilePath(mResultFile).second
-    }
-
-    protected fun setTrialsID(){
-        mTrials.mapIndexed { index, trialBasic ->
-            trialBasic.id = index }           // set trial id according to its order in the list
-    }
-
+    // TRIAL MANAGEMENT
+    // ===============================================================================================================
     open fun nextTrial(prev_result: String = "", elapsed: Int = -1): Int {
 
         if (prev_result != "")  mTrial.setResponse(prev_result, elapsed)
@@ -182,14 +208,19 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
                 }
     }
 
-    // called by above nextTrial & TestFragment after user decided to continue after block end
+    // called by above nextTrial & by TestFragment after user decided to continue after block end
     fun doNextTrial():Int{
         mTrial = getNewTrial()  // it also updates currTrial
+
+        if(isDebug)
+            testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))    // send debug info
+
         show(mTrial)
         return currTrial
     }
 
-    // in the present basic form it does not do anything special. can be overridden to implement quest-based trial values
+    // in the present basic form it does not do anything special.
+    // can be overridden to implement custom online trials' values manipulation (e.g. in quest-based tasks)
     open fun getNewTrial():TrialBasic{
         currTrial++
         return mTrials[currTrial]
@@ -205,11 +236,294 @@ abstract class TestBasic(protected val ctx: Context, protected open val data: Su
             down.addCompletedDownload(file.name, "User file", false, "text/plain", file.path, file.length(), true)
         }
     }
+
+    // ===============================================================================================================
+    // ACCESSORY
+    // ===============================================================================================================
+    protected fun getTestTitle(_type:Int):String{
+        return "${ctx.resources.getString(R.string.app_name)} - ${ctx.resources.getString(R.string.lab_test_res)}: $mTestLabel"
+    }
+
+    protected fun createResultFile(subj:SubjectBasicParcel, header:String){
+        mResultFile = subj.composeResultFileName()
+        saveText(ctx, mResultFile, header)
+    }
+
+    fun getResultFile(): String{
+        return  if(existFile(mResultFile).first)    mResultFile
+        else                                ""
+    }
+
+    fun getAbsoluteResultFilePath(): String{
+        return getAbsoluteFilePath(mResultFile).second
+    }
+
+    // set trial id according to its order in the list
+    protected fun setTrialsID(){
+        mTrials.mapIndexed { index, trialBasic ->
+            trialBasic.id = index
+        }
+    }
+
+    private fun getDebugInfo():String{
+        return mTrial.debugInfo()
+    }
+
+    // =============================================================================================================================
+    // STIMULUS DELIVERY
+    // =============================================================================================================================
+
+    protected fun playbackAllAudioResource(resname:String, onEnd:()-> Unit = {}){
+
+        val mediaPlayer = MediaPlayer.create(ctx, ctx.resources.getIdentifier(resname, "raw", ctx.packageName))
+        mediaPlayer.setOnCompletionListener{
+            onEnd()
+            it.release()
+        }
+        mediaPlayer.start()
+    }
+
+    protected fun deliverStimulus(type:Int, duration:Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        when(type){
+            STIM_TYPE_A1        -> deliverA1Stimulus(duration   , extra, onEnd)    // tone
+            STIM_TYPE_A2        -> deliverA2Stimulus(duration   , extra, onEnd)    // mediaplayer from resource
+            STIM_TYPE_T         -> deliverTStimulus(duration    , extra, onEnd)
+            STIM_TYPE_V1        -> deliverV1Stimulus(duration   , extra, onEnd)    // imageview made visible/invisible
+            STIM_TYPE_V2        -> deliverV2Stimulus(duration   , extra, onEnd)    // imageview with different color frame (one as background)
+            STIM_TYPE_A1T       -> deliverA1TStimulus(duration  , extra, onEnd)
+            STIM_TYPE_A2T       -> deliverA2TStimulus(duration  , extra, onEnd)
+            STIM_TYPE_A1V1      -> deliverA1V1Stimulus(duration , extra, onEnd)
+            STIM_TYPE_A2V1      -> deliverA2V1Stimulus(duration , extra, onEnd)
+            STIM_TYPE_A1V2      -> deliverA1V2Stimulus(duration , extra, onEnd)
+            STIM_TYPE_A2V2      -> deliverA2V2Stimulus(duration , extra, onEnd)
+            STIM_TYPE_TV1       -> deliverTV1Stimulus(duration  , extra, onEnd)
+            STIM_TYPE_TV2       -> deliverTV2Stimulus(duration  , extra, onEnd)
+            STIM_TYPE_A1TV1     -> deliverA1TV1Stimulus(duration, extra, onEnd)
+            STIM_TYPE_A2TV1     -> deliverA2TV1Stimulus(duration, extra, onEnd)
+            STIM_TYPE_A1TV2     -> deliverA1TV2Stimulus(duration, extra, onEnd)
+            STIM_TYPE_A2TV2     -> deliverA2TV2Stimulus(duration, extra, onEnd)
+        }
+    }
+
+    protected fun deliverA1Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        mToneGen.startTone(mTone, duration.toInt())
+        mStimuliHandler.postDelayed({
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverA2Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        currTone.start()                              // MediaPlayer from resource/file
+
+        mStimuliHandler.postDelayed({
+            currTone.stop()
+            currTone.prepare()
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverTStimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        vibrator?.vibrateSingle(duration)
+        mStimuliHandler.postDelayed({
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverV1Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        mImageView?.visibility = View.VISIBLE
+
+        mStimuliHandler.postDelayed({
+            mImageView?.visibility = View.INVISIBLE
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverV2Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+
+        if(extra is Pair<*, *>){
+            if(extra.first is Int && extra.second is Int) {
+                val drawables = extra as Pair<Int, Int>
+                mImageView?.setImageResource(drawables.first)
+
+                mStimuliHandler.postDelayed({
+                    mImageView?.setImageResource(drawables.second)
+                    onEnd()
+                }, duration)
+            }
+        }
+        else showAlert(activity, ctx.resources.getString(R.string.error), ctx.resources.getString(R.string.internal_error, "deliverV2Stimulus: extra is not an Pair of drawables"))
+    }
+
+    protected fun deliverA1TStimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        mToneGen.startTone(mTone, duration.toInt())
+        vibrator?.vibrateSingle(duration)
+        mStimuliHandler.postDelayed({
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverA2TStimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        vibrator?.vibrateSingle(duration)
+        currTone.start()                              // MediaPlayer from resource/file
+
+        mStimuliHandler.postDelayed({
+            currTone.stop()
+            currTone.prepare()
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverA1V1Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        mToneGen.startTone(mTone, duration.toInt())
+        mImageView?.visibility = View.VISIBLE
+
+        mStimuliHandler.postDelayed({
+            mImageView?.visibility = View.INVISIBLE
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverA2V1Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        currTone.start()                              // MediaPlayer from resource/file
+        mImageView?.visibility = View.VISIBLE
+
+        mStimuliHandler.postDelayed({
+            mImageView?.visibility = View.INVISIBLE
+            currTone.stop()
+            currTone.prepare()
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverA1V2Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+
+        if(extra is Pair<*, *>){
+            if(extra.first is Int && extra.second is Int) {
+                val drawables = extra as Pair<Int, Int>
+
+                mToneGen.startTone(mTone, duration.toInt())
+                mImageView?.setImageResource(drawables.first)
+
+                mStimuliHandler.postDelayed({
+                    mImageView?.setImageResource(drawables.second)
+                    onEnd()
+                }, duration)
+            }
+        }
+    }
+
+    protected fun deliverA2V2Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+
+        if(extra is Pair<*, *>) {
+            if (extra.first is Int && extra.second is Int) {
+                val drawables = extra as Pair<Int, Int>
+
+                currTone.start()                              // MediaPlayer from resource/file
+                mImageView?.setImageResource(drawables.first)
+
+                mStimuliHandler.postDelayed({
+                    mImageView?.setImageResource(drawables.second)
+                    currTone.stop()
+                    currTone.prepare()
+                    onEnd()
+                }, duration)
+            }
+        }
+    }
+
+    protected fun deliverTV1Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        vibrator?.vibrateSingle(duration)
+        mImageView?.visibility = View.VISIBLE
+
+        mStimuliHandler.postDelayed({
+            mImageView?.visibility = View.INVISIBLE
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverTV2Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+
+        if(extra is Pair<*, *>) {
+            if (extra.first is Int && extra.second is Int) {
+                val drawables = extra as Pair<Int, Int>
+
+                vibrator?.vibrateSingle(duration)
+                mImageView?.setImageResource(drawables.first)
+
+                mStimuliHandler.postDelayed({
+                    mImageView?.setImageResource(drawables.second)
+                    onEnd()
+                }, duration)
+            }
+        }
+    }
+
+    protected fun deliverA1TV1Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        vibrator?.vibrateSingle(duration)
+        mToneGen.startTone(mTone, duration.toInt())
+        mImageView?.visibility = View.VISIBLE
+
+        mStimuliHandler.postDelayed({
+            mImageView?.visibility = View.INVISIBLE
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverA2TV1Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+        vibrator?.vibrateSingle(duration)
+        currTone.start()                              // MediaPlayer from resource/file
+        mImageView?.visibility = View.VISIBLE
+
+        mStimuliHandler.postDelayed({
+            mImageView?.visibility = View.INVISIBLE
+            currTone.stop()
+            currTone.prepare()
+            onEnd()
+        }, duration)
+    }
+
+    protected fun deliverA1TV2Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+
+        if(extra is Pair<*, *>) {
+            if (extra.first is Int && extra.second is Int) {
+                val drawables = extra as Pair<Int, Int>
+
+                vibrator?.vibrateSingle(duration)
+                mToneGen.startTone(mTone, duration.toInt())
+                mImageView?.setImageResource(drawables.first)
+
+                mStimuliHandler.postDelayed({
+                    mImageView?.setImageResource(drawables.second)
+                    onEnd()
+                }, duration)
+            }
+        }
+    }
+
+    protected fun deliverA2TV2Stimulus(duration: Long, extra:Any? = null, onEnd:() -> Unit = {}){
+
+        if(extra is Pair<*, *>) {
+            if (extra.first is Int && extra.second is Int) {
+                val drawables = extra as Pair<Int, Int>
+
+                vibrator?.vibrateSingle(duration)
+                currTone.start()                              // MediaPlayer from resource/file
+                mImageView?.setImageResource(drawables.first)
+
+                mStimuliHandler.postDelayed({
+                    mImageView?.setImageResource(drawables.second)
+                    currTone.stop()
+                    currTone.prepare()
+                    onEnd()
+                }, duration)
+            }
+        }
+    }
+    // =============================================================================================================================
 }
 
 @Parcelize
 data class TaskCode(val label: String, val id: Int) : Parcelable{
-
     override fun toString(): String {
         return label
     }

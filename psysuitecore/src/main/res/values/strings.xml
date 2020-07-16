@@ -45,6 +45,9 @@
     <string name="restart_app_suggestion">E\' consigliabile riavviare l\'app</string>
     <string name="contact_developer">E\' consigliabile riavviare l\'app\nin caso l\'errore persista, contattare lo sviluppatore all\'indirizzo:\npsysuite.uvip@gmail.com</string>
 
+    <string name="error">Errore</string>
+    <string name="internal_error">Il codice ha generato il seguente errore\n%1$s</string>
+
 
     <!-- ATB -->
     <string name="start_atb">Audio-Tactile Binding (AT-B)</string>
@@ -139,18 +142,18 @@
     <string name="bisection_question_text_tactile">La seconda vibrazione era più vicina alla prima o alla terza?</string>
     <string name="bisection_question_text_mixed">Il secondo stimolo era più vicino al primo o al terzo?</string>
 
-    <string name="bisection_rb1_text">Più vicino al primo</string>
+    <string name="bisection_rb1_text">primo</string>
     <string name="bisection_rb2_text">Uguale</string>
-    <string name="bisection_rb3_text">Più vicino al terzo</string>
+    <string name="bisection_rb3_text">terzo</string>
 
     <!-- MUSICAL METERS -->
     <string name="start_musicalmeter">MUSICAL METER DISCRIMINATION (MMD)</string>
 
     <string name="mmeters_question_text">Le due sequenze sono uguali?</string>
 
-    <string name="mmeters_rb1_text">SI, sono uguali</string>
+    <string name="mmeters_rb1_text">si</string>
     <string name="mmeters_rb2_text">Uguale</string>
-    <string name="mmeters_rb3_text">NO, sono diverse</string>
+    <string name="mmeters_rb3_text">no</string>
 
 
 

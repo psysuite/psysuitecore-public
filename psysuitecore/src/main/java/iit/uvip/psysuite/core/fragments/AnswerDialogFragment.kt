@@ -49,11 +49,13 @@ class AnswerDialogFragment: DialogFragment()
         val str_trial   = "trial " +  (requireArguments().getInt("trial_id", 0) + 1).toString() + " di " + requireArguments().getInt("tot_trials", 0)
         val question    = requireArguments().getString("question", "Enter Name")
         val answers     = requireArguments().getStringArrayList("answers")
+        val debug_info  = requireArguments().getString("debug")
 
         dialog?.setTitle(title)
 
         txt_trials.text     = str_trial
         txt_question.text   = question
+        txt_debug.text      = debug_info
 
         if (answers != null)
             if (answers.isNotEmpty()) {

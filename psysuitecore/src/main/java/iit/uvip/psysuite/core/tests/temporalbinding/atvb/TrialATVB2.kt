@@ -20,4 +20,8 @@ class TrialATVB2(id: Int = -1, val a:Long, val t:Long, val v:Long, correct_answe
     override fun Log(): String {
         return id.toString() + "\t" + a.toString() + "\t" + t.toString() + "\t" + v.toString() + "\t" + user_answer + "\t" + success.toString() + "\t" + elapsed.toString() +"\n"
     }
+
+    override fun debugInfo():String{
+        return "${super.debugInfo()}, a=$a, t=$t, v=$v"
+    }
 }

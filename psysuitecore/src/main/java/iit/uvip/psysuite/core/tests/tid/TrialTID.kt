@@ -26,4 +26,8 @@ class TrialTID(id:Int=-1, type:Int, val block:Int, val group:Int, val session:In
     override fun Log(): String {
         return id.toString() + "\t" + type.toString() + "\t" + block.toString() + "\t" + group.toString() + "\t" + session.toString() + "\t" + user_answer + "\t" + success.toString() + "\t" + elapsed.toString() + "\t" + delta1.toString() + "\t" + delta2.toString() + "\t" + ref_first.toString() +"\n"
     }
+
+    override fun debugInfo():String{
+        return "${super.debugInfo()}, d1=$delta1, d2=$delta2, is_ref_first=$ref_first"
+    }
 }

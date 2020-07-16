@@ -21,4 +21,5 @@ class TrialATBInfants(id:Int=-1, type:Int): TrialBasic(id, type, "", ""){
     override fun Log():String{
         return id.toString() +  "\t" + type.toString() + "\n"
     }
+
 }

@@ -20,4 +20,8 @@ class TrialATVB(id: Int = -1, type: Int, val delay: Long, correct_answer:String)
     override fun Log(): String {
         return id.toString() + "\t" + type.toString() + "\t" + delay.toString() + "\t" + user_answer + "\t" + success.toString() + "\t" + elapsed.toString() +"\n"
     }
+
+    override fun debugInfo():String{
+        return "${super.debugInfo()}, delay=$delay"
+    }
 }

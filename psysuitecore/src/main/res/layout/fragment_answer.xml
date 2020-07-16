@@ -8,14 +8,14 @@
 
 
     <ImageButton
-            android:id="@+id/bt_clear"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginStart="44dp"
-            android:background="@android:color/transparent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/radioGroupIntervals"
-            app:srcCompat="@drawable/repeat_icon" />
+        android:id="@+id/bt_clear"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="36dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/radioGroupIntervals"
+        app:srcCompat="@drawable/repeat_icon" />
 
     <ImageButton
             android:id="@+id/bt_confirm"
@@ -28,18 +28,18 @@
             app:srcCompat="@drawable/green_tick" />
 
     <Button
-            android:id="@+id/bt_abort_test"
-            android:layout_width="373dp"
-            android:layout_height="59dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:background="@android:color/transparent"
-            android:text="ANNULLA TEST"
-            android:textSize="18sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+        android:id="@+id/bt_abort_test"
+        android:layout_width="342dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@android:color/transparent"
+        android:text="ANNULLA TEST"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <RadioGroup
             android:id="@+id/radioGroupIntervals"
@@ -66,17 +66,17 @@
     </RadioGroup>
 
     <TextView
-            android:id="@+id/txt_question"
-            android:layout_width="241dp"
-            android:layout_height="106dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="TextView"
-            android:textSize="24sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txt_trials" />
+        android:id="@+id/txt_question"
+        android:layout_width="335dp"
+        android:layout_height="205dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="TextView"
+        android:textSize="24sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txt_trials" />
 
     <TextView
             android:id="@+id/txt_trials"
@@ -90,5 +90,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/txt_debug"
+        android:layout_width="336dp"
+        android:layout_height="98dp"
+        android:layout_marginBottom="24dp"
+        android:text=""
+        app:layout_constraintBottom_toTopOf="@+id/bt_abort_test"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.494"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

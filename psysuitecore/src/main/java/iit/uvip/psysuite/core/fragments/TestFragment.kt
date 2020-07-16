@@ -14,6 +14,7 @@ import iit.uvip.psysuite.core.common.TestResult
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
 import iit.uvip.psysuite.core.tests.bis.TestBIS
 import iit.uvip.psysuite.core.tests.mmd.TestMMD
+import iit.uvip.psysuite.core.tests.sample.TestSample
 import iit.uvip.psysuite.core.tests.temporalbinding.atb.SubjectATBParcel
 import iit.uvip.psysuite.core.tests.temporalbinding.atb.TestATB
 import iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB
@@ -42,11 +43,18 @@ Three operative modalities:
 - trial have no answer dialog, at the end of the trial, the following trial is displayed
 - trial have no answer dialog, at the end of the trial, test stops and wait for user press.
 
+normal trial-by-trial flow is:
+
+here        : mTest.start()
+within Test : show -> onTrialEnd -> EVENT_GIVE_ANSWER/EVENT_SHOW_NEXT
+here        : mTest.testEvent.subscribe -> answerdialog/speechrec   -> onAnswer  |-> onNewTrial -> mTest.nextTrial ->  test end | block end | show next trial
+                                        -> next button  _________________________|
+within Test : mTrial.setResponse -> saveText -> doNextTrial() -> getNewTrial -> show
  */
 
 class TestFragment : BaseFragment(
-    layout = R.layout.fragment_test,
-    landscape = false,
+    layout              = R.layout.fragment_test,
+    landscape           = false,
     hideAndroidControls = true
 ){
 
@@ -70,7 +78,10 @@ class TestFragment : BaseFragment(
     private lateinit var speechManager: SpeechManager
     private var vibrator:VibrationManager?          = null
 
-    lateinit var onsetDate: Date
+    private lateinit var onsetDate: Date
+
+    private val isDebug:Boolean                     = true
+    private var currDebugInfo:String                = ""
 
     // ==========================================================================================================================
     // ==========================================================================================================================
@@ -95,51 +106,57 @@ class TestFragment : BaseFragment(
 
         speechRecognitionManager    = SpeechRecognitionManager(requireContext())
         speechManager               = SpeechManager(resources, requireContext())
-
         vibrator                    = VibrationManager(requireContext()).init()
 
         mSubjectParcel              = arguments?.getParcelable(TestBasic.TESTINFO_BUNDLE_LABEL) ?: return
-        when(mSubjectParcel!!.type)
-        {
-            TestBasic.TEST_BISECTION_AUDIO,
-            TestBasic.TEST_BISECTION_TACTILE,
-            TestBasic.TEST_BISECTION_AUDIO_TACTILE,
-            TestBasic.TEST_BISECTION_AUDIO_VIDEO    -> mTest = TestBIS(requireContext(), mSubjectParcel!!, vibrator, circleView)
 
-            TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), mSubjectParcel!!)
+        try{
+            when(mSubjectParcel!!.type)
+            {
+                TestBasic.TEST_BISECTION_AUDIO,
+                TestBasic.TEST_BISECTION_TACTILE,
+                TestBasic.TEST_BISECTION_AUDIO_TACTILE,
+                TestBasic.TEST_BISECTION_AUDIO_VIDEO    -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, isDebug)
 
-            TestBasic.TEST_TID_SHORT_AUDIO,
-            TestBasic.TEST_TID_SHORT_TACTILE,
-            TestBasic.TEST_TID_LONG_AUDIO,
-            TestBasic.TEST_TID_LONG_TACTILE         -> mTest = TestTID(requireContext(), mSubjectParcel as SubjectTIDParcel, vibrator)
+                TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), requireActivity(), this, mSubjectParcel!!, isDebug)
 
-            TestBasic.TEST_ATB_TIME,
-            TestBasic.TEST_ATB_FREQUENCY,           // to be coded
-            TestBasic.TEST_ATB_FREQUENCY_INF,       // to be coded
-            TestBasic.TEST_ATB_TIME_INF_15s,
-            TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), mSubjectParcel as SubjectATBParcel, vibrator)
+                TestBasic.TEST_TID_SHORT_AUDIO,
+                TestBasic.TEST_TID_SHORT_TACTILE,
+                TestBasic.TEST_TID_LONG_AUDIO,
+                TestBasic.TEST_TID_LONG_TACTILE         -> mTest = TestTID(requireContext(), requireActivity(), this, mSubjectParcel as SubjectTIDParcel, vibrator, isDebug)
 
-            TestBasic.TEST_ATVB_TIME_SINGLESTIM,
-            TestBasic.TEST_ATVB_TIME_SINGLESTIM2,
-            TestBasic.TEST_ATVB_TIME_DOUBLESTIM,
-            TestBasic.TEST_ATVB_TIME_DOUBLESTIM2    -> mTest = TestATVB(requireContext(), mSubjectParcel as SubjectATBParcel, vibrator, circleView)
+                TestBasic.TEST_ATB_TIME,
+                TestBasic.TEST_ATB_FREQUENCY,           // to be coded
+                TestBasic.TEST_ATB_FREQUENCY_INF,       // to be coded
+                TestBasic.TEST_ATB_TIME_INF_15s,
+                TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel as SubjectATBParcel, vibrator, isDebug)
 
+                TestBasic.TEST_ATVB_TIME_SINGLESTIM,
+                TestBasic.TEST_ATVB_TIME_SINGLESTIM2,
+                TestBasic.TEST_ATVB_TIME_DOUBLESTIM,
+                TestBasic.TEST_ATVB_TIME_DOUBLESTIM2    -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel as SubjectATBParcel, vibrator, circleView, isDebug)
+
+                TestBasic.TEST_SAMPLE                   -> mTest = TestSample(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, isDebug)
+
+                else    -> {
+                    showAlert(requireActivity(),resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
+                    return
+                }
+            }
         }
-
-        if(!this::mTest.isInitialized){
-            showAlert(
-                requireActivity(),
-                resources.getString(R.string.critical_error),
-                resources.getString(R.string.contact_developer)
-            )
+        catch (e:Exception){
+            showAlert(requireActivity(),resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
+            showAlert(requireActivity(),resources.getString(R.string.critical_error), e.toString())
             return
         }
 
-        bt_next.visibility  = View.INVISIBLE
-        bt_abort.visibility = View.INVISIBLE
-        bt_pause.visibility = View.INVISIBLE
 
-        if (mTest.showTrialsID == TestBasic.TEST_SHOWTRIALS_ALWAYS) showTrialId(false)
+        bt_next.visibility      = View.INVISIBLE
+        bt_abort.visibility     = View.INVISIBLE
+        bt_pause.visibility     = View.INVISIBLE
+        txtDebugInfo.visibility = View.INVISIBLE
+
+        if (mTest.showTrialsID == TestBasic.TEST_SHOWTRIALS_ALWAYS) showTrialId()
         if (mTest.abortMode == TestBasic.TEST_ABORT_ALWAYS){
             bt_abort.visibility = View.VISIBLE
             bt_pause.visibility = View.VISIBLE
@@ -168,7 +185,7 @@ class TestFragment : BaseFragment(
             if(isPaused){
                 bt_pause.text = resources.getString(R.string.pause)
                 bt_pause.visibility = View.INVISIBLE
-                askNewTrial()
+                onNewTrial()
             }
             else{
                 mHandler.removeCallbacksAndMessages(null)
@@ -184,22 +201,50 @@ class TestFragment : BaseFragment(
     }
 
     // here I manage all trial-by-trial behaviours invoked by Tests
+    // normal flow is
     private fun setEventsFlow(){
         mTest.testEvent
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe {
-            when(it){
-                TestBasic.EVENT_STIMULI_START               -> {}
-                TestBasic.EVENT_STIMULI_END                 -> mTest.onTrialEnd()
-                TestBasic.EVENT_GIVE_ANSWER                 -> showAnswerDialog()
-                TestBasic.EVENT_GIVE_VOCAL_ANSWER           -> {
-                                                                bt_abort.visibility = View.VISIBLE
-                                                                listenForVocalAnswer(mTest.validAnswers)
+            when(it.first){
+                TestBasic.EVENT_STIMULI_START       -> {}
+                TestBasic.EVENT_STIMULI_END         -> {}
+
+                TestBasic.EVENT_GIVE_ANSWER         -> showAnswerDialog()
+                TestBasic.EVENT_GIVE_VOCAL_ANSWER   -> {
+                                                        bt_abort.visibility = View.VISIBLE
+                                                        listenForVocalAnswer(mTest.validAnswers)
                 }
-                TestBasic.EVENT_SHOW_NEXT_BUTTON            -> showNext()
-                TestBasic.EVENT_UPDATE_TRIAL_ID             -> showTrialId(false)
-                TestBasic.EVENT_UPDATE_TRIAL_ID_REMOVE      -> showTrialId(true)
-                TestBasic.EVENT_SHOW_1SECABORT              -> showShortAbort()
+                TestBasic.EVENT_SHOW_NEXT_BUTTON    -> showNext()
+
+                // called by SubTests' nextTrial
+                TestBasic.EVENT_UPDATE_TRIAL_ID     -> {
+                                                        try {
+                                                            val dur = it.second as Long
+                                                            showTrialId(dur)
+                                                        }catch(e:Exception){
+                                                            e.printStackTrace()
+                                                            showTrialId(1000L)
+                                                        }
+                }
+                TestBasic.EVENT_SHOW_ABORT          -> {
+                                                        try {
+                                                            val dur = it.second as Long
+                                                            showShortAbort(dur)
+                                                        }catch(e:Exception){
+                                                            e.printStackTrace()
+                                                            showShortAbort(1000L)
+                                                        }
+                }
+                TestBasic.EVENT_SHOW_DEBUGINFO      -> {
+                                                        try {
+                                                            val info = it.second as String
+                                                            showDebugInfo(info)
+                                                        }catch(e:Exception){
+                                                            e.printStackTrace()
+                                                            showDebugInfo(e.toString())
+                                                        }
+                }
             }
         }
         .addTo(disposable)
@@ -210,7 +255,7 @@ class TestFragment : BaseFragment(
             bt_next.visibility      = View.INVISIBLE
             bt_pause.visibility     = View.INVISIBLE
 
-            askNewTrial()
+            onNewTrial()
         }
     }
     //---------------------------------------------------------------------------------------------------------------------------------------
@@ -225,10 +270,11 @@ class TestFragment : BaseFragment(
         closeAnswerDialog()
 
         // call next trial & check whether it was the last => test ended
-        askNewTrial(prev_result, elapsed)
+        onNewTrial(prev_result, elapsed)
     }
 
-    private fun askNewTrial(prev_result: String = "", elapsed: Int = -1){
+    // called by: onAnswer, bt_next click, bt_pause click
+    private fun onNewTrial(prev_result: String = "", elapsed: Int = -1){
         when(mTest.nextTrial(prev_result, elapsed)){
             TestBasic.EVENT_TEST_END    -> onTestEnded()
             TestBasic.EVENT_BLOCK_END   -> onBlockEnded()       // ask whether interrupting the test
@@ -238,29 +284,41 @@ class TestFragment : BaseFragment(
     //---------------------------------------------------------------------------------------------------------------------------------------
     // manage TrialID text and abort button, called after mTest.nextTrial if test is not finished
     private fun onBeforeTrialShow(){
+
+        txtTrialId.visibility   = View.INVISIBLE
+        bt_abort.visibility     = View.INVISIBLE
+
         when(mTest.showTrialsID) {
-            TestBasic.TEST_SHOWTRIALS_ALWAYS    -> showTrialId(false)
-            TestBasic.TEST_SHOWTRIALS_TRIALEND  -> showTrialId(true)
-            TestBasic.TEST_SHOWTRIALS_NEVER     -> txtTrialId.visibility = View.INVISIBLE
+            TestBasic.TEST_SHOWTRIALS_ALWAYS    -> showTrialId()
+            TestBasic.TEST_SHOWTRIALS_TRIALEND  -> showTrialId(1000L)
         }
         if(mTest.abortMode == TestBasic.TEST_ABORT_ALWAYS)  bt_abort.visibility = View.VISIBLE
-        else                                                bt_abort.visibility = View.INVISIBLE
+
     }
 
     private fun onTestEnded(){
-        showToast(
-            getText(R.string.test_ended).toString(),
-            requireContext()
-        )
+        showToast(getText(R.string.test_ended).toString(), requireContext())
         navigateBack(TestBasic.TEST_COMPLETED, mTest.getAbsoluteResultFilePath())
     }
 
+    // user wanted to interrupt test during a block (ask whether sending data)
     private fun onAbortTest(deletelog:Boolean=false){
         mTest.abortTest(deletelog)
         mHandler.removeCallbacksAndMessages(null)
         navigateBack(TestBasic.TEST_ABORT, mTest.getAbsoluteResultFilePath())
     }
 
+    private fun onBlockEnded(){
+        show2MethodsDialog(requireActivity(),
+            resources.getString(R.string.warning),
+            resources.getString(R.string.block_ended),
+            resources.getString(R.string.continue_label),
+            resources.getString(R.string.stop),
+            { /* cancelClb*/    onStoppedAfterBlock() },
+            { /* okClb */       mTest.doNextTrial() })
+    }
+
+    // user wanted to interrupt test after an end block (send data)
     private fun onStoppedAfterBlock(){
         mTest.abortTest(false)
         mHandler.removeCallbacksAndMessages(null)
@@ -275,15 +333,6 @@ class TestFragment : BaseFragment(
         Navigation.findNavController(requireView()).popBackStack()
     }
 
-    private fun onBlockEnded(){
-        show2MethodsDialog(requireActivity(),
-            resources.getString(R.string.warning),
-            resources.getString(R.string.block_ended),
-            resources.getString(R.string.continue_label),
-            resources.getString(R.string.stop),
-            { /* cancelClb*/    onStoppedAfterBlock() },
-            { /* okClb */       mTest.doNextTrial() })
-    }
     //---------------------------------------------------------------------------------------------------------------------------------------
     // ELEMENT VISIBILITY
     //---------------------------------------------------------------------------------------------------------------------------------------
@@ -295,24 +344,37 @@ class TestFragment : BaseFragment(
             bt_abort.visibility = View.VISIBLE
     }
 
-    private fun showShortAbort(){
+    private fun showShortAbort(remove: Long = 1000L){
         bt_abort.visibility = View.VISIBLE
         bt_pause.visibility = View.VISIBLE
 
-        mHandler.postDelayed({
-            bt_abort.visibility = View.INVISIBLE
-            bt_pause.visibility = View.INVISIBLE
-            askNewTrial()
-        }, 1000L)
+        if(remove > 0){
+            mHandler.postDelayed({
+                bt_abort.visibility = View.INVISIBLE
+                bt_pause.visibility = View.INVISIBLE
+                onNewTrial()
+            }, remove)
+        }
     }
 
-    private fun showTrialId(remove:Boolean=false){
+    private fun showTrialId(remove:Long=0){
         txtTrialId.visibility   = View.VISIBLE
         txtTrialId.text         = resources.getString(R.string.trial_id, (mTest.currTrial + 1).toString())
-        if(remove){
+        if(remove > 0){
             mHandler.postDelayed({
                 txtTrialId.visibility = View.INVISIBLE
-            }, 1000L)
+            }, remove)
+        }
+    }
+
+    private fun showDebugInfo(msg:String, remove:Long=0){
+        currDebugInfo           = msg
+        txtDebugInfo.visibility = View.VISIBLE
+        txtDebugInfo.text       = currDebugInfo
+        if(remove > 0){
+            mHandler.postDelayed({
+                txtDebugInfo.visibility = View.INVISIBLE
+            }, remove)
         }
     }
 
@@ -327,6 +389,7 @@ class TestFragment : BaseFragment(
         b.putInt("tot_trials",  mTest.nTrials)
         b.putString("question", mTest.mQuestion)
         b.putStringArrayList("answers", mTest.validAnswers as ArrayList<String>)
+        b.putString("debug", currDebugInfo)
 
         answerDialogFragment = AnswerDialogFragment.newInstance("Some Title")
         (answerDialogFragment as AnswerDialogFragment).setTargetFragment(this , TARGET_FRAGMENT_REQUEST_CODE)

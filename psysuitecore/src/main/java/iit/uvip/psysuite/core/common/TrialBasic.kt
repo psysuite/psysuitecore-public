@@ -11,6 +11,10 @@ abstract class TrialBasic(var id:Int=-1, val type:Int, protected val label:Strin
     // data exported to log file
     abstract fun Log():String
 
+    open fun debugInfo():String{
+        return "lab=$label, type=$type, corr_answ=$correct_answer"
+    }
+
     open fun setResponse(result: String, elapsedms: Int) {
         user_answer = result
         elapsed     = elapsedms
