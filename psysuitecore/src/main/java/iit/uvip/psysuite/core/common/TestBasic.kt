@@ -1,7 +1,6 @@
 package iit.uvip.psysuite.core.common
 
 import android.app.Activity
-import android.app.DownloadManager
 import android.content.Context
 import android.os.Environment
 import android.os.Handler
@@ -14,9 +13,7 @@ import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
 import kotlinx.android.parcel.Parcelize
 import org.albaspazio.core.accessory.*
-import org.albaspazio.core.ui.show2MethodsDialog
 import org.albaspazio.core.ui.showAlert
-import java.io.File
 import java.util.*
 import java.util.Collections.max
 import java.util.Collections.min
@@ -98,10 +95,10 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_ATB_TIME_DOUBLESTIM     = 131
         @JvmStatic val TEST_ATB_TIME_INF            = 132
 
-        @JvmStatic val TEST_ATVB_TIME_SINGLESTIM    = 140
-        @JvmStatic val TEST_ATVB_TIME_DOUBLESTIM    = 141
-        @JvmStatic val TEST_ATVB_TIME_DOUBLESTIM2   = 142
-        @JvmStatic val TEST_ATVB_TIME_SINGLESTIM2   = 143
+        @JvmStatic val TEST_ATVB_TIME_S_UNBAL    = 140
+        @JvmStatic val TEST_ATVB_TIME_D_UNBAL    = 141
+        @JvmStatic val TEST_ATVB_TIME_D_BAL   = 142
+        @JvmStatic val TEST_ATVB_TIME_S_BAL   = 143
 
         @JvmStatic val TEST_SAMPLE_ALIGNED          = 150
         @JvmStatic val TEST_SAMPLE_SHIFTED          = 151
@@ -265,21 +262,11 @@ abstract class TestBasic(protected val ctx: Context,
         return mTrials[currTrial]
     }
 
-    fun abortTest(dir:String= Environment.DIRECTORY_DOWNLOADS){
+    fun abortTest(deleteOrShow:Boolean, dir:String= Environment.DIRECTORY_DOWNLOADS){
         mStimuliHandler.removeCallbacksAndMessages(null)
 
-        show2MethodsDialog(activity,
-            ctx.resources.getString(R.string.warning),
-            ctx.resources.getString(R.string.block_ended),
-            ctx.resources.getString(R.string.keep),         // ok
-            ctx.resources.getString(R.string.delete),       // cancel
-            { /* okClb */
-                val path    = Environment.getExternalStoragePublicDirectory(dir)
-                val file    = File(path, mResultFile)
-                val down    = ctx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-                down.addCompletedDownload(file.name, "User file", false, "text/plain", file.path, file.length(), true)
-            },
-            { /* cancelClb*/    deleteFile(mResultFile) })
+        if(deleteOrShow)    deleteFile(mResultFile)
+        else                notifyFile(mResultFile, ctx, dir)
     }
 
     fun stopTestAfterBlock(dir:String= Environment.DIRECTORY_DOWNLOADS):String{
@@ -292,10 +279,7 @@ abstract class TestBasic(protected val ctx: Context,
         val newsubjname = subjectparcel.composeSubjectFileName(mCurrBlock)
         renameFile(subjectparcel.subjectFileName, newsubjname)
 
-        val path    = Environment.getExternalStoragePublicDirectory(dir)
-        val file    = File(path, newresname)
-        val down    = ctx.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        down.addCompletedDownload(file.name, "User file", false, "text/plain", file.path, file.length(), true)
+        notifyFile(newresname, ctx, dir)
 
         return newresname
     }
@@ -1003,7 +987,8 @@ data class TaskCode(val label: String, val id: Int) : Parcelable{
 data class TestResult(var code:Int=-1, var mailsubject:String, var mailbody:String, var res_files:ArrayList<String> = arrayListOf(), val testClass:String) : Parcelable
 
 data class StimulusATBInfants(val type: Int, val tactile_pattern:Int)
-data class Stimulus3delay(val a:Long, val t:Long, val v:Long)
+data class Stimulus3delay(val type: Int, val a:Long, val t:Long, val v:Long)
+data class StimulusBindingsUnbalanced(val type: Int, val delay:Long)
 data class StimulusBIS(val ntrials:Int, val position:Int, val conflict:String)
 
 fun VibrationManager.vibrateSingle(paramsT:TactileManager) {

@@ -21,6 +21,7 @@
     <string name="continue_label">CONTINUA</string>
     <string name="block_ended">Questa parte del test è terminata\nVuoi continuare o interrompere per poi proseguire un\'altra volta?</string>
     <string name="test_ended">Il Test è terminato</string>
+    <string name="test_aborted">Hai deciso di interrompere il test. Vuoi cancellare i risultati fin qui scritti\n o li vuoi mantenere?</string>
 
     <string name="name">NOME</string>
     <string name="gender">SESSO</string>

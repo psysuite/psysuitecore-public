@@ -16,7 +16,7 @@ import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
 import kotlinx.android.synthetic.main.fragment_subject_info_basic_spinner.*
 import org.albaspazio.core.accessory.deleteFilesStartingWith
 import org.albaspazio.core.accessory.getCompanionObjectMethod
-import org.albaspazio.core.ui.show2MethodsDialog
+import org.albaspazio.core.ui.show2ChoisesDialog
 import org.albaspazio.core.ui.showAlert
 
 open class SubjectBasicDialogFragment: DialogFragment(){
@@ -255,7 +255,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
             -1 -> true  // does not exist a same subject file
             0  -> {     // exist only one same subjects file
-                show2MethodsDialog(requireActivity(), resources.getString(R.string.warning), resources.getString(R.string.subject_present), resources.getString(R.string.yes), resources.getString(R.string.no),
+                show2ChoisesDialog(requireActivity(), resources.getString(R.string.warning), resources.getString(R.string.subject_present), resources.getString(R.string.yes), resources.getString(R.string.no),
                     { // ok press, update subject, then continue
                         subject = subj
                         sendResult(subject)
@@ -266,7 +266,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
                 false
             }
             else  -> {  // exist at least n-block files
-                show2MethodsDialog(requireActivity(), resources.getString(R.string.warning), resources.getString(R.string.subject_block_present), resources.getString(R.string.continue_txt), resources.getString(R.string.restart),
+                show2ChoisesDialog(requireActivity(), resources.getString(R.string.warning), resources.getString(R.string.subject_block_present), resources.getString(R.string.continue_txt), resources.getString(R.string.restart),
                     { // ok press, continue next block
                         subject = subj
                         subject.block = nextblock

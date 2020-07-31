@@ -14,7 +14,7 @@ import iit.uvip.psysuite.core.common.TestBasic
 import iit.uvip.psysuite.core.common.subjects_dialog.SubjectBasicDialogFragment
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
 import kotlinx.android.synthetic.main.fragment_subject_info_sample.*
-import org.albaspazio.core.ui.show2MethodsDialog
+import org.albaspazio.core.ui.show2ChoisesDialog
 import org.albaspazio.core.ui.showAlert
 
 
@@ -340,41 +340,14 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
     // check whether subject's "label_type_Date" file exists, ask user whether continue or change name
     private fun manageSubjectFileExistence(subj: SubjectBasicParcel):Boolean{
         return if(subj.existSubjectFile() > -1){
-            show2MethodsDialog(
-                requireActivity(),
-                resources.getString(R.string.warning),
-                resources.getString(R.string.subject_present),
-                resources.getString(R.string.yes),
-                resources.getString(R.string.no),
+            show2ChoisesDialog(requireActivity(), resources.getString(R.string.warning),
+                resources.getString(R.string.subject_present), resources.getString(R.string.yes), resources.getString(R.string.no),
                 { // ok press, update subject, then continue
                     subject = subj as SubjectSampleParcel
                     sendResult(subject)
-                },
-                {
-                    // cancel press. stop. let user change data
-//                    txtName.requestFocus()
-                })
+                },{})
             false
         }
         else true
     }
-
-//    @SuppressLint("SupportAnnotationUsage")
-//    private fun getRawResources(){
-//
-//        val fields: Array<Field> = raw::class.java.fields
-//        val ids:MutableList<Int> = mutableListOf()
-//        val names:MutableList<String> = mutableListOf()
-//        fields.map{
-//            ids.add(it.getInt(it))
-//            names.add(it.name)
-//        }
-////        for (i in 0 until fields.size - 1) {
-////            val name: String = fields[i].getName()
-////            @RawRes val rawId = fields[i].get(null)
-////            // Do your thing here.
-////        }
-//
-//        var a=1
-//    }
 }

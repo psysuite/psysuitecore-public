@@ -33,7 +33,7 @@ import org.albaspazio.core.fragments.BaseFragment
 import org.albaspazio.core.fragments.setNavigationResult
 import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.speech.SpeechRecognitionManager
-import org.albaspazio.core.ui.show2MethodsDialog
+import org.albaspazio.core.ui.show2ChoisesDialog
 import org.albaspazio.core.ui.showAlert
 import org.albaspazio.core.ui.showToast
 import java.util.*
@@ -131,10 +131,10 @@ class TestFragment : BaseFragment(
                 TestBasic.TEST_ATB_TIME_DOUBLESTIM,
                 TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel as SubjectBindingsParcel, vibrator, isDebug)
 
-                TestBasic.TEST_ATVB_TIME_SINGLESTIM,
-                TestBasic.TEST_ATVB_TIME_SINGLESTIM2,
-                TestBasic.TEST_ATVB_TIME_DOUBLESTIM,
-                TestBasic.TEST_ATVB_TIME_DOUBLESTIM2    -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel as SubjectBindingsParcel, vibrator, circleView, isDebug)
+                TestBasic.TEST_ATVB_TIME_S_UNBAL,
+                TestBasic.TEST_ATVB_TIME_S_BAL,
+                TestBasic.TEST_ATVB_TIME_D_UNBAL,
+                TestBasic.TEST_ATVB_TIME_D_BAL    -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel as SubjectBindingsParcel, vibrator, circleView, isDebug)
 
                 TestBasic.TEST_SAMPLE_ALIGNED,
                 TestBasic.TEST_SAMPLE_SHIFTED,
@@ -309,16 +309,29 @@ class TestFragment : BaseFragment(
         navigateBack(TestBasic.TEST_COMPLETED, mTest.getAbsoluteResultFilePath())
     }
 
-    // user wanted to interrupt test during a block (ask whether sending data)
+    // user wanted to interrupt test during a block (ask whether deleting results file and it)
     private fun onAbortTest(){
-        mTest.abortTest()
-        mHandler.removeCallbacksAndMessages(null)
-        navigateBack(TestBasic.TEST_ABORT, mTest.getAbsoluteResultFilePath())
+
+        show2ChoisesDialog(requireActivity(),
+            requireContext().resources.getString(R.string.warning),
+            requireContext().resources.getString(R.string.test_aborted),
+            requireContext().resources.getString(R.string.keep),         // ok
+            requireContext().resources.getString(R.string.delete),       // cancel
+            { /* okClb */
+                mTest.abortTest(false)
+                mHandler.removeCallbacksAndMessages(null)
+                navigateBack(TestBasic.TEST_ABORT, mTest.getAbsoluteResultFilePath())
+            },
+            { /* cancelClb*/
+                mTest.abortTest(true)
+                mHandler.removeCallbacksAndMessages(null)
+                navigateBack(TestBasic.TEST_ABORT, "")
+            })
     }
 
     // user ended a planned block. can continue or stop (result file is renamed "*_blkX")
     private fun onBlockEnded(){
-        show2MethodsDialog(requireActivity(),resources.getString(R.string.warning),resources.getString(R.string.block_ended), resources.getString(R.string.continue_label), resources.getString(R.string.stop),
+        show2ChoisesDialog(requireActivity(),resources.getString(R.string.warning),resources.getString(R.string.block_ended), resources.getString(R.string.continue_label), resources.getString(R.string.stop),
             { /* okClb */       mTest.startNewBlock() },
             { /* cancelClb*/    onStoppedAfterBlock() })
     }

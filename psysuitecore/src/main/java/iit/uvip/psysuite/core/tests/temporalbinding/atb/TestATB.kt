@@ -8,7 +8,7 @@ import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.*
 import iit.uvip.psysuite.core.tests.temporalbinding.SubjectBindingsParcel
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindings
-import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindings3latencies
+import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.ui.showToast
 
@@ -28,6 +28,13 @@ class TestATB(ctx: Context,
 
     private var curISI: Long = 0L
 
+
+    private val TYPE_AT     = 0
+    private val TYPE_A      = 1
+    private val TYPE_T      = 2
+    private val TYPE_A_T    = 3
+    private val TYPE_T_A    = 4
+    
     // stimuli combinations
     private val STIM_TYPE_TIME_A800_T   = 100
     private val STIM_TYPE_TIME_A_T800   = 101
@@ -44,27 +51,48 @@ class TestATB(ctx: Context,
     )
 
     // 13 different elements
-    private val lStimuli3delay: List<Stimulus3delay> = listOf(
+    private val lStimuliUnBalanced: List<StimulusBindingsUnbalanced> = listOf(
 
-        Stimulus3delay( 0, 0, -1),
-        Stimulus3delay( 0, -1, -1),
-        Stimulus3delay( -1, 0, -1),
+        StimulusBindingsUnbalanced( TYPE_AT, 0),
+        StimulusBindingsUnbalanced( TYPE_A, 0),
+        StimulusBindingsUnbalanced( TYPE_T, 0),
+
+        StimulusBindingsUnbalanced( TYPE_A_T, 100),
+        StimulusBindingsUnbalanced( TYPE_T_A, 100),
         
-        Stimulus3delay( 0, 100, -1),
-        Stimulus3delay( 100, 0, -1),
+        StimulusBindingsUnbalanced( TYPE_A_T, 200),
+        StimulusBindingsUnbalanced( TYPE_T_A, 200),
         
-        Stimulus3delay( 0, 200, -1),
-        Stimulus3delay( 200, 0, -1),
+        StimulusBindingsUnbalanced( TYPE_A_T, 300),
+        StimulusBindingsUnbalanced( TYPE_T_A, 300),
         
-        Stimulus3delay( 0, 300, -1),
-        Stimulus3delay( 300, 0, -1),
+        StimulusBindingsUnbalanced( TYPE_A_T, 400),
+        StimulusBindingsUnbalanced( TYPE_T_A, 400),
         
-        Stimulus3delay( 0, 400, -1),
-        Stimulus3delay( 400, 0, -1),
-        
-        Stimulus3delay( 0, 800, -1),
-        Stimulus3delay( 800, 0, -1)
+        StimulusBindingsUnbalanced( TYPE_A_T, 800),
+        StimulusBindingsUnbalanced( TYPE_T_A, 800)
     )    
+//    private val lStimuli3delay: List<Stimulus3delay> = listOf(
+//
+//        Stimulus3delay( 0, 0, 0, -1),
+//        Stimulus3delay( 0, 0, -1, -1),
+//        Stimulus3delay( 0, -1, 0, -1),
+//        
+//        Stimulus3delay( 0, 0, 100, -1),
+//        Stimulus3delay( 0, 100, 0, -1),
+//        
+//        Stimulus3delay( 0, 0, 200, -1),
+//        Stimulus3delay( 0, 200, 0, -1),
+//        
+//        Stimulus3delay( 0, 0, 300, -1),
+//        Stimulus3delay( 0, 300, 0, -1),
+//        
+//        Stimulus3delay( 0, 0, 400, -1),
+//        Stimulus3delay( 0, 400, 0, -1),
+//        
+//        Stimulus3delay( 0, 0, 800, -1),
+//        Stimulus3delay( 0, 800, 0, -1)
+//    )    
 
     private val STIM_DURATION           = 1000L
     private val ISI                     = 2000L
@@ -213,97 +241,97 @@ class TestATB(ctx: Context,
     private fun createTrialsTime() {
         var cnt = -1
 
-        val trials: MutableList<TrialBindings3latencies> = mutableListOf()
+        val trials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[6].a, lStimuli3delay[6].t, lStimuli3delay[6].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[9].a, lStimuli3delay[9].t, lStimuli3delay[9].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[3].a, lStimuli3delay[3].t, lStimuli3delay[3].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[2].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[7].a, lStimuli3delay[7].t, lStimuli3delay[7].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[12].a, lStimuli3delay[12].t, lStimuli3delay[12].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[5].a, lStimuli3delay[5].t, lStimuli3delay[5].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[2].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[10].a, lStimuli3delay[10].t, lStimuli3delay[10].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[4].a, lStimuli3delay[4].t, lStimuli3delay[4].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[8].a, lStimuli3delay[8].t, lStimuli3delay[8].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[11].a, lStimuli3delay[11].t, lStimuli3delay[11].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[4].a, lStimuli3delay[4].t, lStimuli3delay[4].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[2].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[5].a, lStimuli3delay[5].t, lStimuli3delay[5].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[8].a, lStimuli3delay[8].t, lStimuli3delay[8].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[11].a, lStimuli3delay[11].t, lStimuli3delay[11].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[10].a, lStimuli3delay[10].t, lStimuli3delay[10].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[7].a, lStimuli3delay[7].t, lStimuli3delay[7].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[6].a, lStimuli3delay[6].t, lStimuli3delay[6].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[9].a, lStimuli3delay[9].t, lStimuli3delay[9].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[2].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[3].a, lStimuli3delay[3].t, lStimuli3delay[3].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[12].a, lStimuli3delay[12].t, lStimuli3delay[12].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[12].a, lStimuli3delay[12].t, lStimuli3delay[12].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[3].a, lStimuli3delay[3].t, lStimuli3delay[3].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[9].a, lStimuli3delay[9].t, lStimuli3delay[9].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[2].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[5].a, lStimuli3delay[5].t, lStimuli3delay[5].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[7].a, lStimuli3delay[7].t, lStimuli3delay[7].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[6].a, lStimuli3delay[6].t, lStimuli3delay[6].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[8].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[4].a, lStimuli3delay[4].t, lStimuli3delay[4].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[10].a, lStimuli3delay[10].t, lStimuli3delay[10].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[8].a, lStimuli3delay[8].t, lStimuli3delay[8].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[11].a, lStimuli3delay[11].t, lStimuli3delay[11].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[6].a, lStimuli3delay[6].t, lStimuli3delay[6].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[10].a, lStimuli3delay[10].t, lStimuli3delay[10].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[3].a, lStimuli3delay[3].t, lStimuli3delay[3].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[2].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[7].a, lStimuli3delay[7].t, lStimuli3delay[7].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[12].a, lStimuli3delay[12].t, lStimuli3delay[12].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[5].a, lStimuli3delay[5].t, lStimuli3delay[5].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[2].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[9].a, lStimuli3delay[9].t, lStimuli3delay[9].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[4].a, lStimuli3delay[4].t, lStimuli3delay[4].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[8].a, lStimuli3delay[8].t, lStimuli3delay[8].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[11].a, lStimuli3delay[11].t, lStimuli3delay[11].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[4].a, lStimuli3delay[4].t, lStimuli3delay[4].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[2].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[5].a, lStimuli3delay[5].t, lStimuli3delay[5].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[8].a, lStimuli3delay[8].t, lStimuli3delay[8].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[11].a, lStimuli3delay[11].t, lStimuli3delay[11].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[10].a, lStimuli3delay[10].t, lStimuli3delay[10].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
 
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[0].a, lStimuli3delay[0].t, lStimuli3delay[0].v, validAnswers[0]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[7].a, lStimuli3delay[7].t, lStimuli3delay[7].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[9].a, lStimuli3delay[9].t, lStimuli3delay[9].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[6].a, lStimuli3delay[6].t, lStimuli3delay[6].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[1].a, lStimuli3delay[1].t, lStimuli3delay[1].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[2].a, lStimuli3delay[2].t, lStimuli3delay[2].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[3].a, lStimuli3delay[3].t, lStimuli3delay[3].v, validAnswers[1]))
-        trials.add(TrialBindings3latencies(++cnt, lStimuli3delay[12].a, lStimuli3delay[12].t, lStimuli3delay[12].v, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
         mTrials.addAll(trials)
     }
 
@@ -359,7 +387,7 @@ class TestATB(ctx: Context,
             TEST_ATB_TIME_SINGLESTIM -> {
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    deliverShiftedStimulus((trial as TrialBindings3latencies).a, trial.t, trial.v, audiotype = STIM_TYPE_A2, visualtype=STIM_TYPE_V2){ onTrialEnd()}
+                    deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced)
                 }, (1000L))
             }
             TEST_ATB_TIME_DOUBLESTIM -> {
@@ -369,7 +397,7 @@ class TestATB(ctx: Context,
                     // aneous
                 }, 1000L)
                 mStimuliHandler.postDelayed({
-                    deliverShiftedStimulus((trial as TrialBindings3latencies).a, trial.t, trial.v, audiotype = STIM_TYPE_A2, visualtype=STIM_TYPE_V2){ onTrialEnd()}
+                    deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced)
                 }, (1000L + 2*currStimulusDuration))
             }
         }
@@ -433,6 +461,17 @@ class TestATB(ctx: Context,
                     onTrialEnd()
                 }, (5 * curISI + 800L))
             }
+        }
+    }
+
+
+    private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced){
+        when(trial.type){
+            TYPE_AT     ->  deliverShiftedStimulus(0, 0, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
+            TYPE_A      ->  deliverShiftedStimulus(0, -1, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
+            TYPE_T      ->  deliverShiftedStimulus(-1, 0, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
+            TYPE_A_T    ->  deliverShiftedStimulus(0, trial.delay, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
+            TYPE_T_A    ->  deliverShiftedStimulus(trial.delay, 0, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
         }
     }
     // =============================================================================================================================

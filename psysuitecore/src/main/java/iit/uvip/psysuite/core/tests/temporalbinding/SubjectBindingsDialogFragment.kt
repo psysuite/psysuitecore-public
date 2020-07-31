@@ -43,10 +43,10 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
         when((spCondition.selectedItem as TaskCode).id){
              TestBasic.TEST_ATB_TIME_DOUBLESTIM,
              TestBasic.TEST_ATB_TIME_SINGLESTIM,
-             TestBasic.TEST_ATVB_TIME_DOUBLESTIM,
-             TestBasic.TEST_ATVB_TIME_DOUBLESTIM2,
-             TestBasic.TEST_ATVB_TIME_SINGLESTIM,
-             TestBasic.TEST_ATVB_TIME_SINGLESTIM2    -> {
+             TestBasic.TEST_ATVB_TIME_D_UNBAL,
+             TestBasic.TEST_ATVB_TIME_D_BAL,
+             TestBasic.TEST_ATVB_TIME_S_UNBAL,
+             TestBasic.TEST_ATVB_TIME_S_BAL    -> {
                 swInteractive.visibility = View.GONE
                 labInteractive.visibility = View.GONE
              }
@@ -73,10 +73,10 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
 
             TestBasic.TEST_ATB_TIME_SINGLESTIM,
             TestBasic.TEST_ATB_TIME_DOUBLESTIM,
-            TestBasic.TEST_ATVB_TIME_DOUBLESTIM,
-            TestBasic.TEST_ATVB_TIME_DOUBLESTIM2,
-            TestBasic.TEST_ATVB_TIME_SINGLESTIM,
-            TestBasic.TEST_ATVB_TIME_SINGLESTIM2 ->  if(subject.canRecordAudio)  TestBasic.TEST_NEXTTRIAL_ANSWER //TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER
+            TestBasic.TEST_ATVB_TIME_D_UNBAL,
+            TestBasic.TEST_ATVB_TIME_D_BAL,
+            TestBasic.TEST_ATVB_TIME_S_UNBAL,
+            TestBasic.TEST_ATVB_TIME_S_BAL ->  if(subject.canRecordAudio)  TestBasic.TEST_NEXTTRIAL_ANSWER //TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER
                                                      else                        TestBasic.TEST_NEXTTRIAL_ANSWER
 
             else                                ->   subject.nextTrailModality

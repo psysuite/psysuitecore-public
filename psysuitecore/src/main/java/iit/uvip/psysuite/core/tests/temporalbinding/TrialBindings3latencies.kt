@@ -4,7 +4,7 @@ import iit.uvip.psysuite.core.common.TrialBasic
 
 
 //                     trial_id    0-8      "none"
-class TrialBindings3latencies(id:Int=-1, val a:Long=0L, val t:Long=0L, val v:Long=0L, correct_answer:String=""):TrialBasic(id, 0, "", correct_answer) {
+class TrialBindings3latencies(id:Int=-1, type:Int=0, val a:Long=0L, val t:Long=0L, val v:Long=0L, correct_answer:String=""):TrialBasic(id, type, "", correct_answer) {
 
     companion object {
         @JvmStatic
@@ -13,12 +13,12 @@ class TrialBindings3latencies(id:Int=-1, val a:Long=0L, val t:Long=0L, val v:Lon
 
     // all class exported as string
     override fun toString(): String {
-        return id.toString() + "\t" + a.toString() + "\t" + t.toString() + "\t" + v.toString() + "\n"
+        return id.toString() + "\t" + type.toString() + "\t" + a.toString() + "\t" + t.toString() + "\t" + v.toString() + "\n"
     }
 
     // data exported to log file
     override fun Log(): String {
-        return id.toString() + "\t" + a.toString() + "\t" + t.toString() + "\t" + v.toString() + "\t" + user_answer + "\t" + success.toString() + "\t" + elapsed.toString() +"\n"
+        return id.toString() + "\t" + type.toString() + "\t" + a.toString() + "\t" + t.toString() + "\t" + v.toString() + "\t" + user_answer + "\t" + success.toString() + "\t" + elapsed.toString() +"\n"
     }
 
     override fun debugInfo():String{
