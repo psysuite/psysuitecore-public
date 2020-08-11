@@ -2,6 +2,7 @@ package iit.uvip.psysuite.core.tests.tid
 
 import android.app.Activity
 import android.content.Context
+import android.media.MediaPlayer
 import androidx.fragment.app.Fragment
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.common.*
@@ -35,20 +36,24 @@ class TestTID(ctx: Context,
     private var currNTRIALS_X_BLOCK:Int = 0
     private var currREP_X_LATENCY:Int   = 0
 
+    private var noise: MediaPlayer? = null
+
     companion object {
+
+        @JvmStatic val TEST_BASIC_LABEL                 = "TID"
 
         @JvmStatic var NUM_BLOCKS                       = 2
 
         @JvmStatic val REF_STIM_DUR_SHORT:Long          = 200
         @JvmStatic val ISI_SHORT:Long                   = 1000L  // interval between pair#1 and pair#2
         @JvmStatic val NUM_FIXED_LATENCIES_SHORT        = 8
-        @JvmStatic val NUM_REP_X_LATENCY_X_BLOCK_SHORT  = 8     // MUST BE ODD !!!
+        @JvmStatic val NUM_REP_X_LATENCY_X_BLOCK_SHORT  = 4     // MUST BE ODD !!!
         @JvmStatic var NUM_TRIALS_X_BLOCK_SHORT         = NUM_FIXED_LATENCIES_SHORT * NUM_FIXED_LATENCIES_SHORT
 
         @JvmStatic val REF_STIM_DUR_LONG:Long           = 2000L
         @JvmStatic val ISI_LONG:Long                    = 1000L  // interval between pair#1 and pair#2
         @JvmStatic val NUM_FIXED_LATENCIES_LONG         = 8
-        @JvmStatic val NUM_REP_X_LATENCY_X_BLOCK_LONG   = 8     // MUST BE ODD !!!
+        @JvmStatic val NUM_REP_X_LATENCY_X_BLOCK_LONG   = 4     // MUST BE ODD !!!
         @JvmStatic var NUM_TRIALS_X_BLOCK_LONG          = NUM_FIXED_LATENCIES_LONG * NUM_FIXED_LATENCIES_LONG
 
         @JvmStatic val recipients:Array<String>         = arrayOf(  "uvip.apptester@gmail.com",
@@ -75,11 +80,14 @@ class TestTID(ctx: Context,
             val sts     = ctx.resources.getString(R.string.tid_rb_short_text)
             val stl     = ctx.resources.getString(R.string.tid_rb_long_text)
 
+            val sts_sh  = ctx.resources.getString(R.string.tid_rb_short_text_short)
+            val stl_sh  = ctx.resources.getString(R.string.tid_rb_long_text_short)
+
             return mutableListOf(
-                TaskCodeLabels(label + "_" + STIMULUS_TYPE_AUDIO + "_" + sts    , TEST_TID_SHORT_AUDIO),
-                TaskCodeLabels(label + "_" + STIMULUS_TYPE_TACTILE + "_" + sts  , TEST_TID_SHORT_TACTILE),
-                TaskCodeLabels(label + "_" + STIMULUS_TYPE_AUDIO + "_" + stl    , TEST_TID_LONG_AUDIO),
-                TaskCodeLabels(label + "_" + STIMULUS_TYPE_TACTILE + "_" + stl  , TEST_TID_LONG_TACTILE)
+                TaskCodeLabels("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts"    , TEST_TID_SHORT_AUDIO, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts_sh"),
+                TaskCodeLabels("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$sts"  , TEST_TID_SHORT_TACTILE, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$sts_sh"),
+                TaskCodeLabels("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl"    , TEST_TID_LONG_AUDIO, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl_sh"),
+                TaskCodeLabels("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$stl"  , TEST_TID_LONG_TACTILE, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$stl_sh")
             )
         }
 
@@ -156,6 +164,8 @@ class TestTID(ctx: Context,
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         createResultFile(subjectparcel, TrialTID.LOG_HEADER)
+
+        noise = MediaPlayerManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
     }
 
     // =============================================================================================================================
@@ -223,6 +233,9 @@ class TestTID(ctx: Context,
     // =============================================================================================================================
     override fun onTrialEnd() {
 
+        noise?.stop()
+        noise?.prepare()
+
         when (nextTrailModality) {
             TEST_NEXTTRIAL_VOICE_ANSWER         ->  testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
             TEST_NEXTTRIAL_ANSWER               ->  testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
@@ -274,15 +287,16 @@ class TestTID(ctx: Context,
     // QUESTION:    FIRST_STIMULUS_DELAY + duration + mTrial.delta1 + duration + ISI + duration + mTrial.delta2 + duration + QUESTION_DELAY
     override fun show(trial:TrialBasic, isRepeat:Boolean){
 
+        noise?.start()
         // PAIR 1
         mStimuliHandler.postDelayed({
-            deliverPair((trial as TrialTID).type, trial.delta1.toLong(), trial.duration.toLong())
+            deliverPair((trial as TrialTID).type, trial.delta1.toLong())
             testEvent.accept(Pair(EVENT_STIMULI_START, null))
         }, FIRST_STIMULUS_DELAY)
 
         // PAIR 2
         mStimuliHandler.postDelayed({
-            deliverPair((trial as TrialTID).type, trial.delta2.toLong(), trial.duration.toLong())
+            deliverPair((trial as TrialTID).type, trial.delta2.toLong())
         }, FIRST_STIMULUS_DELAY + currStimulusDuration + (trial as TrialTID).delta1 + currStimulusDuration + currISI)
 
         // send stimuli-end event
@@ -291,11 +305,11 @@ class TestTID(ctx: Context,
         }, FIRST_STIMULUS_DELAY + currStimulusDuration + trial.delta1 + currStimulusDuration + currISI + currStimulusDuration + trial.delta2 + currStimulusDuration + QUESTION_DELAY)
     }
 
-    private fun deliverPair(type:Int, delta:Long, duration:Long){
+    private fun deliverPair(type:Int, delta:Long){
 
         when(type) {
-            TEST_TID_SHORT_AUDIO, TEST_TID_LONG_AUDIO       -> deliverAlignedStimuliPair(delta, STIM_TYPE_A1)
-            TEST_TID_SHORT_TACTILE, TEST_TID_LONG_TACTILE   -> deliverAlignedStimuliPair(delta, STIM_TYPE_T1)
+            TEST_TID_SHORT_AUDIO, TEST_TID_LONG_AUDIO       -> deliverAlignedStimuliPair(delta, STIM_TYPE_A1, stimuliDelay = subjectparcel.stimuliDelay)
+            TEST_TID_SHORT_TACTILE, TEST_TID_LONG_TACTILE   -> deliverAlignedStimuliPair(delta, STIM_TYPE_T1, stimuliDelay = subjectparcel.stimuliDelay)
         }
     }
 

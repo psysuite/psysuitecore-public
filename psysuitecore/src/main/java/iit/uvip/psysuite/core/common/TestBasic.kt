@@ -91,6 +91,8 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_ATB_TIME_SINGLESTIM     = 130
         @JvmStatic val TEST_ATB_TIME_DOUBLESTIM     = 131
         @JvmStatic val TEST_ATB_TIME_INF            = 132
+        @JvmStatic val TEST_ATB_TIME_SINGLESTIM_TOD = 133
+        @JvmStatic val TEST_ATB_TIME_DOUBLESTIM_TOD = 134
 
         @JvmStatic val TEST_ATVB_TIME_S_UNBAL       = 140
         @JvmStatic val TEST_ATVB_TIME_D_UNBAL       = 141
@@ -164,10 +166,10 @@ abstract class TestBasic(protected val ctx: Context,
     protected var nBlocks:Int                       = 0
 
     protected var mListBlocks:MutableList<Int>      = mutableListOf()
-    set(value) {
-        field = value
-        nBlocks = value.size + 1
-    }
+        set(value) {
+            field = value
+            nBlocks = value.size + 1
+        }
 
     // this instances are defined and validated during sub-class init{}
     // in case of error an exception is thrown and test is aborted.
@@ -269,7 +271,10 @@ abstract class TestBasic(protected val ctx: Context,
     fun abortTest(deleteOrShow:Boolean, dir:String= Environment.DIRECTORY_DOWNLOADS){
         mStimuliHandler.removeCallbacksAndMessages(null)
 
-        if(deleteOrShow)    deleteFile(mResultFile)
+        if(deleteOrShow){
+            deleteFile(mResultFile)
+            deleteFile(subjectparcel.subjectFileName)
+        }
         else                notifyFile(mResultFile, ctx, dir)
     }
 
@@ -364,7 +369,7 @@ abstract class TestBasic(protected val ctx: Context,
         return Triple(max(durs) as Long, min(durs) as Long, mean)
     }
 
-    private fun stimtypesFromSource(source:Int):List<Int>{
+    private fun unimodaltypesFromMainType(source:Int):List<Int>{
 
         val a = when {
             source and STIM_TYPE_A1 > 0 -> STIM_TYPE_A1
@@ -386,41 +391,87 @@ abstract class TestBasic(protected val ctx: Context,
         return listOf(a,t,v)
     }
 
+    // subtract system delay corrections (all positive) to given trial delays (all positive).
+    // calculate min latency after correction, if negative => shift all latencies forward and report it
+    protected fun arrangeDelays(a:Long, t:Long, v:Long, stim_delay:StimuliDelay):CorrectedStimuliDelay{
+
+        val deltas = mutableListOf(-1L, -1L, -1L)
+
+        if(a != -1L) deltas[0] = a - stim_delay.a
+        if(t != -1L) deltas[1] = t - stim_delay.t
+        if(v != -1L) deltas[2] = v - stim_delay.v
+
+        val minimum = min(deltas)
+
+        val corr_delays = CorrectedStimuliDelay()
+
+        if(minimum < 0){
+            corr_delays.a = if (a != -1L) deltas[0] - minimum else -1
+            corr_delays.t = if (t != -1L) deltas[1] - minimum else -1
+            corr_delays.v = if (v != -1L) deltas[2] - minimum else -1
+            corr_delays.shift = -minimum
+        }
+        else {
+            corr_delays.a = if (a != -1L) deltas[0] else -1
+            corr_delays.t = if (t != -1L) deltas[1] else -1
+            corr_delays.v = if (v != -1L) deltas[2] else -1
+            corr_delays.shift = 0
+        }
+        return corr_delays
+    }
     // =============================================================================================================================
     // STIMULUS DELIVERY
     // =============================================================================================================================
 
+    // ---------------------------------------------------------------------------------------------
+    // PAIRS
+    // ---------------------------------------------------------------------------------------------
     // deliver a pair of identical aligned stimuli, separated by "isi" ms.
-    protected fun deliverAlignedStimuliPair(isi:Long, type:Int, managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+    protected fun deliverAlignedStimuliPair(isi:Long, type:Int,
+                                            managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
+                                            stimuliDelay: StimuliDelay,
+                                            onEnd:() -> Unit = {}){
 
-        val meanduration = getDuration(managerA, managerT, managerV).third
-
-        deliverAlignedStimulus(type, managerA, managerT, managerV)
-        mStimuliHandler.postDelayed({
-            deliverAlignedStimulus(type, managerA, managerT, managerV){   onEnd() }
-        }, (meanduration + isi))
+        val unimodal_types = unimodaltypesFromMainType(type)
+        deliverAlignedStimuliPair(isi, managerA, managerT, managerV, stimuliDelay, unimodal_types[0], unimodal_types[1], unimodal_types[2], onEnd)
     }
-    protected fun deliverShiftedStimuliPair(isi:Long, a:Long, t:Long, v:Long, managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
-                                            audiotype:Int = STIM_TYPE_A1, visualtype:Int = STIM_TYPE_V1, tactiletype:Int = STIM_TYPE_T1, onEnd:() -> Unit = {}){
+
+    // OVERLOAD with stimuliDelay: StimuliDelay:  simultaneous multimodal stimuli...that must be corrected
+    protected fun deliverAlignedStimuliPair(isi:Long,
+                                            managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
+                                            stimuliDelay: StimuliDelay,
+                                            audiotype:Int = STIM_TYPE_A1, tactiletype:Int = STIM_TYPE_T1, visualtype:Int = STIM_TYPE_V1,
+                                            onEnd:()-> Unit = {}){
+
+        val corr_delays = arrangeDelays(0,0,0, stimuliDelay)
+        deliverShiftedStimuliPair(isi, corr_delays.a, corr_delays.t, corr_delays.v, corr_delays.shift, managerA, managerT, managerV, audiotype, tactiletype, visualtype, onEnd)
+    }
+
+    protected fun deliverShiftedStimuliPair(isi:Long,
+                                            a:Long, t:Long, v:Long, shift:Long,
+                                            managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
+                                            audiotype:Int = STIM_TYPE_A1, tactiletype:Int = STIM_TYPE_T1, visualtype:Int = STIM_TYPE_V1,
+                                            onEnd:() -> Unit = {}){
 
         val meanduration = getDuration(managerA, managerT, managerV).third
 
         deliverShiftedStimulus(a, t, v, managerA, managerT, managerV, audiotype, visualtype, tactiletype)
         mStimuliHandler.postDelayed({
             deliverShiftedStimulus(a, t, v, managerA, managerT, managerV, audiotype, visualtype, tactiletype){   onEnd() }
-        }, (meanduration + isi))
+        }, (meanduration + isi + shift))
     }
 
-    // deliver unimodal stimuli at different latencies
-    protected fun deliverShiftedStimulus(type:Int, a:Long, t:Long, v:Long, managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}) {
-        val list = stimtypesFromSource(type)
+    // ---------------------------------------------------------------------------------------------
+    // SHIFTED STIMULUS (deliver unimodal stimuli at different latencies, receive already corrected shifting)
+    // ---------------------------------------------------------------------------------------------
 
-        deliverShiftedStimulus(a, t, v, managerA, managerT, managerV, list[0], list[1], list[2], onEnd)
-    }
-    protected fun deliverShiftedStimulus(a:Long, t:Long, v:Long, managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
-                                         audiotype:Int = STIM_TYPE_A1, visualtype:Int = STIM_TYPE_V1, tactiletype:Int = STIM_TYPE_T1, onEnd:()-> Unit = {}) {
+    // MAIN: with unimodal types
+    protected fun deliverShiftedStimulus(a:Long, t:Long, v:Long,
+                                         managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
+                                         audiotype:Int = STIM_TYPE_A1, tactiletype:Int = STIM_TYPE_T1, visualtype:Int = STIM_TYPE_V1,
+                                         onEnd:()-> Unit = {}) {
 
-        val offset = 500L
+        val offset = 0L
         val durlist = mutableListOf<Long>()
 
         val am:StimulusManager?
@@ -441,7 +492,7 @@ abstract class TestBasic(protected val ctx: Context,
             durlist.add(am!!.duration + a)
             mStimuliHandler.postDelayed({
                 Log.d("TestBasic", "audio: type=$audiotype")
-                deliverAlignedStimulus(audiotype    , managerA = am)
+                deliverUnimodalStimulus(audiotype, am)
             }, a + offset)
         }
 
@@ -455,7 +506,7 @@ abstract class TestBasic(protected val ctx: Context,
             durlist.add(tm!!.duration + t)
             mStimuliHandler.postDelayed({
                 Log.d("TestBasic", "tactile: type=$tactiletype")
-                deliverAlignedStimulus(tactiletype  , managerT = tm)
+                deliverUnimodalStimulus(tactiletype, tm)
             }, t + offset)
         }
 
@@ -469,7 +520,7 @@ abstract class TestBasic(protected val ctx: Context,
             durlist.add(vm!!.duration + v)
             mStimuliHandler.postDelayed({
                 Log.d("TestBasic", "visual: type=$visualtype")
-                deliverAlignedStimulus(visualtype   , managerV = vm)
+                deliverUnimodalStimulus(visualtype, vm)
             }, v + offset)
         }
 
@@ -477,27 +528,51 @@ abstract class TestBasic(protected val ctx: Context,
         mStimuliHandler.postDelayed({   onEnd() }, end + offset)
     }
 
-    // simultaneous multimodal stimuli...redirect call to specific calls
-    protected fun deliverAlignedStimulus(type:Int, managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+    // with global type, call above function
+    protected fun deliverShiftedStimulus(type:Int,
+                                         a:Long, t:Long, v:Long,
+                                         managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
+                                         onEnd:() -> Unit = {}) {
+
+        val unimodal_types = unimodaltypesFromMainType(type)
+        deliverShiftedStimulus(a, t, v, managerA, managerT, managerV, unimodal_types[0], unimodal_types[1], unimodal_types[2], onEnd)
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // ALIGNED STIMULUS (correct and call shifted stimulus)
+    // ---------------------------------------------------------------------------------------------
+
+    // MAIN: with unimodal types and StimuliDelay
+    protected fun deliverAlignedStimulus(managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
+                                         stimuliDelay: StimuliDelay,
+                                         audiotype:Int = STIM_TYPE_A1, tactiletype:Int = STIM_TYPE_T1, visualtype:Int = STIM_TYPE_V1,
+                                         onEnd:()-> Unit = {}){
+
+        val corr_delays = arrangeDelays(0,0,0, stimuliDelay)
+        deliverShiftedStimulus(corr_delays.a, corr_delays.t, corr_delays.v, managerA, managerT, managerV, audiotype, tactiletype, visualtype, onEnd)
+    }
+
+    // with global type and StimuliDelay, call above fun
+    protected fun deliverAlignedStimulus(type:Int,
+                                         managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
+                                         stimuliDelay: StimuliDelay,
+                                         onEnd:()-> Unit = {}){
+
+        val unimodal_types = unimodaltypesFromMainType(type)
+        deliverAlignedStimulus(managerA, managerT, managerV, stimuliDelay, unimodal_types[0], unimodal_types[1], unimodal_types[2], onEnd)
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    // UNIMODAL STIMULUS (unimodal stimulus)
+    // ---------------------------------------------------------------------------------------------
+    protected fun deliverUnimodalStimulus(type:Int, manager:StimulusManager? = null, onEnd:() -> Unit = {}){
         when(type){
-            STIM_TYPE_A1        -> deliverA1Stimulus(managerA as ToneManager?, onEnd)             // ToneParams()        tone generator
-            STIM_TYPE_A2        -> deliverA2Stimulus(managerA as MediaPlayerManager?, onEnd)             // AudioParams()       mediaplayer from resource
-            STIM_TYPE_T1        -> deliverT1Stimulus(managerT, onEnd)             // TactileParams()
-            STIM_TYPE_T2        -> deliverT2Stimulus(managerT, onEnd)             // TactileParams()
-            STIM_TYPE_V1        -> deliverV1Stimulus(managerV, onEnd)             // VisualParams()      made visible/invisible
-            STIM_TYPE_V2        -> deliverV2Stimulus(managerV, onEnd)             // VisualParams()      imageview with different color frame (one as background)
-            STIM_TYPE_A1T1      -> deliverA1T1Stimulus(managerA as ToneManager?, managerT, onEnd)
-            STIM_TYPE_A2T1      -> deliverA2T1Stimulus(managerA as MediaPlayerManager?, managerT, onEnd)
-            STIM_TYPE_A1V1      -> deliverA1V1Stimulus(managerA as ToneManager?, managerV, onEnd)
-            STIM_TYPE_A2V1      -> deliverA2V1Stimulus(managerA as MediaPlayerManager?, managerV, onEnd)
-            STIM_TYPE_A1V2      -> deliverA1V2Stimulus(managerA as ToneManager?, managerV, onEnd)
-            STIM_TYPE_A2V2      -> deliverA2V2Stimulus(managerA as MediaPlayerManager?, managerV, onEnd)
-            STIM_TYPE_T1V1      -> deliverT1V1Stimulus(managerT, managerV, onEnd)
-            STIM_TYPE_T1V2      -> deliverT1V2Stimulus(managerT, managerV, onEnd)
-            STIM_TYPE_A1T1V1    -> deliverA1T1V1Stimulus(managerA as ToneManager?, managerT, managerV, onEnd)
-            STIM_TYPE_A2T1V1    -> deliverA2T1V1Stimulus(managerA as MediaPlayerManager?, managerT, managerV, onEnd)
-            STIM_TYPE_A1T1V2    -> deliverA1T1V2Stimulus(managerA as ToneManager?, managerT, managerV, onEnd)
-            STIM_TYPE_A2T1V2    -> deliverA2T1V2Stimulus(managerA as MediaPlayerManager?, managerT, managerV, onEnd)
+            STIM_TYPE_A1        -> deliverA1Stimulus(manager as ToneManager?        , onEnd)    // ToneParams()        tone generator
+            STIM_TYPE_A2        -> deliverA2Stimulus(manager as MediaPlayerManager? , onEnd)    // AudioParams()       mediaplayer from resource
+            STIM_TYPE_T1        -> deliverT1Stimulus(manager as TactileManager      , onEnd)    // TactileParams()
+            STIM_TYPE_T2        -> deliverT2Stimulus(manager as TactileManager      , onEnd)    // TactileParams()
+            STIM_TYPE_V1        -> deliverV1Stimulus(manager as VisualManager       , onEnd)    // VisualParams()      made visible/invisible
+            STIM_TYPE_V2        -> deliverV2Stimulus(manager as VisualManager       , onEnd)    // VisualParams()      imageview with different color frame (one as background)
         }
     }
 
@@ -520,16 +595,16 @@ abstract class TestBasic(protected val ctx: Context,
         try {
             var duration:Long = mMediaPlayerManager!!.duration
             val audio = if(managerA != null) {
-                            duration = managerA.duration
-                            when {
-                                managerA.isLoaded(managerA.resource) -> managerA
-                                managerA.resource.isNotEmpty()       -> {
-                                                                        managerA.loadResource(managerA.resource)
-                                                                        managerA
-                                }
-                                else                                 -> throw Exception("deliverA2Stimulus: mediaplayer audio resource is empty")
-                            }
-                        } else mMediaPlayerManager!!
+                duration = managerA.duration
+                when {
+                    managerA.isLoaded(managerA.resource) -> managerA
+                    managerA.resource.isNotEmpty()       -> {
+                        managerA.loadResource(managerA.resource)
+                        managerA
+                    }
+                    else                                 -> throw Exception("deliverA2Stimulus: mediaplayer audio resource is empty")
+                }
+            } else mMediaPlayerManager!!
 
             audio.deliver()
             // ---------------------------------------------------------------------------------------
@@ -604,378 +679,407 @@ abstract class TestBasic(protected val ctx: Context,
             onEnd()
         }, duration)
     }
-
-    protected fun deliverA1T1Stimulus(managerA:ToneManager? = null, managerT:TactileManager? = null, onEnd:() -> Unit = {}){
-
-        val am = managerA ?: mToneManager!!
-        if(!am.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1T1Stimulus: $am")
-            return
-        }
-        am.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val tm = managerT ?: mTactileManager!!
-        if(!tm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1T1Stimulus: $tm")
-            return
-        }
-        tm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val maxduration = getDuration(am, tm).first
-        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
-    }
-    protected fun deliverA2T1Stimulus(managerA:MediaPlayerManager? = null, managerT:TactileManager? = null, onEnd:() -> Unit = {}){
-
-        try {
-            val am = if(managerA != null) {
-                when {
-                    managerA.isLoaded(managerA.resource) -> managerA
-                    managerA.resource.isNotEmpty() -> {
-                        managerA.loadResource(managerA.resource)
-                        managerA
-                    }
-                    else                                 -> throw Exception("deliverA2T1Stimulus: mediaplayer audio resource is empty")
-                }
-            } else mMediaPlayerManager!!
-            am.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val tm = managerT ?: mTactileManager!!
-            if(!tm.isValid()){
-                // TODO : ALERT
-                Log.e("TestBasic", "error in deliverA2T1Stimulus: $tm")
-                return
-            }
-            tm.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val maxduration = getDuration(am, tm).first
-            mStimuliHandler.postDelayed({
-                onEnd()
-            }, maxduration)
-        }
-        catch (e:Exception){
-
-        }
-    }
-    protected fun deliverA1V1Stimulus(managerA:ToneManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        val am          = managerA ?: mToneManager!!
-        if(!am.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1V1Stimulus: $am")
-            return
-        }
-        am.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val vm = managerV ?: mVisualManager!!
-        if(!vm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1V1Stimulus: $vm")
-            return
-        }
-        vm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val maxduration = getDuration(am, vm).first
-        mStimuliHandler.postDelayed({
-            onEnd()
-        }, maxduration)
-    }
-    protected fun deliverA2V1Stimulus(managerA:MediaPlayerManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        try {
-            val am = if(managerA != null) {
-                when {
-                    managerA.isLoaded(managerA.resource) -> managerA
-                    managerA.resource.isNotEmpty() -> {
-                        managerA.loadResource(managerA.resource)
-                        managerA
-                    }
-                    else                                 -> throw Exception("deliverA2Stimulus: mediaplayer audio resource is empty")
-                }
-            } else mMediaPlayerManager!!
-            am.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val vm = managerV ?: mVisualManager!!
-            if(!vm.isValid()){
-                // TODO : ALERT
-                Log.e("TestBasic", "error in deliverA2V1Stimulus: $vm")
-                return
-            }
-            vm.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val maxduration = getDuration(am, vm).first
-            mStimuliHandler.postDelayed({
-                onEnd()
-            }, maxduration)
-        }
-        catch (e:Exception){
-
-        }
-    }
-    protected fun deliverA1V2Stimulus(managerA:ToneManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        val am          = managerA ?: mToneManager!!
-        if(!am.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1V2Stimulus: $am")
-            return
-        }
-        am.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val vm = managerV ?: mVisualManager!!
-        if(!vm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error deliverA1V2Stimulus: $vm")
-            return
-        }
-        vm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val maxduration = getDuration(am, vm).first
-        mStimuliHandler.postDelayed({
-            onEnd()
-        }, maxduration)
-    }
-    protected fun deliverA2V2Stimulus(managerA:MediaPlayerManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        try {
-            val am = if(managerA != null) {
-                when {
-                    managerA.isLoaded(managerA.resource) -> managerA
-                    managerA.resource.isNotEmpty() -> {
-                        managerA.loadResource(managerA.resource)
-                        managerA
-                    }
-                    else                                 -> throw Exception("deliverA2V2Stimulus: mediaplayer audio resource is empty")
-                }
-            } else mMediaPlayerManager!!
-            am.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val vm = managerV ?: mVisualManager!!
-            if(!vm.isValid()){
-                // TODO : ALERT
-                Log.e("TestBasic", "error in deliverA2V2Stimulus: $vm")
-                return
-            }
-            vm.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val maxduration = getDuration(am, vm).first
-            mStimuliHandler.postDelayed({
-                onEnd()
-            }, maxduration)
-        }
-        catch (e:Exception){
-
-        }
-    }
-    protected fun deliverT1V1Stimulus(managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        val tm = managerT ?: mTactileManager!!
-        if(!tm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverT1V1Stimulus: $tm")
-            return
-        }
-        tm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val vm = managerV ?: mVisualManager!!
-        if(!vm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverT1V1Stimulus: $vm")
-            return
-        }
-        vm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val maxduration = getDuration(tm, vm).first
-        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
-    }
-    protected fun deliverT1V2Stimulus(managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        val tm = managerT ?: mTactileManager!!
-        if(!tm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverT1V2Stimulus: $tm")
-            return
-        }
-        tm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val vm = managerV ?: mVisualManager!!
-        if(!vm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverT1V2Stimulus: $vm")
-            return
-        }
-        vm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val maxduration = getDuration(tm, vm).first
-        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
-    }
-
-    protected fun deliverA1T1V1Stimulus(managerA:ToneManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        val am = managerA ?: mToneManager!!
-        if(!am.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1T1V1Stimulus: $am")
-            return
-        }
-        am.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val tm = managerT ?: mTactileManager!!
-        if(!tm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1T1V1Stimulus: $tm")
-            return
-        }
-        tm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val vm = managerV ?: mVisualManager!!
-        if(!vm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1T1V1Stimulus: $vm")
-            return
-        }
-        vm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val maxduration = getDuration(am, tm, vm).first
-        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
-    }
-    protected fun deliverA2T1V1Stimulus(managerA:MediaPlayerManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        try {
-            val am = if(managerA != null) {
-                when {
-                    managerA.isLoaded(managerA.resource) -> managerA
-                    managerA.resource.isNotEmpty() -> {
-                        managerA.loadResource(managerA.resource)
-                        managerA
-                    }
-                    else                                 -> throw Exception("deliverA2T1V1Stimulus: mediaplayer audio resource is empty")
-                }
-            } else mMediaPlayerManager!!
-            am.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val tm = managerT ?: mTactileManager!!
-            if(!tm.isValid()){
-                // TODO : ALERT
-                Log.e("TestBasic", "error in deliverA2T1V1Stimulus: $tm")
-                return
-            }
-            tm.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val vm = managerV ?: mVisualManager!!
-            if(!vm.isValid()){
-                // TODO : ALERT
-                Log.e("TestBasic", "error in deliverA2T1V1Stimulus: $vm")
-                return
-            }
-            vm.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val maxduration = getDuration(am, tm, vm).first
-            mStimuliHandler.postDelayed({
-                onEnd()
-            }, maxduration)
-        }
-        catch (e:Exception){
-
-        }
-    }
-    protected fun deliverA1T1V2Stimulus(managerA:ToneManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        val am = managerA ?: mToneManager!!
-        if(!am.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1T1Stimulus: $am")
-            return
-        }
-        am.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val tm = managerT ?: mTactileManager!!
-        if(!tm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA1T1Stimulus: $tm")
-            return
-        }
-        tm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val vm = managerV ?: mVisualManager!!
-        if(!vm.isValid()){
-            // TODO : ALERT
-            Log.e("TestBasic", "error in deliverA2T1V1Stimulus: $vm")
-            return
-        }
-        vm.deliver()
-
-        // ---------------------------------------------------------------------------------------
-        val maxduration = getDuration(am, tm, vm).first
-        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
-    }
-    protected fun deliverA2T1V2Stimulus(managerA:MediaPlayerManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
-
-        try {
-            val am = if(managerA != null) {
-                when {
-                    managerA.isLoaded(managerA.resource) -> managerA
-                    managerA.resource.isNotEmpty() -> {
-                        managerA.loadResource(managerA.resource)
-                        managerA
-                    }
-                    else                                 -> throw Exception("deliverA2T1V2Stimulus: mediaplayer audio resource is empty")
-                }
-            } else mMediaPlayerManager!!
-            am.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val tm = managerT ?: mTactileManager!!
-            if(!tm.isValid()){
-                // TODO : ALERT
-                Log.e("TestBasic", "error in deliverA2T1V2Stimulus: $tm")
-                return
-            }
-            tm.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val vm = managerV ?: mVisualManager!!
-            if(!vm.isValid()){
-                // TODO : ALERT
-                Log.e("TestBasic", "error in deliverA2T1V2Stimulus: $vm")
-                return
-            }
-            vm.deliver()
-
-            // ---------------------------------------------------------------------------------------
-            val maxduration = getDuration(am, tm, vm).first
-            mStimuliHandler.postDelayed({
-                onEnd()
-            }, maxduration)
-        }
-        catch (e:Exception){
-
-        }
-    }
-    // =============================================================================================================================
 }
+
+
+
+
+// simultaneous multimodal stimuli...redirect call to specific calls
+//    protected fun deliverAlignedStimulus(type:Int,
+//                                         managerA:StimulusManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null,
+//                                         onEnd:() -> Unit = {}){
+//        when(type){
+//            STIM_TYPE_A1        -> deliverA1Stimulus(managerA as ToneManager?, onEnd)             // ToneParams()        tone generator
+//            STIM_TYPE_A2        -> deliverA2Stimulus(managerA as MediaPlayerManager?, onEnd)             // AudioParams()       mediaplayer from resource
+//            STIM_TYPE_T1        -> deliverT1Stimulus(managerT, onEnd)             // TactileParams()
+//            STIM_TYPE_T2        -> deliverT2Stimulus(managerT, onEnd)             // TactileParams()
+//            STIM_TYPE_V1        -> deliverV1Stimulus(managerV, onEnd)             // VisualParams()      made visible/invisible
+//            STIM_TYPE_V2        -> deliverV2Stimulus(managerV, onEnd)             // VisualParams()      imageview with different color frame (one as background)
+//            STIM_TYPE_A1T1      -> deliverA1T1Stimulus(managerA as ToneManager?, managerT, onEnd)
+//            STIM_TYPE_A2T1      -> deliverA2T1Stimulus(managerA as MediaPlayerManager?, managerT, onEnd)
+//            STIM_TYPE_A1V1      -> deliverA1V1Stimulus(managerA as ToneManager?, managerV, onEnd)
+//            STIM_TYPE_A2V1      -> deliverA2V1Stimulus(managerA as MediaPlayerManager?, managerV, onEnd)
+//            STIM_TYPE_A1V2      -> deliverA1V2Stimulus(managerA as ToneManager?, managerV, onEnd)
+//            STIM_TYPE_A2V2      -> deliverA2V2Stimulus(managerA as MediaPlayerManager?, managerV, onEnd)
+//            STIM_TYPE_T1V1      -> deliverT1V1Stimulus(managerT, managerV, onEnd)
+//            STIM_TYPE_T1V2      -> deliverT1V2Stimulus(managerT, managerV, onEnd)
+//            STIM_TYPE_A1T1V1    -> deliverA1T1V1Stimulus(managerA as ToneManager?, managerT, managerV, onEnd)
+//            STIM_TYPE_A2T1V1    -> deliverA2T1V1Stimulus(managerA as MediaPlayerManager?, managerT, managerV, onEnd)
+//            STIM_TYPE_A1T1V2    -> deliverA1T1V2Stimulus(managerA as ToneManager?, managerT, managerV, onEnd)
+//            STIM_TYPE_A2T1V2    -> deliverA2T1V2Stimulus(managerA as MediaPlayerManager?, managerT, managerV, onEnd)
+//        }
+//    }
+//
+//    protected fun deliverA1T1Stimulus(managerA:ToneManager? = null, managerT:TactileManager? = null, onEnd:() -> Unit = {}){
+//
+//        val am = managerA ?: mToneManager!!
+//        if(!am.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1T1Stimulus: $am")
+//            return
+//        }
+//        am.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val tm = managerT ?: mTactileManager!!
+//        if(!tm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1T1Stimulus: $tm")
+//            return
+//        }
+//        tm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val maxduration = getDuration(am, tm).first
+//        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
+//    }
+//    protected fun deliverA2T1Stimulus(managerA:MediaPlayerManager? = null, managerT:TactileManager? = null, onEnd:() -> Unit = {}){
+//
+//        try {
+//            val am = if(managerA != null) {
+//                when {
+//                    managerA.isLoaded(managerA.resource) -> managerA
+//                    managerA.resource.isNotEmpty() -> {
+//                        managerA.loadResource(managerA.resource)
+//                        managerA
+//                    }
+//                    else                                 -> throw Exception("deliverA2T1Stimulus: mediaplayer audio resource is empty")
+//                }
+//            } else mMediaPlayerManager!!
+//            am.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val tm = managerT ?: mTactileManager!!
+//            if(!tm.isValid()){
+//                // TODO : ALERT
+//                Log.e("TestBasic", "error in deliverA2T1Stimulus: $tm")
+//                return
+//            }
+//            tm.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val maxduration = getDuration(am, tm).first
+//            mStimuliHandler.postDelayed({
+//                onEnd()
+//            }, maxduration)
+//        }
+//        catch (e:Exception){
+//
+//        }
+//    }
+//    protected fun deliverA1V1Stimulus(managerA:ToneManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        val am          = managerA ?: mToneManager!!
+//        if(!am.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1V1Stimulus: $am")
+//            return
+//        }
+//        am.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val vm = managerV ?: mVisualManager!!
+//        if(!vm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1V1Stimulus: $vm")
+//            return
+//        }
+//        vm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val maxduration = getDuration(am, vm).first
+//        mStimuliHandler.postDelayed({
+//            onEnd()
+//        }, maxduration)
+//    }
+//    protected fun deliverA2V1Stimulus(managerA:MediaPlayerManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        try {
+//            val am = if(managerA != null) {
+//                when {
+//                    managerA.isLoaded(managerA.resource) -> managerA
+//                    managerA.resource.isNotEmpty() -> {
+//                        managerA.loadResource(managerA.resource)
+//                        managerA
+//                    }
+//                    else                                 -> throw Exception("deliverA2Stimulus: mediaplayer audio resource is empty")
+//                }
+//            } else mMediaPlayerManager!!
+//            am.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val vm = managerV ?: mVisualManager!!
+//            if(!vm.isValid()){
+//                // TODO : ALERT
+//                Log.e("TestBasic", "error in deliverA2V1Stimulus: $vm")
+//                return
+//            }
+//            vm.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val maxduration = getDuration(am, vm).first
+//            mStimuliHandler.postDelayed({
+//                onEnd()
+//            }, maxduration)
+//        }
+//        catch (e:Exception){
+//
+//        }
+//    }
+//    protected fun deliverA1V2Stimulus(managerA:ToneManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        val am          = managerA ?: mToneManager!!
+//        if(!am.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1V2Stimulus: $am")
+//            return
+//        }
+//        am.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val vm = managerV ?: mVisualManager!!
+//        if(!vm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error deliverA1V2Stimulus: $vm")
+//            return
+//        }
+//        vm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val maxduration = getDuration(am, vm).first
+//        mStimuliHandler.postDelayed({
+//            onEnd()
+//        }, maxduration)
+//    }
+//    protected fun deliverA2V2Stimulus(managerA:MediaPlayerManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        try {
+//            val am = if(managerA != null) {
+//                when {
+//                    managerA.isLoaded(managerA.resource) -> managerA
+//                    managerA.resource.isNotEmpty() -> {
+//                        managerA.loadResource(managerA.resource)
+//                        managerA
+//                    }
+//                    else                                 -> throw Exception("deliverA2V2Stimulus: mediaplayer audio resource is empty")
+//                }
+//            } else mMediaPlayerManager!!
+//            am.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val vm = managerV ?: mVisualManager!!
+//            if(!vm.isValid()){
+//                // TODO : ALERT
+//                Log.e("TestBasic", "error in deliverA2V2Stimulus: $vm")
+//                return
+//            }
+//            vm.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val maxduration = getDuration(am, vm).first
+//            mStimuliHandler.postDelayed({
+//                onEnd()
+//            }, maxduration)
+//        }
+//        catch (e:Exception){
+//
+//        }
+//    }
+//    protected fun deliverT1V1Stimulus(managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        val tm = managerT ?: mTactileManager!!
+//        if(!tm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverT1V1Stimulus: $tm")
+//            return
+//        }
+//        tm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val vm = managerV ?: mVisualManager!!
+//        if(!vm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverT1V1Stimulus: $vm")
+//            return
+//        }
+//        vm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val maxduration = getDuration(tm, vm).first
+//        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
+//    }
+//    protected fun deliverT1V2Stimulus(managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        val tm = managerT ?: mTactileManager!!
+//        if(!tm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverT1V2Stimulus: $tm")
+//            return
+//        }
+//        tm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val vm = managerV ?: mVisualManager!!
+//        if(!vm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverT1V2Stimulus: $vm")
+//            return
+//        }
+//        vm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val maxduration = getDuration(tm, vm).first
+//        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
+//    }
+//
+//    protected fun deliverA1T1V1Stimulus(managerA:ToneManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        val am = managerA ?: mToneManager!!
+//        if(!am.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1T1V1Stimulus: $am")
+//            return
+//        }
+//        am.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val tm = managerT ?: mTactileManager!!
+//        if(!tm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1T1V1Stimulus: $tm")
+//            return
+//        }
+//        tm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val vm = managerV ?: mVisualManager!!
+//        if(!vm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1T1V1Stimulus: $vm")
+//            return
+//        }
+//        vm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val maxduration = getDuration(am, tm, vm).first
+//        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
+//    }
+//    protected fun deliverA2T1V1Stimulus(managerA:MediaPlayerManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        try {
+//            val am = if(managerA != null) {
+//                when {
+//                    managerA.isLoaded(managerA.resource) -> managerA
+//                    managerA.resource.isNotEmpty() -> {
+//                        managerA.loadResource(managerA.resource)
+//                        managerA
+//                    }
+//                    else                                 -> throw Exception("deliverA2T1V1Stimulus: mediaplayer audio resource is empty")
+//                }
+//            } else mMediaPlayerManager!!
+//            am.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val tm = managerT ?: mTactileManager!!
+//            if(!tm.isValid()){
+//                // TODO : ALERT
+//                Log.e("TestBasic", "error in deliverA2T1V1Stimulus: $tm")
+//                return
+//            }
+//            tm.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val vm = managerV ?: mVisualManager!!
+//            if(!vm.isValid()){
+//                // TODO : ALERT
+//                Log.e("TestBasic", "error in deliverA2T1V1Stimulus: $vm")
+//                return
+//            }
+//            vm.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val maxduration = getDuration(am, tm, vm).first
+//            mStimuliHandler.postDelayed({
+//                onEnd()
+//            }, maxduration)
+//        }
+//        catch (e:Exception){
+//
+//        }
+//    }
+//    protected fun deliverA1T1V2Stimulus(managerA:ToneManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        val am = managerA ?: mToneManager!!
+//        if(!am.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1T1Stimulus: $am")
+//            return
+//        }
+//        am.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val tm = managerT ?: mTactileManager!!
+//        if(!tm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA1T1Stimulus: $tm")
+//            return
+//        }
+//        tm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val vm = managerV ?: mVisualManager!!
+//        if(!vm.isValid()){
+//            // TODO : ALERT
+//            Log.e("TestBasic", "error in deliverA2T1V1Stimulus: $vm")
+//            return
+//        }
+//        vm.deliver()
+//
+//        // ---------------------------------------------------------------------------------------
+//        val maxduration = getDuration(am, tm, vm).first
+//        mStimuliHandler.postDelayed({   onEnd() }, maxduration)
+//    }
+//    protected fun deliverA2T1V2Stimulus(managerA:MediaPlayerManager? = null, managerT:TactileManager? = null, managerV:VisualManager? = null, onEnd:() -> Unit = {}){
+//
+//        try {
+//            val am = if(managerA != null) {
+//                when {
+//                    managerA.isLoaded(managerA.resource) -> managerA
+//                    managerA.resource.isNotEmpty() -> {
+//                        managerA.loadResource(managerA.resource)
+//                        managerA
+//                    }
+//                    else                                 -> throw Exception("deliverA2T1V2Stimulus: mediaplayer audio resource is empty")
+//                }
+//            } else mMediaPlayerManager!!
+//            am.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val tm = managerT ?: mTactileManager!!
+//            if(!tm.isValid()){
+//                // TODO : ALERT
+//                Log.e("TestBasic", "error in deliverA2T1V2Stimulus: $tm")
+//                return
+//            }
+//            tm.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val vm = managerV ?: mVisualManager!!
+//            if(!vm.isValid()){
+//                // TODO : ALERT
+//                Log.e("TestBasic", "error in deliverA2T1V2Stimulus: $vm")
+//                return
+//            }
+//            vm.deliver()
+//
+//            // ---------------------------------------------------------------------------------------
+//            val maxduration = getDuration(am, tm, vm).first
+//            mStimuliHandler.postDelayed({
+//                onEnd()
+//            }, maxduration)
+//        }
+//        catch (e:Exception){
+//
+//        }
+//    }
+    // =============================================================================================================================

@@ -14,7 +14,7 @@ import org.albaspazio.core.accessory.VibrationManager
 // in each subclass, their dependance (vibrator, ImageView) are validated in init.
 
 
-abstract class StimulusManager(open val amplitude:Int, open val duration:Long, protected val handler: Handler){
+abstract class StimulusManager(open val type:Int, open val amplitude:Int, open val duration:Long, protected val handler: Handler){
 
     override fun toString():String{
         return "${StimulusManager::class.java.simpleName}, ampl=$amplitude, duration=$duration"
@@ -25,16 +25,16 @@ abstract class StimulusManager(open val amplitude:Int, open val duration:Long, p
     abstract fun isValid():Boolean
 }
 
-class ToneManager(val type:Int= ToneGenerator.TONE_CDMA_ALERT_INCALL_LITE,
+class ToneManager(private val tone:Int= ToneGenerator.TONE_CDMA_ALERT_INCALL_LITE,
                   override val amplitude:Int= ToneGenerator.MAX_VOLUME,
                   override val duration:Long=-1L, handler: Handler)
-                  :StimulusManager(amplitude, duration, handler){
+                  :StimulusManager(TestBasic.STIM_TYPE_A1, amplitude, duration, handler){
 
     private var mToneGen = ToneGenerator(AudioManager.STREAM_SYSTEM, amplitude)
 
     override fun deliver(dur:Any?){
         val d = dur ?: duration
-        mToneGen.startTone(type, (d as Long).toInt())
+        mToneGen.startTone(tone, (d as Long).toInt())
     }
 
     override fun getHandler():ToneGenerator{
@@ -52,7 +52,7 @@ class ToneManager(val type:Int= ToneGenerator.TONE_CDMA_ALERT_INCALL_LITE,
 
 class MediaPlayerManager(private val ctx: Context, val resource:String, override val amplitude:Int=100,
                          override val duration:Long=-1L, handler: Handler)
-                         :StimulusManager(amplitude, duration, handler){
+                         :StimulusManager(TestBasic.STIM_TYPE_A2, amplitude, duration, handler){
 
     companion object{
 
@@ -83,16 +83,28 @@ class MediaPlayerManager(private val ctx: Context, val resource:String, override
     private var loadedResource:String       = ""
 
     init{
-        if(resource.isNotEmpty())   loadResource(resource, amplitude.toFloat())
+        if(resource.isNotEmpty()){
+            loadResource(resource, amplitude.toFloat())
+            if(isValid()) dummyUse(currMPAudio!!, amplitude.toFloat())
+        }
     }
 
     fun isLoaded(resource:String):Boolean = (resource == loadedResource && currMPAudio != null)
 
+    // used when dealing with very short sounds (50-100ms) that on their first playback are not audible
+    private fun dummyUse(mp:MediaPlayer, vol:Float){
+        mp.setVolume(0F,0F)
+        mp.start()
+        mp.stop()
+        mp.prepare()
+        mp.setVolume(vol, vol)
+    }
+
     @Throws(AudioResourceException::class, Exception::class)
     fun loadResource(resname: String, volume:Float=1F, deftype:String = "raw"):MediaPlayer{
         try{
-            currMPAudio = getAudioResource(ctx, resname, volume, deftype)
-            loadedResource = resname
+            currMPAudio     = getAudioResource(ctx, resname, volume, deftype)
+            loadedResource  = resname
             return currMPAudio as MediaPlayer
         }
         catch (e:Exception){
@@ -120,9 +132,20 @@ class MediaPlayerManager(private val ctx: Context, val resource:String, override
     }
 }
 
-class VisualManager(private val type:Int, private val imgV: ImageView, var drawResOn:Int=1, val drawResOff:Int=0,
+class VisualManager(type:Int, private val imgV: ImageView, var drawResOn:Int=1, val drawResOff:Int=0,
                     override val duration:Long=-1L, handler: Handler)
-                    :StimulusManager(0, duration, handler){
+                    :StimulusManager(type, 0, duration, handler){
+
+    init {
+        if(type == TestBasic.STIM_TYPE_V1){
+            imgV.setImageResource(drawResOn)
+            imgV.visibility = View.INVISIBLE
+        }
+        else{
+            imgV.setImageResource(drawResOff)
+            imgV.visibility = View.VISIBLE
+        }
+    }
 
     override fun deliver(dur:Any?){
         val d = dur ?: duration
@@ -148,7 +171,7 @@ class VisualManager(private val type:Int, private val imgV: ImageView, var drawR
 class TactileManager(private val vibrator: VibrationManager, override val amplitude:Int=-1,
                      val timings:List<Int> = listOf(), val amplitudes:List<Int> = listOf(),
                      override val duration:Long=-1L, handler: Handler)
-                     :StimulusManager(amplitude, duration, handler){
+                     :StimulusManager(TestBasic.STIM_TYPE_T1, amplitude, duration, handler){
 
     companion object{
 

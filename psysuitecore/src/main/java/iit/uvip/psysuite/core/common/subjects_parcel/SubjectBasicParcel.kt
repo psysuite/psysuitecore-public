@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Parcelable
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import iit.uvip.psysuite.core.common.StimuliDelay
 import iit.uvip.psysuite.core.common.TaskCodeLabels
 import iit.uvip.psysuite.core.common.TestBasic
 import iit.uvip.psysuite.core.common.getLabelLog
@@ -29,7 +30,8 @@ open class SubjectBasicParcel(
     open var canRecordAudio:Boolean = false,
     open var testClass:String = "",
     open var device:Device? = null,
-    open var block:Int = -1
+    open var block:Int = -1,
+    open var stimuliDelay:StimuliDelay = StimuliDelay()
 ) : Parcelable {
 
     @IgnoredOnParcel

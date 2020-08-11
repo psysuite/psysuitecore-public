@@ -31,23 +31,29 @@ class TestATB(ctx: Context,
     private val STIM_TYPE_TIME_A800_T   = 100
     private val STIM_TYPE_TIME_A_T800   = 101
 
+    private val UNIMODAL_AUDIO_CODE     = STIM_TYPE_A1
+    private val BIMODAL_AUDIO_CODE      = STIM_TYPE_A1T1
+
     private var allQuestions:MutableList<String> = mutableListOf()
 
     // 5   different trials
     private val lStimuli: List<StimulusATBInfants> = listOf(
-        StimulusATBInfants(STIM_TYPE_A2T1,0),
-        StimulusATBInfants(STIM_TYPE_A2, 1),
+        StimulusATBInfants(BIMODAL_AUDIO_CODE,0),
+        StimulusATBInfants(UNIMODAL_AUDIO_CODE, 1),
         StimulusATBInfants(STIM_TYPE_T1, 2),
         StimulusATBInfants(STIM_TYPE_TIME_A_T800,  3),
         StimulusATBInfants(STIM_TYPE_TIME_A800_T,  4)
     )
 
-    // 13 different elements
+    // 15 different elements
     private val lStimuliUnBalanced: List<StimulusBindingsUnbalanced> = listOf(
 
         StimulusBindingsUnbalanced( TYPE_AT, 0),
         StimulusBindingsUnbalanced( TYPE_A, 0),
         StimulusBindingsUnbalanced( TYPE_T, 0),
+
+        StimulusBindingsUnbalanced( TYPE_A_T, 50),
+        StimulusBindingsUnbalanced( TYPE_T_A, 50),
 
         StimulusBindingsUnbalanced( TYPE_A_T, 100),
         StimulusBindingsUnbalanced( TYPE_T_A, 100),
@@ -63,10 +69,14 @@ class TestATB(ctx: Context,
         
         StimulusBindingsUnbalanced( TYPE_A_T, 800),
         StimulusBindingsUnbalanced( TYPE_T_A, 800)
-    )    
+    )
 
-    private val STIM_DURATION           = 1000L
-    private val ISI                     = 2000L
+    private val WN_FIRSTSTIM_INTERVAL   = 1000L
+    private val STIM_DURATION_INF       = 1000L
+    private val STIM_DURATION_TOD       = 200L
+    private val STIM_DURATION           = 50L
+    private val ISI                     = 1000L
+    private val ISI_INF                 = 2000L // distance between stimuli onsets
 
     private val EVENT_SECOND_TRAIN      = 1201
 
@@ -86,17 +96,21 @@ class TestATB(ctx: Context,
         @JvmStatic val TYPE_A_T    = 3
         @JvmStatic val TYPE_T_A    = 4
 
-        @JvmStatic val recipients:Array<String> = arrayOf("uvip.apptester@gmail.com", "monica.gori.parmiggiani@gmail.com") // "psysuite.uvip@gmail.com",
+         @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com")
 
         fun getConditionsInfo(ctx: Context): List<TaskCodeLabels> {
             return mutableListOf(
-                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_single)}" , TEST_ATB_TIME_SINGLESTIM  ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_single_tag)}"),
-                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double)}" , TEST_ATB_TIME_DOUBLESTIM  ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_double_tag)}"),
-                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_infants)}", TEST_ATB_TIME_INF         , "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_infants_tag)}"))
+                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_single)}" , TEST_ATB_TIME_SINGLESTIM          ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_single_tag)}"),
+                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double)}" , TEST_ATB_TIME_DOUBLESTIM          ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_double_tag)}"),
+                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_single_tod)}" , TEST_ATB_TIME_SINGLESTIM_TOD  ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_single_tod_tag)}"),
+                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double_tod)}" , TEST_ATB_TIME_DOUBLESTIM_TOD  ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_double_tod_tag)}"),
+                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_infants)}", TEST_ATB_TIME_INF                 ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_infants_tag)}"))
         }
 
         fun getNextTrialModes():List<List<Int>> {
             return listOf(
+                listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
+                listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
                 listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
                 listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
                 listOf(TEST_NEXTTRIAL_AUTO, TEST_NEXTTRIAL_BUTTON))
@@ -112,55 +126,70 @@ class TestATB(ctx: Context,
         if(vibrator == null)    throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
         else{
             initTest()
-            mMediaPlayerManager = MediaPlayerManager(ctx, tone2sec, duration = currStimulusDuration, handler = mStimuliHandler)
+//            mMediaPlayerManager = MediaPlayerManager(ctx, tone2sec  , duration = currStimulusDuration, handler = mStimuliHandler)
+            mToneManager        = ToneManager(duration = currStimulusDuration, handler = mStimuliHandler)
             mTactileManager     = TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler)
         }
     }
 
-    // no need to redefine mAudioParams & mTactileParams. they use a same duration and amplited and currMPAudio does not change
     override fun initTest() {
 
         nextTrailModality   = subjectparcel.nextTrailModality
         abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
         showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
 
-        allQuestions    = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro), ctx.resources.getString(R.string.atvb_question_equal))
-        validAnswers    = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
+        allQuestions        = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro), ctx.resources.getString(R.string.atvb_question_equal))
+        validAnswers        = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
 
         // set stim duration (presently the same in the two subtasks
         when (subjectparcel.type) {
             TEST_ATB_TIME_SINGLESTIM ->{
                 mQuestion               = allQuestions[0]
-                curISI                  = ISI           // 2000L
-                currStimulusDuration    = STIM_DURATION // 1000L
+                curISI                  = ISI           // 1000L
+                currStimulusDuration    = STIM_DURATION // 50L
             }
             TEST_ATB_TIME_DOUBLESTIM ->{
                 mQuestion               = allQuestions[1]
-                curISI                  = ISI           // 2000L
-                currStimulusDuration    = STIM_DURATION // 1000L
+                curISI                  = ISI           // 1000L
+                currStimulusDuration    = STIM_DURATION // 50L
+            }
+            TEST_ATB_TIME_SINGLESTIM_TOD ->{
+                mQuestion               = allQuestions[0]
+                curISI                  = ISI               // 1000L
+                currStimulusDuration    = STIM_DURATION_TOD // 200L
+            }
+            TEST_ATB_TIME_DOUBLESTIM_TOD ->{
+                mQuestion               = allQuestions[1]
+                curISI                  = ISI               // 1000L
+                currStimulusDuration    = STIM_DURATION_TOD // 200L
             }
             TEST_ATB_TIME_INF   -> {
-                curISI                  = ISI           // 2000L
-                currStimulusDuration    = STIM_DURATION // 1000L
+                curISI                  = ISI_INF           // 2000L
+                currStimulusDuration    = STIM_DURATION_INF // 1000L
             }
-        }
-        when (subjectparcel.type) {
-            TEST_ATB_TIME_INF       -> initTimeArrays()
         }
 
-        // create trials
+        // create trials/summary
         when (subjectparcel.type) {
-            TEST_ATB_TIME_SINGLESTIM,
-            TEST_ATB_TIME_DOUBLESTIM       -> {
-                createTrialsTime()
+            TEST_ATB_TIME_DOUBLESTIM_TOD,
+            TEST_ATB_TIME_DOUBLESTIM ->{
+                createTrialsTimeDouble()
                 createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+                initSummary()
+
+            }
+            TEST_ATB_TIME_SINGLESTIM_TOD,
+            TEST_ATB_TIME_SINGLESTIM       -> {
+                createTrialsTimeSingle()
+                createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+                initSummary()
             }
             TEST_ATB_TIME_INF   -> {
+                initTimeArrays()
                 createTrialsTimeInfants()
                 createResultFile(subjectparcel, TrialATBInfants.LOG_HEADER)
             }
         }
-        initSummary()
 
         nTrials     = mTrials.size
         currTrial   = 0
@@ -172,7 +201,7 @@ class TestATB(ctx: Context,
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         if (subjectparcel.whitenoise)
-            noise = MediaPlayerManager.getAudioResource(ctx,"wnoise_20s", 0.4f)
+            noise = MediaPlayerManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
 
     }
     //              _   _   _   _   _
@@ -216,7 +245,7 @@ class TestATB(ctx: Context,
         }
     }
 
-    private fun createTrialsTime() {
+    private fun createTrialsTimeDouble() {
         var cnt = -1
 
         val trials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
@@ -224,6 +253,7 @@ class TestATB(ctx: Context,
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
@@ -232,6 +262,7 @@ class TestATB(ctx: Context,
 
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
@@ -244,12 +275,14 @@ class TestATB(ctx: Context,
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
 
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
@@ -261,6 +294,7 @@ class TestATB(ctx: Context,
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
@@ -268,6 +302,7 @@ class TestATB(ctx: Context,
 
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
@@ -277,6 +312,7 @@ class TestATB(ctx: Context,
 
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
@@ -289,11 +325,13 @@ class TestATB(ctx: Context,
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
 
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
@@ -307,7 +345,96 @@ class TestATB(ctx: Context,
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[1].type, lStimuliUnBalanced[1].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[2].type, lStimuliUnBalanced[2].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
+        mTrials.addAll(trials)
+    }
+
+    // only-A & only-T were removed in single stimulus sub-task. 7/8/2020
+    private fun createTrialsTimeSingle() {
+        var cnt = -1
+
+        val trials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[14].type, lStimuliUnBalanced[14].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[4].type, lStimuliUnBalanced[4].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[5].type, lStimuliUnBalanced[5].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[8].type, lStimuliUnBalanced[8].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[11].type, lStimuliUnBalanced[11].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[10].type, lStimuliUnBalanced[10].delay, validAnswers[1]))
+
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[0].type, lStimuliUnBalanced[0].delay, validAnswers[0]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[7].type, lStimuliUnBalanced[7].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[9].type, lStimuliUnBalanced[9].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[6].type, lStimuliUnBalanced[6].delay, validAnswers[1]))
+        trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[13].type, lStimuliUnBalanced[13].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[3].type, lStimuliUnBalanced[3].delay, validAnswers[1]))
         trials.add(TrialBindingsUnBalanced(++cnt, lStimuliUnBalanced[12].type, lStimuliUnBalanced[12].delay, validAnswers[1]))
         mTrials.addAll(trials)
@@ -349,9 +476,11 @@ class TestATB(ctx: Context,
 
         mSummary = when (subjectparcel.type) {
             TEST_ATB_TIME_DOUBLESTIM,
-            TEST_ATB_TIME_SINGLESTIM ->  ATBUnBalancedSummary(ctx)
+            TEST_ATB_TIME_SINGLESTIM,
+            TEST_ATB_TIME_DOUBLESTIM_TOD,
+            TEST_ATB_TIME_SINGLESTIM_TOD    ->  ATBUnBalancedSummary(ctx)
 
-            else                     ->  ATBUnBalancedSummary(ctx)
+            else                            ->  ATBUnBalancedSummary(ctx)
         }
     }
     // =============================================================================================================================
@@ -369,23 +498,29 @@ class TestATB(ctx: Context,
                 mStimuliHandler.postDelayed({
                     firstTrain((trial as TrialATBInfants).tactile_pattern)     // schedule first 3 stimuli
                     secondTrain(trial.type)    // schedule second 2 stimuli
-                }, 1000L)
+                }, WN_FIRSTSTIM_INTERVAL)
             }
-            TEST_ATB_TIME_SINGLESTIM -> {
+            TEST_ATB_TIME_SINGLESTIM,
+            TEST_ATB_TIME_SINGLESTIM_TOD -> {
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
                     deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced)
-                }, (1000L))
+                }, WN_FIRSTSTIM_INTERVAL)
             }
-            TEST_ATB_TIME_DOUBLESTIM -> {
+            TEST_ATB_TIME_DOUBLESTIM,
+            TEST_ATB_TIME_DOUBLESTIM_TOD -> {
+
+                // since I have to apply the possible shift, I calculate here the correction and thus call deliverShiftedStimulus for the 1st stim.
+                // for the second I call instead deliverUnBalancedStimuli
+                val corr_delays = arrangeDelays(0,0,-1, subjectparcel.stimuliDelay)
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    deliverAlignedStimulus(STIM_TYPE_A2T1) // simult
-                    // aneous
-                }, 1000L)
+                    deliverShiftedStimulus(BIMODAL_AUDIO_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+                }, WN_FIRSTSTIM_INTERVAL)
                 mStimuliHandler.postDelayed({
                     deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced)
-                }, (1000L + 2*currStimulusDuration))
+                }, (WN_FIRSTSTIM_INTERVAL + currStimulusDuration + curISI + corr_delays.shift))     // to preserve the desired ISI between 1st and 2nd stimuli,
+                                                                                                    // I also add the shift that could be eventually imposed to the fastest modality
             }
         }
     }
@@ -393,37 +528,61 @@ class TestATB(ctx: Context,
     // tactile are programmed once, audio are programmed with postDelayed
     private fun firstTrain(tactile_pattern: Int) {
 
-        vibrator?.vibratePattern(vibration_trains_timings[tactile_pattern], vibration_trains_amplitudes[tactile_pattern])
-        deliverAlignedStimulus(STIM_TYPE_A2)
-        testEvent.accept(Pair(EVENT_STIMULI_START, null))
+        // assuming audio is faster than vibro, I delay the former
+        var A_delay     = subjectparcel.stimuliDelay.t - subjectparcel.stimuliDelay.a
+        var timings     = vibration_trains_timings[tactile_pattern]
+
+        if(A_delay < 0L){  // audio delayed wrt vibro: delay vibro timings and preserve audio onsets
+            vibration_trains_timings[tactile_pattern].mapIndexed { index, it ->
+                timings[index] = it - A_delay
+            }
+            A_delay = 0
+        }
+
+        vibrator?.vibratePattern(timings, vibration_trains_amplitudes[tactile_pattern])
+
+        if(A_delay > 0L){
+            mStimuliHandler.postDelayed({
+                deliverUnimodalStimulus(UNIMODAL_AUDIO_CODE)
+                testEvent.accept(Pair(EVENT_STIMULI_START, null))
+            }, A_delay)
+        }
+        else {
+            deliverUnimodalStimulus(UNIMODAL_AUDIO_CODE)
+            testEvent.accept(Pair(EVENT_STIMULI_START, null))
+        }
 
         mStimuliHandler.postDelayed({
-            deliverAlignedStimulus(STIM_TYPE_A2)
-        }, curISI)
+            deliverUnimodalStimulus(UNIMODAL_AUDIO_CODE)
+        }, curISI + A_delay)
 
         mStimuliHandler.postDelayed({
-            deliverAlignedStimulus(STIM_TYPE_A2)
-        }, 2*curISI)
+            deliverUnimodalStimulus(UNIMODAL_AUDIO_CODE)
+        }, 2*curISI + A_delay)
     }
 
     // only for infants subtest
     // tactile have been already programmed at the beginning of the trial => just playback audio and take care of events
     private fun secondTrain(type:Int){
 
+        // assuming audio is faster than vibro, I delay the former
+        var A_delay    = subjectparcel.stimuliDelay.t - subjectparcel.stimuliDelay.a
+        if(A_delay < 0L)   A_delay = 0L    // audio delayed wrt vibro: I previoulsy delayed vibro timings and now I preserve audio
+
         when(type){
-            STIM_TYPE_A2T1,
-            STIM_TYPE_A2,
+            BIMODAL_AUDIO_CODE,
+            UNIMODAL_AUDIO_CODE,
             STIM_TYPE_TIME_A_T800   -> {
                 mStimuliHandler.postDelayed({
-                    deliverAlignedStimulus(STIM_TYPE_A2)
+                    deliverUnimodalStimulus(UNIMODAL_AUDIO_CODE)
                     testEvent.accept(Pair(EVENT_SECOND_TRAIN, null))
-                }, 3 * curISI)
+                }, 3 * curISI + A_delay)
                 mStimuliHandler.postDelayed({
-                    deliverAlignedStimulus(STIM_TYPE_A2)
-                }, 4 * curISI)
+                    deliverUnimodalStimulus(UNIMODAL_AUDIO_CODE)
+                }, 4 * curISI + A_delay)
                 mStimuliHandler.postDelayed({
                     onTrialEnd()
-                }, 5 * curISI)
+                }, 5 * curISI + A_delay)
             }
 
             STIM_TYPE_T1 -> {
@@ -437,29 +596,31 @@ class TestATB(ctx: Context,
 
             STIM_TYPE_TIME_A800_T -> {
                 mStimuliHandler.postDelayed({
-                    deliverAlignedStimulus(STIM_TYPE_A2)
+                    deliverUnimodalStimulus(UNIMODAL_AUDIO_CODE)
                     testEvent.accept(Pair(EVENT_SECOND_TRAIN, null))
-                }, (3 * curISI + 800L))
+                }, (3 * curISI + 800L + A_delay))
                 mStimuliHandler.postDelayed({
-                    deliverAlignedStimulus(STIM_TYPE_A2)
+                    deliverUnimodalStimulus(UNIMODAL_AUDIO_CODE)
                     testEvent.accept(Pair(EVENT_SECOND_TRAIN, null))
-                }, (4 * curISI + 800))
+                }, (4 * curISI + 800 + A_delay))
                 mStimuliHandler.postDelayed({
                     onTrialEnd()
-                }, (5 * curISI + 800L))
+                }, (5 * curISI + 800L + A_delay))
             }
         }
     }
 
-
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced){
-        when(trial.type){
-            TYPE_AT     ->  deliverShiftedStimulus(0, 0, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
-            TYPE_A      ->  deliverShiftedStimulus(0, -1, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
-            TYPE_T      ->  deliverShiftedStimulus(-1, 0, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
-            TYPE_A_T    ->  deliverShiftedStimulus(0, trial.delay, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
-            TYPE_T_A    ->  deliverShiftedStimulus(trial.delay, 0, -1, audiotype = STIM_TYPE_A2){ onTrialEnd()}
+
+        val corr_delays:CorrectedStimuliDelay = when(trial.type) {
+            TYPE_AT     -> arrangeDelays(0, 0, -1, subjectparcel.stimuliDelay)
+            TYPE_A      -> CorrectedStimuliDelay(0, -1, -1)
+            TYPE_T      -> CorrectedStimuliDelay(-1, 0, -1)
+            TYPE_A_T    -> arrangeDelays(0, trial.delay, -1, subjectparcel.stimuliDelay)
+            TYPE_T_A    -> arrangeDelays(trial.delay, 0, -1, subjectparcel.stimuliDelay)
+            else        -> CorrectedStimuliDelay(0, 0, -1)
         }
+        deliverShiftedStimulus(corr_delays.a, corr_delays.t, corr_delays.v  , audiotype = UNIMODAL_AUDIO_CODE){ onTrialEnd()}
     }
     // =============================================================================================================================
 }

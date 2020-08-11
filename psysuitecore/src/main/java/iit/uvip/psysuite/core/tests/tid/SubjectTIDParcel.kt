@@ -1,6 +1,7 @@
 package iit.uvip.psysuite.core.tests.tid
 
 import android.content.Context
+import iit.uvip.psysuite.core.common.StimuliDelay
 import iit.uvip.psysuite.core.common.TaskCodeLabels
 import iit.uvip.psysuite.core.common.TestBasic
 import iit.uvip.psysuite.core.common.getLabelLog
@@ -22,11 +23,12 @@ class SubjectTIDParcel(
     override var testClass:String = "",
     override var device: Device? = null,
     override var block:Int = -1,
+    override var stimuliDelay: StimuliDelay = StimuliDelay(),
 
     override var spinner_sel: Int = -1,
     override var spinner_data_resource: Int = -1,
     var group: Int = -1
-) : SubjectLongitParcel(type, label, age, gender, nextTrailModality, canRecordAudio, testClass, device, block, spinner_sel, spinner_data_resource){
+) : SubjectLongitParcel(type, label, age, gender, nextTrailModality, canRecordAudio, testClass, device, block, stimuliDelay, spinner_sel, spinner_data_resource){
 
     override fun getFilesPrefix(ctx:Context):String{
 

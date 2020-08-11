@@ -46,9 +46,9 @@ class TestSample(
 
         fun getConditionsInfo(ctx: Context): List<TaskCodeLabels> {
             return mutableListOf(
-                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.aligned)}", TEST_SAMPLE_ALIGNED, "$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.aligned)}"),
-                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.shifted)}", TEST_SAMPLE_SHIFTED, "$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.shifted)}"),
-                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.pair)}", TEST_SAMPLE_PAIR, "$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.pair)}")
+                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.aligned)}" , TEST_SAMPLE_ALIGNED, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.aligned)}"),
+                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.shifted)}" , TEST_SAMPLE_SHIFTED, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.shifted)}"),
+                TaskCodeLabels("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.pair)}"    , TEST_SAMPLE_PAIR   , "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.pair)}")
             )
         }
         
@@ -115,32 +115,30 @@ class TestSample(
             throw AudioResourceException("AUDIO_RESOURCE_ERROR: resource name = $e")
         }
 
-        mTactileManager = if(subjectparcel.stim_sources and STIM_TYPE_T1 > 0){
-                            TactileManager(vibrator!!, subjectparcel.tactileAmplitude, duration = subjectparcel.tactileSequence.toLong(), handler = mStimuliHandler)
-                        }else if(subjectparcel.stim_sources and STIM_TYPE_T2 > 0){
-                            val timings = TactileManager.validatePattern(subjectparcel.tactileSequence)
-                            if(timings != null)     TactileManager(vibrator!!, subjectparcel.tactileAmplitude, timings!!, handler = mStimuliHandler)
-                            else {
-                                // TODO: ALERT
-                                null
+        mTactileManager =   if(subjectparcel.stim_sources and STIM_TYPE_T1 > 0){
+                                TactileManager(vibrator!!, subjectparcel.tactileAmplitude, duration = subjectparcel.tactileSequence.toLong(), handler = mStimuliHandler)
+                            }else if(subjectparcel.stim_sources and STIM_TYPE_T2 > 0){
+                                val timings = TactileManager.validatePattern(subjectparcel.tactileSequence)
+                                if(timings != null)     TactileManager(vibrator!!, subjectparcel.tactileAmplitude, timings!!, handler = mStimuliHandler)
+                                else {
+                                    // TODO: ALERT
+                                    null
+                                }
                             }
-                        }
-                        else null
+                            else null
 
-        mVisualManager = if(subjectparcel.stim_sources and STIM_TYPE_V1 > 0){
-                            val on =    if(subjectparcel.visualDrawableOn >= mDrawablesResource.size)    mDrawablesResource.size
-                            else                                                                subjectparcel.visualDrawableOn
-                            mImageView!!.setImageResource(mDrawablesResource[on])
-                            mImageView.visibility = View.INVISIBLE
-                            VisualManager(STIM_TYPE_V1, mImageView, mDrawablesResource[on], duration = subjectparcel.visualDuration, handler = mStimuliHandler)
-                        }else if(subjectparcel.stim_sources and STIM_TYPE_V2 > 0){
-                            if(mImageView == null)  return
-                            val on =    if(subjectparcel.visualDrawableOn >= mDrawablesResource.size)    mDrawablesResource.size-1
-                                        else                                                    subjectparcel.visualDrawableOn
-                            mImageView.visibility = View.VISIBLE
-                            VisualManager(STIM_TYPE_V2, mImageView, mDrawablesResource[on], mDrawablesResource[subjectparcel.visualDrawableOff], subjectparcel.visualDuration, handler = mStimuliHandler)
-                        }
-                        else null
+        mVisualManager =    if(subjectparcel.stim_sources and STIM_TYPE_V1 > 0){
+                                val on =    if(subjectparcel.visualDrawableOn >= mDrawablesResource.size)    mDrawablesResource.size
+                                            else                                                             subjectparcel.visualDrawableOn
+
+                                VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[on], duration = subjectparcel.visualDuration, handler = mStimuliHandler)
+                            }else if(subjectparcel.stim_sources and STIM_TYPE_V2 > 0){
+                                if(mImageView == null)  return
+                                val on =    if(subjectparcel.visualDrawableOn >= mDrawablesResource.size)   mDrawablesResource.size-1
+                                            else                                                            subjectparcel.visualDrawableOn
+                                VisualManager(STIM_TYPE_V2, mImageView, mDrawablesResource[on], mDrawablesResource[subjectparcel.visualDrawableOff], subjectparcel.visualDuration, handler = mStimuliHandler)
+                            }
+                            else null
 
         val extraTrial:Any? = when(subjectparcel.type){
             TEST_SAMPLE_SHIFTED     -> subjectparcel.shiftedParams
@@ -179,9 +177,16 @@ class TestSample(
 
         when(trial.type){
 
-            TEST_SAMPLE_ALIGNED ->  deliverAlignedStimulus((trial as TrialSample).source){onTrialEnd()}
-            TEST_SAMPLE_SHIFTED ->  deliverShiftedStimulus((trial as TrialSample).source, (trial.extraTrial as List<Long>)[0], trial.extraTrial[1], trial.extraTrial[2]){onTrialEnd()}
-            TEST_SAMPLE_PAIR    ->  deliverAlignedStimuliPair((trial as TrialSample).extraTrial as Long, trial.source){onTrialEnd()}
+            TEST_SAMPLE_ALIGNED ->  deliverAlignedStimulus((trial as TrialSample).source, stimuliDelay = subjectparcel.stimuliDelay){onTrialEnd()}
+
+            TEST_SAMPLE_SHIFTED ->  {
+                val corr_delays = arrangeDelays(((trial as TrialSample).extraTrial as List<Long>)[0],
+                                                                 (trial.extraTrial as List<Long>)[1],
+                                                                 (trial.extraTrial as List<Long>)[2], subjectparcel.stimuliDelay)
+
+                deliverShiftedStimulus(trial.source, corr_delays.a, corr_delays.t, corr_delays.v){onTrialEnd()}
+            }
+            TEST_SAMPLE_PAIR    ->  deliverAlignedStimuliPair((trial as TrialSample).extraTrial as Long, trial.source, stimuliDelay = subjectparcel.stimuliDelay){onTrialEnd()}
         }
     }
     // =============================================================================================================================

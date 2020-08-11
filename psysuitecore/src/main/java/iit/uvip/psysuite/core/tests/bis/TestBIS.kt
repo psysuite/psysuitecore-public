@@ -2,6 +2,7 @@ package iit.uvip.psysuite.core.tests.bis
 
 import android.app.Activity
 import android.content.Context
+import android.media.MediaPlayer
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 
@@ -23,6 +24,8 @@ class TestBIS(
 ) : TestBasic(ctx, activity, hostfragment, data, vibrator, mImageView, isDebug = isDebug){
 
     var LOG_TAG:String = TestBIS::class.java.simpleName
+
+    private var noise: MediaPlayer? = null
 
     companion object {
 
@@ -57,10 +60,10 @@ class TestBIS(
 
         fun getConditionsInfo(ctx: Context): List<TaskCodeLabels> {
             return mutableListOf(
-                TaskCodeLabels(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO           , TEST_BISECTION_AUDIO          , STIMULUS_TYPE_AUDIO_LOG),
-                TaskCodeLabels(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_TACTILE         , TEST_BISECTION_TACTILE        , STIMULUS_TYPE_TACTILE_LOG),
-                TaskCodeLabels(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO_TACTILE   , TEST_BISECTION_AUDIO_TACTILE  , STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-                TaskCodeLabels(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO_VIDEO     , TEST_BISECTION_AUDIO_VIDEO    , STIMULUS_TYPE_AUDIO_VIDEO_LOG)
+                TaskCodeLabels(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO           , TEST_BISECTION_AUDIO          , "${TEST_BASIC_LABEL}_$STIMULUS_TYPE_AUDIO_LOG"),
+                TaskCodeLabels(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_TACTILE         , TEST_BISECTION_TACTILE        , "${TEST_BASIC_LABEL}_$STIMULUS_TYPE_TACTILE_LOG"),
+                TaskCodeLabels(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO_TACTILE   , TEST_BISECTION_AUDIO_TACTILE  , "${TEST_BASIC_LABEL}_$STIMULUS_TYPE_AUDIO_TACTILE_LOG"),
+                TaskCodeLabels(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO_VIDEO     , TEST_BISECTION_AUDIO_VIDEO    , "${TEST_BASIC_LABEL}_$STIMULUS_TYPE_AUDIO_VIDEO_LOG")
             )
         }
         
@@ -136,6 +139,8 @@ class TestBIS(
             ctx
         )
         createResultFile(subjectparcel, TrialBIS.LOG_HEADER)
+
+        noise = MediaPlayerManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
     }
 
     // =============================================================================================================================
@@ -194,6 +199,10 @@ class TestBIS(
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
     override fun onTrialEnd(){
+
+        noise?.stop()
+        noise?.prepare()
+
         testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
     }
 
@@ -210,6 +219,7 @@ class TestBIS(
     // + (QUESTION_DELAY + FIRST_STIMULUS_DELAY)        => event : show question
     override fun show(trial:TrialBasic, isRepeat:Boolean){
 
+        noise?.start()
         if(isRepeat)    mTrial.repetitions++
 
         mStimuliHandler.postDelayed({
@@ -235,7 +245,7 @@ class TestBIS(
         when(trial.type) {
             TEST_BISECTION_AUDIO            ->  deliverA1Stimulus(mToneManager)
             TEST_BISECTION_TACTILE          ->  deliverT1Stimulus(mTactileManager)
-            TEST_BISECTION_AUDIO_TACTILE    ->  deliverA1T1Stimulus(mToneManager, mTactileManager)
+            TEST_BISECTION_AUDIO_TACTILE    ->  deliverAlignedStimulus(STIM_TYPE_A1T1, stimuliDelay = subjectparcel.stimuliDelay, managerA = mToneManager)
             TEST_BISECTION_AUDIO_VIDEO      ->  deliverAVStimuli(trial, stage)
         }
     }
@@ -243,35 +253,13 @@ class TestBIS(
     private fun deliverAVStimuli(trial:TrialBIS, stage:Int=0){
 
         mVisualManager!!.drawResOn = mDrawablesResource[stage]
-        when(stage == TRIAL_STAGE_2){
-            true -> {
-                // mid (second) stimulus: audio and video are dissociated
-                when(trial.conflict_type == STIMULUS_TYPE_VIDEO_AUDIO_LOG){
-                    true    -> {
-                        // first visual
-                        deliverV2Stimulus(mVisualManager)
-
-                        // delayed stimulus
-                        mStimuliHandler.postDelayed({
-                            deliverA1Stimulus()
-                        }, AV_STIMULUS_DELTA.toLong())
-                    }
-                    false   -> {
-                        // first audio
-                        deliverA1Stimulus()
-
-                        // delayed stimulus
-                        mStimuliHandler.postDelayed({
-                            deliverV2Stimulus(mVisualManager)
-                        }, AV_STIMULUS_DELTA.toLong())
-                    }
-                }
-            }
-            false -> {
-                // normal stimulus (1st or 3rd): audio and video simultaneously
-                deliverA1V2Stimulus(managerV = mVisualManager)
-            }
+        if(stage == TRIAL_STAGE_2){
+            // mid (second) stimulus: audio and video are dissociated
+            if(trial.conflict_type == STIMULUS_TYPE_VIDEO_AUDIO_LOG)    deliverShiftedStimulus(STIM_TYPE_A1V2, AV_STIMULUS_DELTA.toLong(), -1, 0)
+            else                                                        deliverShiftedStimulus(STIM_TYPE_A1V2, 0, -1, AV_STIMULUS_DELTA.toLong())
         }
+        // normal stimulus (1st or 3rd): audio and video simultaneously
+        else                                                            deliverAlignedStimulus(STIM_TYPE_A1V2, stimuliDelay = subjectparcel.stimuliDelay)
     }
 
     // =====================================================================================

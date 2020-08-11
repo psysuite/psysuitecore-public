@@ -29,10 +29,20 @@ class TestATVB(
     private var noise: MediaPlayer? = null
     private var tone2sec:String = "t200hz_2s"
 
+    private val UNIMODAL_AUDIO_CODE     = STIM_TYPE_A1
+    private val TRIMODAL_AUDIO_CODE     = STIM_TYPE_A1T1V1
+
     private var curISI: Long = 0L
 
     // 36 different elements
     private val lStimuliUnbalanced: List<StimulusBindingsUnbalanced> = listOf(
+
+        StimulusBindingsUnbalanced( TYPE_A_TV, 50),
+        StimulusBindingsUnbalanced( TYPE_TV_A, 50),
+        StimulusBindingsUnbalanced( TYPE_V_AT, 50),
+        StimulusBindingsUnbalanced( TYPE_AT_V, 50),
+        StimulusBindingsUnbalanced( TYPE_T_AV, 50),
+        StimulusBindingsUnbalanced( TYPE_AV_T, 50),
 
         StimulusBindingsUnbalanced( TYPE_A_TV, 100),
         StimulusBindingsUnbalanced( TYPE_TV_A, 100),
@@ -67,14 +77,7 @@ class TestATVB(
         StimulusBindingsUnbalanced( TYPE_V_AT, 800),
         StimulusBindingsUnbalanced( TYPE_AT_V, 800),
         StimulusBindingsUnbalanced( TYPE_T_AV, 800),
-        StimulusBindingsUnbalanced( TYPE_AV_T, 800),
-
-        StimulusBindingsUnbalanced( TYPE_A_TV, 1200),
-        StimulusBindingsUnbalanced( TYPE_TV_A, 1200),
-        StimulusBindingsUnbalanced( TYPE_V_AT, 1200),
-        StimulusBindingsUnbalanced( TYPE_AT_V, 1200),
-        StimulusBindingsUnbalanced( TYPE_T_AV, 1200),
-        StimulusBindingsUnbalanced( TYPE_AV_T, 1200)
+        StimulusBindingsUnbalanced( TYPE_AV_T, 800)
     )
 
     // 72 different elements
@@ -159,8 +162,9 @@ class TestATVB(
         Stimulus3delay( 0,800, 0, 1600)
     )
 
-    private val STIM_DURATION   = 1000L
-    private val ISI             = 2000L
+    private val WN_FIRSTSTIM_INTERVAL   = 1000L
+    private val STIM_DURATION           = 50L
+    private val ISI                     = 1000L // time between end of first stim and onset of second stim in DOUBLE STIM tasks
 
     private var allQuestions:MutableList<String> = mutableListOf()
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle)
@@ -179,7 +183,7 @@ class TestATVB(
         @JvmStatic val TYPE_T_AV = 5
         @JvmStatic val TYPE_AV_T = 6
 
-        @JvmStatic val recipients:Array<String> = arrayOf("uvip.apptester@gmail.com", "monica.gori.parmiggiani@gmail.com") // "psysuite.uvip@gmail.com",
+        @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com") // "psysuite.uvip@gmail.com",
 
         fun getConditionsInfo(ctx: Context): List<TaskCodeLabels> {
             return mutableListOf(TaskCodeLabels(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_single),  TEST_ATVB_TIME_S_UNBAL, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atvb_subtask_time_single_tag)}"),
@@ -208,9 +212,10 @@ class TestATVB(
         else{
             initTest()
 
-            mMediaPlayerManager = MediaPlayerManager(ctx, tone2sec, duration = currStimulusDuration, handler = mStimuliHandler)
-            mTactileManager      = TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler)
-            mVisualManager       = VisualManager(STIM_TYPE_V2, mImageView, mDrawablesResource[1], mDrawablesResource[0], duration = currStimulusDuration, handler = mStimuliHandler)
+//            mMediaPlayerManager = MediaPlayerManager(ctx, tone2sec, duration = currStimulusDuration, handler = mStimuliHandler)
+            mToneManager        = ToneManager(duration = currStimulusDuration, handler = mStimuliHandler)
+            mTactileManager     = TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler)
+            mVisualManager      = VisualManager(STIM_TYPE_V1, mImageView, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler)
         }
     }
 
@@ -226,19 +231,15 @@ class TestATVB(
         createResultFile(subjectparcel, TrialBindings3latencies.LOG_HEADER)
         initSummary()
 
+        curISI                  = ISI           // 1000L
+        currStimulusDuration    = STIM_DURATION // 50L
+
         when (subjectparcel.type) {
             TEST_ATVB_TIME_S_UNBAL,
-            TEST_ATVB_TIME_D_UNBAL   -> {
-                curISI                  = ISI           // 2000L
-                currStimulusDuration    = STIM_DURATION // 1000L
-                createTrialsTimeUnbalanced()
-            }
+            TEST_ATVB_TIME_D_UNBAL  ->  createTrialsTimeUnbalanced()
+
             TEST_ATVB_TIME_S_BAL,
-            TEST_ATVB_TIME_D_BAL   -> {
-                curISI                  = ISI           // 2000L
-                currStimulusDuration    = STIM_DURATION // 1000L
-                createTrialsTimeBalanced()
-            }
+            TEST_ATVB_TIME_D_BAL    ->  createTrialsTimeBalanced()
         }
         when (subjectparcel.type) {
             TEST_ATVB_TIME_S_UNBAL,
@@ -251,7 +252,7 @@ class TestATVB(
             }
         }
 
-        if (subjectparcel.whitenoise)    noise = MediaPlayerManager.getAudioResource(ctx, "wnoise_20s", 0.4f)
+        if (subjectparcel.whitenoise)    noise = MediaPlayerManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
         // mTrials list
         nTrials         = mTrials.size
@@ -359,7 +360,6 @@ class TestATVB(
 
         if (isRepeat) trial.repetitions++
 
-        noise?.setVolume(0.5f, 0.5f)
         noise?.start()
 
         when(subjectparcel.type) {
@@ -368,45 +368,50 @@ class TestATVB(
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
                     deliverUnBalancedStimuli((trial as TrialBindingsUnBalanced))
-                }, 1000L)
+                }, WN_FIRSTSTIM_INTERVAL)
             }
             TEST_ATVB_TIME_S_BAL -> {
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    deliverShiftedStimulus((trial as TrialBindings3latencies).a, trial.t, trial.v, audiotype = STIM_TYPE_A2, visualtype = STIM_TYPE_V2){ onTrialEnd()}
-                }, 1000L)
+                    deliverShiftedStimulus((trial as TrialBindings3latencies).a, trial.t, trial.v, audiotype = UNIMODAL_AUDIO_CODE, visualtype = STIM_TYPE_V2){ onTrialEnd()}
+                }, WN_FIRSTSTIM_INTERVAL)
             }
             TEST_ATVB_TIME_D_UNBAL -> {
+                val corr_delays = arrangeDelays(0,0,0, subjectparcel.stimuliDelay)
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    deliverAlignedStimulus(STIM_TYPE_A2T1V2, managerV = mVisualManager)
-                }, 1000L)
+                    deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+                }, WN_FIRSTSTIM_INTERVAL)
                 mStimuliHandler.postDelayed({
                     deliverUnBalancedStimuli((trial as TrialBindingsUnBalanced))
-                }, (1000L + 2*currStimulusDuration))
+                }, (WN_FIRSTSTIM_INTERVAL + currStimulusDuration + curISI + corr_delays.shift))
             }
             TEST_ATVB_TIME_D_BAL -> {
+                val corr_delays = arrangeDelays(0,0,0, subjectparcel.stimuliDelay)
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    deliverAlignedStimulus(STIM_TYPE_A2T1V2)
-                }, 1000L)
+                    deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+                }, WN_FIRSTSTIM_INTERVAL)
                 mStimuliHandler.postDelayed({
-                    deliverShiftedStimulus((trial as TrialBindings3latencies).a, trial.t, trial.v, audiotype = STIM_TYPE_A2, visualtype = STIM_TYPE_V2){ onTrialEnd()}
-                }, (1000L + 2*currStimulusDuration))
+                    deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, (trial as TrialBindings3latencies).a, trial.t, trial.v){ onTrialEnd()}
+                }, (WN_FIRSTSTIM_INTERVAL + currStimulusDuration + curISI + corr_delays.shift))
             }
         }
     }
 
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced){
-        when(trial.type){
-            TYPE_ATV    ->  deliverShiftedStimulus(0, 0, 0,                 audiotype = STIM_TYPE_A2, visualtype = STIM_TYPE_V2){ onTrialEnd()}
-            TYPE_A_TV   ->  deliverShiftedStimulus(0, trial.delay, trial.delay,     audiotype = STIM_TYPE_A2, visualtype = STIM_TYPE_V2){ onTrialEnd()}
-            TYPE_TV_A   ->  deliverShiftedStimulus(trial.delay, 0, 0,           audiotype = STIM_TYPE_A2, visualtype = STIM_TYPE_V2){ onTrialEnd()}
-            TYPE_T_AV   ->  deliverShiftedStimulus(trial.delay, 0, trial.delay,     audiotype = STIM_TYPE_A2, visualtype = STIM_TYPE_V2){ onTrialEnd()}
-            TYPE_AV_T   ->  deliverShiftedStimulus(0, trial.delay, 0,           audiotype = STIM_TYPE_A2, visualtype = STIM_TYPE_V2){ onTrialEnd()}
-            TYPE_V_AT   ->  deliverShiftedStimulus(trial.delay, trial.delay, 0,     audiotype = STIM_TYPE_A2, visualtype = STIM_TYPE_V2){ onTrialEnd()}
-            TYPE_AT_V   ->  deliverShiftedStimulus(0, 0, trial.delay,           audiotype = STIM_TYPE_A2, visualtype = STIM_TYPE_V2){ onTrialEnd()}
+
+        val corr_delays:CorrectedStimuliDelay = when(trial.type){
+            TYPE_ATV    ->  arrangeDelays(0,0,0, subjectparcel.stimuliDelay)
+            TYPE_A_TV   ->  arrangeDelays(0, trial.delay, trial.delay, subjectparcel.stimuliDelay)
+            TYPE_TV_A   ->  arrangeDelays(trial.delay,0,0, subjectparcel.stimuliDelay)
+            TYPE_T_AV   ->  arrangeDelays(trial.delay,0, trial.delay, subjectparcel.stimuliDelay)
+            TYPE_AV_T   ->  arrangeDelays(0, trial.delay,0, subjectparcel.stimuliDelay)
+            TYPE_V_AT   ->  arrangeDelays(trial.delay, trial.delay,0, subjectparcel.stimuliDelay)
+            TYPE_AT_V   ->  arrangeDelays(0,0, trial.delay, subjectparcel.stimuliDelay)
+            else        ->  arrangeDelays(0,0,0, subjectparcel.stimuliDelay)
         }
+        deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
     }
     // =============================================================================================================================
     // DEBUG

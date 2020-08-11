@@ -1,5 +1,6 @@
 package iit.uvip.psysuite.core.common.subjects_parcel
 
+import iit.uvip.psysuite.core.common.StimuliDelay
 import kotlinx.android.parcel.Parcelize
 import org.albaspazio.core.accessory.Device
 
@@ -21,11 +22,12 @@ open class SubjectBasicListParcel(
     override var testClass:String = "",
     override var device: Device? = null,
     override var block:Int = -1,
+    override var stimuliDelay: StimuliDelay = StimuliDelay(),
 
     open var spinner_sel: Int = -1,
     open var spinner_label: String = "",
     open var spinner_data_resource: Int = -1
-) : SubjectBasicParcel(type, label, age, gender, nextTrailModality, canRecordAudio, testClass, device, block)
+) : SubjectBasicParcel(type, label, age, gender, nextTrailModality, canRecordAudio, testClass, device, block, stimuliDelay)
 
 
 

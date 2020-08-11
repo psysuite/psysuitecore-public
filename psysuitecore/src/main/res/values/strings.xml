@@ -97,6 +97,11 @@
     <string name="atb_subtask_time_double">Doppio Stimolo</string>
     <string name="atb_subtask_time_double_tag">DSU</string>
 
+    <string name="atb_subtask_time_single_tod">Singolo Stimolo Toddlers</string>
+    <string name="atb_subtask_time_single_tod_tag">SSUT</string>
+    <string name="atb_subtask_time_double_tod">Doppio Stimolo Toddlers</string>
+    <string name="atb_subtask_time_double_tod_tag">DSUT</string>
+
     <string name="atb_subtask_time_infants">tempo infanti</string>
     <string name="atb_subtask_time_infants_tag">INF</string>
 
@@ -138,6 +143,9 @@
 
     <string name="tid_rb_short_text">CORTO</string>
     <string name="tid_rb_long_text">LUNGO</string>
+
+    <string name="tid_rb_short_text_short">C</string>
+    <string name="tid_rb_long_text_short">L</string>
 
     <string name="tid_rb_audio_text">audio</string>
     <string name="tid_rb_vibro_text">vibro</string>

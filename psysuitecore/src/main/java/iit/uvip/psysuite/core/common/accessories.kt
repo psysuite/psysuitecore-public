@@ -3,11 +3,25 @@ package iit.uvip.psysuite.core.common
 import android.content.Context
 import android.os.Environment
 import android.os.Parcelable
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.accessory.getAbsoluteFilePath
 import org.albaspazio.core.accessory.saveText
 import java.util.*
+
+@Parcelize
+data class StimuliDelay(val a:Long=0L, val t:Long=0L, val v:Long=0L) : Parcelable{  // delay in ms of each modality wrt audio onset
+
+    @IgnoredOnParcel
+    val shift:Long
+    get() {
+        return Collections.min(listOf(a,t,v))
+    }
+}
+
+@Parcelize
+data class CorrectedStimuliDelay(var a:Long=-1, var t:Long=-1, var v:Long=-1, var shift:Long=0) : Parcelable
 
 @Parcelize
 data class TaskCodeLabels(val label:String, val id:Int, val label_log:String = label) : Parcelable {

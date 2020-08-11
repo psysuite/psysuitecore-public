@@ -129,6 +129,8 @@ class TestFragment : BaseFragment(
 
                 TestBasic.TEST_ATB_TIME_SINGLESTIM,
                 TestBasic.TEST_ATB_TIME_DOUBLESTIM,
+                TestBasic.TEST_ATB_TIME_SINGLESTIM_TOD,
+                TestBasic.TEST_ATB_TIME_DOUBLESTIM_TOD,
                 TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel as SubjectBindingsParcel, vibrator, isDebug)
 
                 TestBasic.TEST_ATVB_TIME_S_UNBAL,
@@ -312,6 +314,7 @@ class TestFragment : BaseFragment(
     // user wanted to interrupt test during a block (ask whether deleting results file and it)
     private fun onAbortTest(){
 
+        mHandler.removeCallbacksAndMessages(null)
         show2ChoisesDialog(requireActivity(),
             requireContext().resources.getString(R.string.warning),
             requireContext().resources.getString(R.string.test_aborted),
@@ -319,12 +322,10 @@ class TestFragment : BaseFragment(
             requireContext().resources.getString(R.string.delete),       // cancel
             { /* okClb */
                 mTest.abortTest(false)
-                mHandler.removeCallbacksAndMessages(null)
                 navigateBack(TestBasic.TEST_ABORT, listOf(mTest.getAbsoluteResultFilePath(), mTest.closeSummary()))
             },
             { /* cancelClb*/
                 mTest.abortTest(true)
-                mHandler.removeCallbacksAndMessages(null)
                 navigateBack(TestBasic.TEST_ABORT, listOf())
             })
     }
