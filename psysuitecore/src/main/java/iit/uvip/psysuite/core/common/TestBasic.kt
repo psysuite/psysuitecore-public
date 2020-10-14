@@ -120,6 +120,12 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_TVB_TIME_SINGLESTIM_TOD = 173
         @JvmStatic val TEST_TVB_TIME_DOUBLESTIM_TOD = 174
 
+        @JvmStatic val TEST_AVB_TIME_SINGLESTIM     = 180
+        @JvmStatic val TEST_AVB_TIME_DOUBLESTIM     = 181
+        @JvmStatic val TEST_AVB_TIME_INF            = 182
+        @JvmStatic val TEST_AVB_TIME_SINGLESTIM_TOD = 183
+        @JvmStatic val TEST_AVB_TIME_DOUBLESTIM_TOD = 184
+
         //-----------------------------------------------------------------------------------------
         // STIMULUS TYPES UNIQUE CODES
         //-----------------------------------------------------------------------------------------
@@ -566,7 +572,7 @@ abstract class TestBasic(protected val ctx: Context,
         }
     }
 
-    protected fun deliverA2Stimulus(managerA: AudioManager? = null, onEnd:() -> Unit = {}){
+     protected fun deliverA2Stimulus(managerA: AudioManager? = null, onEnd:() -> Unit = {}){
 
         try {
             if(mStimuliManager.getValidAudioManager(managerA) == null) throw Exception("deliverA1Stimulus: mAudioManager and given audio manager are both null")

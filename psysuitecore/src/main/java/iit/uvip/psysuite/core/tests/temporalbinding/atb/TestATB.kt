@@ -10,9 +10,11 @@ import iit.uvip.psysuite.core.common.stimuli.StimuliManager
 import iit.uvip.psysuite.core.common.stimuli.TactileManager
 import iit.uvip.psysuite.core.common.stimuli.VibratorNotDefinedException
 import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsInfants
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.ui.showToast
+import kotlin.math.roundToInt
 
 
 class TestATB(ctx: Context,
@@ -203,12 +205,14 @@ class TestATB(ctx: Context,
             TEST_ATB_TIME_INF   -> {
                 initTimeArrays()
                 createTrialsTimeInfants()
-                createResultFile(subjectparcel, TrialATBInfants.LOG_HEADER)
+                createResultFile(subjectparcel, TrialBindingsInfants.LOG_HEADER)
             }
         }
 
         nTrials     = mTrials.size
         currTrial   = 0
+
+        mListBlocks = mutableListOf((3*nTrials / 5F).roundToInt(), (4*nTrials / 5F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
 
         mTestLabel = ""
         getConditionsInfo(ctx).map {
@@ -244,22 +248,23 @@ class TestATB(ctx: Context,
         var cnt = -1
         for (i in 0 until NUM_REPETITIONS_INFANTS) {
 
-            val trials: MutableList<TrialATBInfants> = mutableListOf()
+            val trials: MutableList<TrialBindingsInfants> = mutableListOf()
 
-            trials.add(TrialATBInfants(++cnt, lStimuli[0].type, lStimuli[0].tactile_pattern))
-            trials.add(TrialATBInfants(++cnt, lStimuli[1].type, lStimuli[1].tactile_pattern))
-            trials.add(TrialATBInfants(++cnt, lStimuli[4].type, lStimuli[4].tactile_pattern))
-            trials.add(TrialATBInfants(++cnt, lStimuli[2].type, lStimuli[2].tactile_pattern))
-            trials.add(TrialATBInfants(++cnt, lStimuli[1].type, lStimuli[1].tactile_pattern))
-            trials.add(TrialATBInfants(++cnt, lStimuli[0].type, lStimuli[0].tactile_pattern))
-            trials.add(TrialATBInfants(++cnt, lStimuli[3].type, lStimuli[3].tactile_pattern))
-            trials.add(TrialATBInfants(++cnt, lStimuli[2].type, lStimuli[2].tactile_pattern))
+            trials.add(TrialBindingsInfants(++cnt, lStimuli[0].type, lStimuli[0].tactile_pattern))
+            trials.add(TrialBindingsInfants(++cnt, lStimuli[1].type, lStimuli[1].tactile_pattern))
+            trials.add(TrialBindingsInfants(++cnt, lStimuli[4].type, lStimuli[4].tactile_pattern))
+            trials.add(TrialBindingsInfants(++cnt, lStimuli[2].type, lStimuli[2].tactile_pattern))
+            trials.add(TrialBindingsInfants(++cnt, lStimuli[1].type, lStimuli[1].tactile_pattern))
+            trials.add(TrialBindingsInfants(++cnt, lStimuli[0].type, lStimuli[0].tactile_pattern))
+            trials.add(TrialBindingsInfants(++cnt, lStimuli[3].type, lStimuli[3].tactile_pattern))
+            trials.add(TrialBindingsInfants(++cnt, lStimuli[2].type, lStimuli[2].tactile_pattern))
 
             mTrials.addAll(trials)
         }
     }
 
-    // [(4x2) x 6lat + 4 + 4 + 4 + 4] = 64
+    //      at0  a   t  at1200  6latenze
+    // 2 x [ 2 + 2 + 2 +  2  +  4 x 6lat] = 64
     private fun createTrialsTimeDouble() {
         var cnt = -1
         mTrials = mutableListOf()
@@ -287,6 +292,8 @@ class TestATB(ctx: Context,
     }
 
     // only-A & only-T were removed in single stimulus sub-task. 7/8/2020
+    //      at0  at1200  6latenze
+    // 2 x [ 2  +  2  +  4 x 6lat] = 56
     private fun createTrialsTimeSingle() {
         var cnt = -1
         mTrials = mutableListOf()
@@ -365,7 +372,7 @@ class TestATB(ctx: Context,
 
             TEST_ATB_TIME_INF -> {
                 mStimuliHandler.postDelayed({
-                    firstTrain((trial as TrialATBInfants).tactile_pattern)     // schedule first 3 stimuli
+                    firstTrain((trial as TrialBindingsInfants).tactile_pattern)     // schedule first 3 stimuli
                     secondTrain(trial.type)    // schedule second 2 stimuli
                 }, WN_FIRSTSTIM_INTERVAL)
             }
@@ -381,15 +388,18 @@ class TestATB(ctx: Context,
 
                 // since I have to apply the possible shift, I calculate here the correction and thus call deliverShiftedStimulus for the 1st stim.
                 // for the second I call instead deliverUnBalancedStimuli
-                val corr_delays = delaysAligner.arrangeDelays(BIMODAL_CODE, 0,0,-1) //arrangeDelays(0,0,-1, subjectparcel.stimuliDelay)
+                // to preserve the desired ISI between 1st and 2nd stimuli,
+                // I also add the shift that could be eventually imposed to the fastest modality
+                val corr_delays = delaysAligner.arrangeDelays(BIMODAL_CODE, 0,0,-1)
+                val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
+
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
                     deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
-                }, WN_FIRSTSTIM_INTERVAL)
+                }, shift)
                 mStimuliHandler.postDelayed({
                     deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced)
-                }, (WN_FIRSTSTIM_INTERVAL + currStimulusDuration + curISI - corr_delays.shift))     // to preserve the desired ISI between 1st and 2nd stimuli,
-                                                                                                    // I also add the shift that could be eventually imposed to the fastest modality
+                }, shift + curISI)
             }
         }
     }

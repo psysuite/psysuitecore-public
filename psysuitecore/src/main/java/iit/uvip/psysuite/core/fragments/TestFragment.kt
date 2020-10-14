@@ -19,6 +19,7 @@ import iit.uvip.psysuite.core.tests.sample.SubjectSampleParcel
 import iit.uvip.psysuite.core.tests.sample.TestSample
 import iit.uvip.psysuite.core.tests.temporalbinding.atb.TestATB
 import iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB
+import iit.uvip.psysuite.core.tests.temporalbinding.avb.TestAVB
 import iit.uvip.psysuite.core.tests.temporalbinding.tvb.TestTVB
 import iit.uvip.psysuite.core.tests.tfi.TestTFI
 import iit.uvip.psysuite.core.tests.tid.SubjectTIDParcel
@@ -84,7 +85,7 @@ class TestFragment : BaseFragment(
     private var currDebugInfo:String                = ""
 
     var showResult:Boolean                          = false
-    var correctAnswer:String                       = ""
+    var correctAnswer:String                        = ""
 
     private lateinit var answerDialogRef:Pair<KFunction<*>?, Any?>
     // ==========================================================================================================================
@@ -137,6 +138,13 @@ class TestFragment : BaseFragment(
                 TestBasic.TEST_ATB_TIME_DOUBLESTIM_TOD,
                 TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, isDebug)
 
+
+                TestBasic.TEST_AVB_TIME_SINGLESTIM,
+                TestBasic.TEST_AVB_TIME_DOUBLESTIM,
+                TestBasic.TEST_AVB_TIME_SINGLESTIM_TOD,
+                TestBasic.TEST_AVB_TIME_DOUBLESTIM_TOD,
+                TestBasic.TEST_AVB_TIME_INF             -> mTest = TestAVB(requireContext(), requireActivity(), this, mSubjectParcel!!, circleView, isDebug)
+
                 TestBasic.TEST_TVB_TIME_SINGLESTIM,
                 TestBasic.TEST_TVB_TIME_DOUBLESTIM,
                 TestBasic.TEST_TVB_TIME_SINGLESTIM_TOD,
@@ -163,7 +171,6 @@ class TestFragment : BaseFragment(
             }
         }
         catch (e:Exception){
-
             e.logLastTwo(LOG_TAG)
             showAlert(requireActivity(),resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
             showAlert(requireActivity(),resources.getString(R.string.critical_error), e.toString())
@@ -175,7 +182,7 @@ class TestFragment : BaseFragment(
         val answerDialogClass = if(mSubjectParcel!!.classes.size > 1 && mSubjectParcel!!.classes[1].isNotEmpty())
                                         mSubjectParcel!!.classes[1]
                                 else    "iit.uvip.psysuite.core.fragments.AnswerDialogFragment"
-        answerDialogRef = getCompanionObjectMethod(answerDialogClass, "newInstance")
+        answerDialogRef       = getCompanionObjectMethod(answerDialogClass, "newInstance")
 
         bt_next.visibility      = View.INVISIBLE
         bt_abort.visibility     = View.INVISIBLE

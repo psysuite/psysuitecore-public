@@ -384,16 +384,18 @@ class TestATVB(
                 // to align trimodal stimuli, I have to delay the fastest modality by time_shift ms.
                 // Thus I anticipate all main onsets by the same ms
                 val corr_delays = delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0,0, 0)
+                val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
+
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
                     deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
-                }, WN_FIRSTSTIM_INTERVAL - corr_delays.shift)
+                }, shift)
 
                 // this second stimuli onset could be improved. I should calculate here the final corrected delay (sum of trial specs & system delay)
                 // and adjust  corr_delays.shift accordingly. but here few ms between the two stimuli does not change the task
                 mStimuliHandler.postDelayed({
                     deliverUnBalancedStimuli((trial as TrialBindingsUnBalanced))
-                }, (WN_FIRSTSTIM_INTERVAL + currStimulusDuration + curISI - corr_delays.shift))
+                }, shift + curISI)
             }
 
 //            TEST_ATVB_TIME_S_BAL -> {

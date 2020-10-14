@@ -157,6 +157,23 @@
     <string name="tvb_rb3_text">diversi</string>
     <string name="tvb_question">Sono uguali?</string>
 
+    <!-- AVB -->
+    <string name="start_avb">AV Binding (AV-B)</string>
+
+    <string name="avb_subtask_time_single">Singolo Stimolo</string>
+    <string name="avb_subtask_time_single_tag">SSU</string>
+    <string name="avb_subtask_time_double">Doppio Stimolo</string>
+    <string name="avb_subtask_time_double_tag">DSU</string>
+
+    <string name="avb_subtask_time_single_tod">Singolo Stimolo Toddlers</string>
+    <string name="avb_subtask_time_single_tod_tag">SSUT</string>
+    <string name="avb_subtask_time_double_tod">Doppio Stimolo Toddlers</string>
+    <string name="avb_subtask_time_double_tod_tag">DSUT</string>
+
+    <string name="avb_rb1_text">uguali</string>
+    <string name="avb_rb3_text">diversi</string>
+    <string name="avb_question">Sono uguali?</string>
+
     <!-- TID -->
 
     <string name="tid_label">Temporal Interval Discrimination (TID)</string>

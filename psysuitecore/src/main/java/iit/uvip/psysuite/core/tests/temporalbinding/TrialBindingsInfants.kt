@@ -1,10 +1,10 @@
-package iit.uvip.psysuite.core.tests.temporalbinding.atb
+package iit.uvip.psysuite.core.tests.temporalbinding
 
 import iit.uvip.psysuite.core.common.TrialBasic
 
 
 //                     trial_id    0-8      "none"
-class TrialATBInfants(id:Int=-1, type:Int, val tactile_pattern:Int): TrialBasic(id, type, "", ""){
+class TrialBindingsInfants(id:Int=-1, type:Int, val tactile_pattern:Int): TrialBasic(id, type, "", ""){
 
     companion object {
         @JvmStatic val LOG_HEADER           = "id\ttype\n"

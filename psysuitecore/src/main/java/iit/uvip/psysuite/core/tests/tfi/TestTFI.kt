@@ -231,23 +231,29 @@ class TestTFI(ctx: Context,
         mNoise?.start()
 
         val corr_delays = delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0,0, 0)
+
+        val onset1 = WN_PRESTIM_INTERVAL + (trial as TrialTFI).soa - corr_delays.shift
+        val onset2 = WN_PRESTIM_INTERVAL + 2* trial.soa - corr_delays.shift
+        val onset3 = WN_PRESTIM_INTERVAL + 3* trial.soa - corr_delays.shift
+        val onset4 = WN_PRESTIM_INTERVAL + 3* trial.soa - corr_delays.shift + currStimulusDuration + WN_POSTTSTIM_INTERVAL
+
         mStimuliHandler.postDelayed({
             if((trial as TrialTFI).stims[0] > 0)
                 deliverShiftedStimulus(trial.stims[0], corr_delays.a, corr_delays.t, corr_delays.v)
-        }, WN_PRESTIM_INTERVAL + (trial as TrialTFI).soa - corr_delays.shift)
+        }, onset1)
 
         mStimuliHandler.postDelayed({
             if(trial.stims[1] > 0)
                 deliverShiftedStimulus(trial.stims[1], corr_delays.a, corr_delays.t, corr_delays.v)
-        }, WN_PRESTIM_INTERVAL + 2* trial.soa - corr_delays.shift)
+        }, onset2)
 
         mStimuliHandler.postDelayed({
             if(trial.stims[2] > 0)
                 deliverShiftedStimulus(trial.stims[2], corr_delays.a, corr_delays.t, corr_delays.v)
-        }, WN_PRESTIM_INTERVAL + 3* trial.soa - corr_delays.shift)
+        }, onset3)
 
         mStimuliHandler.postDelayed({
             onTrialEnd()
-        }, WN_PRESTIM_INTERVAL + 3* trial.soa - corr_delays.shift + currStimulusDuration + WN_POSTTSTIM_INTERVAL)
+        }, onset4)
     }
 }
