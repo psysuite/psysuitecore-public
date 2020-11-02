@@ -20,17 +20,16 @@ class TestATVB(
     hostfragment: Fragment,
     subjectparcel: SubjectBasicParcel,
     vibrator: VibrationManager?,
-    mImageView: ImageView?,
-    isDebug:Boolean
-) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator, mImageView, isDebug = isDebug) {
+    mImageView: ImageView?
+) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator, mImageView) {
 
     override var LOG_TAG: String = TestATVB::class.java.simpleName
 
     private var tone2sec:String = "t200hz_2s"
 
     private val UNIMODAL_AUDIO_CODE     = STIM_TYPE_A1
-    private val AV_CODE                 = STIM_TYPE_A1V1
-    private val TRIMODAL_AUDIO_CODE     = STIM_TYPE_A1T1V1
+    private val AV_CODE                 = (UNIMODAL_AUDIO_CODE or STIM_TYPE_V1 )
+    private val TRIMODAL_AUDIO_CODE     = (UNIMODAL_AUDIO_CODE or STIM_TYPE_V1 or STIM_TYPE_T1)
 
     private var curISI: Long = 0L
 
@@ -210,25 +209,12 @@ class TestATVB(
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
-    init {
-        when {
-            mImageView == null -> throw ImageViewDefinedException(
-                "IMAGE_VIEW_NOT_DEFINED"
-            )
-            vibrator == null -> throw VibratorNotDefinedException(
-                "VIBRATOR_NOT_DEFINED"
-            )
-            else -> {
-                initTest()
-                mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-                    TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
-                    VisualManager(STIM_TYPE_V1, mImageView, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler))
-            }
-        }
-    }
-
     override fun initTest() {
 
+        when {
+            mImageView == null -> throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
+            vibrator == null -> throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
+        }
         nextTrailModality   = subjectparcel.nextTrailModality
         abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
         showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
@@ -242,13 +228,17 @@ class TestATVB(
         curISI                  = ISI           // 1000L
         currStimulusDuration    = STIM_DURATION // 50L
 
-        when (subjectparcel.type) {
-            TEST_ATVB_TIME_S_UNBAL,
-            TEST_ATVB_TIME_D_UNBAL  ->  createTrialsTimeUnbalanced()
+        if(!subjectparcel.isDebug) {
+            when (subjectparcel.type) {
+                TEST_ATVB_TIME_S_UNBAL,
+                TEST_ATVB_TIME_D_UNBAL -> createTrialsTimeUnbalanced()
 
-            TEST_ATVB_TIME_S_BAL,
-            TEST_ATVB_TIME_D_BAL    ->  createTrialsTimeBalanced()
+                TEST_ATVB_TIME_S_BAL,
+                TEST_ATVB_TIME_D_BAL -> createTrialsTimeBalanced()
+            }
         }
+        else    createTrialsDebug()
+
         when (subjectparcel.type) {
             TEST_ATVB_TIME_S_UNBAL,
             TEST_ATVB_TIME_S_BAL   -> {
@@ -259,6 +249,7 @@ class TestATVB(
                 mQuestion       = allQuestions[1]
             }
         }
+
 
         if (subjectparcel.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
@@ -274,6 +265,12 @@ class TestATVB(
             if (it.id == subjectparcel.type) mTestLabel = it.label
         }
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
+
+        mStimuliManager = StimuliManager(AudioManager(UNIMODAL_AUDIO_CODE, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+            TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
+            VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler))
+
+        testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
 
     // =============================================================================================================================
@@ -300,6 +297,21 @@ class TestATVB(
             mTrials.addAll(trials)
         }
         setTrialsID()   // set id according to their order
+    }
+
+    private fun createTrialsDebug(){
+        var cnt = -1
+        mTrials = mutableListOf()
+        for (i in 0 until 100000) {
+
+            val trials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
+            for (j in 0 until 2) {
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0, validAnswers[0]))
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, 100, validAnswers[0]))
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, 100, validAnswers[0]))
+            }
+            mTrials.addAll(trials)
+        }
     }
 
     // (72 + 6) * 4
@@ -421,7 +433,7 @@ class TestATVB(
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced){
 
         val corr_delays:CorrectedStimuliDelay = when(trial.type){
-            TYPE_ATV    ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0,0, -1)
+            TYPE_ATV    ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0,0, 0)
             TYPE_A_TV   ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0, trial.delay, trial.delay)
             TYPE_TV_A   ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, trial.delay,0,0)
             TYPE_T_AV   ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, trial.delay,0, trial.delay)

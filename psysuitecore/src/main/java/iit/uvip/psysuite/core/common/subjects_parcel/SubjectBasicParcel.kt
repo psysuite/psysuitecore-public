@@ -35,7 +35,8 @@ open class SubjectBasicParcel(
     open var whitenoise: Int = TestBasic.TEST_WNOISE_CHOOSE_ON,
     open var vercode: Int = -1,
     open var showResult: Boolean = false,
-    open var population: Int = TestBasic.POPULATION_TD
+    open var population: Int = TestBasic.POPULATION_TD,
+    open var isDebug:Boolean = false
 ) : Parcelable {
 
     @IgnoredOnParcel

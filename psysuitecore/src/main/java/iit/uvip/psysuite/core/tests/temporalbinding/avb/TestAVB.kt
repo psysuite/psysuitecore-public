@@ -21,9 +21,8 @@ class TestAVB(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
               subjectparcel: SubjectBasicParcel,
-              mImageView: ImageView?,
-              isDebug:Boolean
-) : TestBasic(ctx, activity, hostfragment, subjectparcel, mImageView = mImageView, isDebug = isDebug)
+              mImageView: ImageView?
+) : TestBasic(ctx, activity, hostfragment, subjectparcel, mImageView = mImageView)
 {
     override var LOG_TAG:String = TestAVB::class.java.simpleName
 
@@ -121,20 +120,9 @@ class TestAVB(ctx: Context,
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
-    init{
-        when {
-            mImageView == null  -> throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
-            else -> {
-                initTest()
-                mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-                                                null,
-                                                 VisualManager(STIM_TYPE_V1, mImageView, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler)
-                )
-            }
-        }
-    }
-
     override fun initTest() {
+
+        if(mImageView == null) throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
 
         nextTrailModality   = subjectparcel.nextTrailModality
         abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
@@ -171,25 +159,31 @@ class TestAVB(ctx: Context,
             }
         }
 
-        // create trials/summary
-        when (subjectparcel.type) {
-            TEST_AVB_TIME_DOUBLESTIM_TOD,
-            TEST_AVB_TIME_DOUBLESTIM ->{
-                createTrialsTimeDouble()
-                createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
-                initSummary()
+        if(!subjectparcel.isDebug) {
+            // create trials/summary
+            when (subjectparcel.type) {
+                TEST_AVB_TIME_DOUBLESTIM_TOD,
+                TEST_AVB_TIME_DOUBLESTIM ->{
+                    createTrialsTimeDouble()
+                    createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+                    initSummary()
 
+                }
+                TEST_AVB_TIME_SINGLESTIM_TOD,
+                TEST_AVB_TIME_SINGLESTIM       -> {
+                    createTrialsTimeSingle()
+                    createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+                    initSummary()
+                }
+                TEST_AVB_TIME_INF   -> {
+                    createTrialsTimeInfants()
+                    createResultFile(subjectparcel, TrialBindingsInfants.LOG_HEADER)
+                }
             }
-            TEST_AVB_TIME_SINGLESTIM_TOD,
-            TEST_AVB_TIME_SINGLESTIM       -> {
-                createTrialsTimeSingle()
-                createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
-                initSummary()
-            }
-            TEST_AVB_TIME_INF   -> {
-                createTrialsTimeInfants()
-                createResultFile(subjectparcel, TrialBindingsInfants.LOG_HEADER)
-            }
+        }
+        else{
+            createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+            createTrialsDebug()
         }
 
         nTrials     = mTrials.size
@@ -204,6 +198,12 @@ class TestAVB(ctx: Context,
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         if (subjectparcel.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
+
+        mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+            null,
+            VisualManager(STIM_TYPE_V1, mImageView, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler))
+
+        testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
 
     // =============================================================================================================================
@@ -277,6 +277,20 @@ class TestAVB(ctx: Context,
         setTrialsID()   // set id according to their order
     }
 
+    private fun createTrialsDebug(){
+        var cnt = -1
+        mTrials = mutableListOf()
+        for (i in 0 until 100000) {
+
+            val trials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
+            for (j in 0 until 2) {
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_AV, 0, validAnswers[0]))
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_V, 50, validAnswers[0]))
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_A, 50, validAnswers[0]))
+            }
+            mTrials.addAll(trials)
+        }
+    }
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
@@ -399,7 +413,7 @@ class TestAVB(ctx: Context,
 
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced, onEnd:() -> Unit = {}){
 
-        var type:Int = 0
+        var type = 0
         val corr_delays:CorrectedStimuliDelay = when(trial.type) {
             TYPE_AV     -> {
                 type = mStimuliManager.typeAV

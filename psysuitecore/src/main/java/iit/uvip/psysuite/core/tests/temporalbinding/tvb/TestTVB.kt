@@ -20,9 +20,8 @@ class TestTVB(ctx: Context,
               hostfragment: Fragment,
               subjectparcel: SubjectBasicParcel,
               vibrator: VibrationManager?,
-              mImageView: ImageView?,
-              isDebug:Boolean
-) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator, isDebug = isDebug)
+              mImageView: ImageView?
+) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator, mImageView)
 {
     override var LOG_TAG:String = TestTVB::class.java.simpleName
 
@@ -135,25 +134,12 @@ class TestTVB(ctx: Context,
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
-    init{
-        when {
-            mImageView == null -> throw ImageViewDefinedException(
-                "IMAGE_VIEW_NOT_DEFINED"
-            )
-            vibrator == null -> throw VibratorNotDefinedException(
-                "VIBRATOR_NOT_DEFINED"
-            )
-            else -> {
-                initTest()
-                mStimuliManager = StimuliManager(null,
-                    TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
-                    VisualManager(STIM_TYPE_V1, mImageView, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler))
-            }
-        }
-    }
-
     override fun initTest() {
 
+        when {
+            mImageView == null -> throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
+            vibrator == null -> throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
+        }
         nextTrailModality   = subjectparcel.nextTrailModality
         abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
         showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
@@ -189,28 +175,33 @@ class TestTVB(ctx: Context,
             }
         }
 
-        // create trials/summary
-        when (subjectparcel.type) {
-            TEST_TVB_TIME_DOUBLESTIM_TOD,
-            TEST_TVB_TIME_DOUBLESTIM ->{
-                createTrialsTimeDouble()
-                createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
-                initSummary()
+        if(!subjectparcel.isDebug) {
+            // create trials/summary
+            when (subjectparcel.type) {
+                TEST_TVB_TIME_DOUBLESTIM_TOD,
+                TEST_TVB_TIME_DOUBLESTIM ->{
+                    createTrialsTimeDouble()
+                    createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+                    initSummary()
 
-            }
-            TEST_TVB_TIME_SINGLESTIM_TOD,
-            TEST_TVB_TIME_SINGLESTIM       -> {
-                createTrialsTimeSingle()
-                createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
-                initSummary()
-            }
-            TEST_TVB_TIME_INF   -> {
-                initTimeArrays()
-                createTrialsTimeInfants()
-                createResultFile(subjectparcel, TrialBindingsInfants.LOG_HEADER)
+                }
+                TEST_TVB_TIME_SINGLESTIM_TOD,
+                TEST_TVB_TIME_SINGLESTIM       -> {
+                    createTrialsTimeSingle()
+                    createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+                    initSummary()
+                }
+                TEST_TVB_TIME_INF   -> {
+                    initTimeArrays()
+                    createTrialsTimeInfants()
+                    createResultFile(subjectparcel, TrialBindingsInfants.LOG_HEADER)
+                }
             }
         }
-
+        else{
+            createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+            createTrialsDebug()
+        }
         nTrials     = mTrials.size
         currTrial   = 0
 
@@ -223,6 +214,12 @@ class TestTVB(ctx: Context,
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         if (subjectparcel.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
+
+        mStimuliManager = StimuliManager(null,
+            TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
+            VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler))
+
+        testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
     //              _   _   _   _   _
     // 9 segments  | |_| |_| |_| |_| |
@@ -315,6 +312,20 @@ class TestTVB(ctx: Context,
         setTrialsID()   // set id according to their order
     }
 
+    private fun createTrialsDebug(){
+        var cnt = -1
+        mTrials = mutableListOf()
+        for (i in 0 until 100000) {
+
+            val trials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
+            for (j in 0 until 2) {
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV, 0, validAnswers[0]))
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_T_V, 50, validAnswers[0]))
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_T, 50, validAnswers[0]))
+            }
+            mTrials.addAll(trials)
+        }
+    }
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
@@ -407,7 +418,7 @@ class TestTVB(ctx: Context,
 
         // assuming vibro is faster than visual, I delay the former
         var V_delay     = delaysAligner.getStimuliDelay(BIMODAL_CODE).v - delaysAligner.getStimuliDelay(BIMODAL_CODE).t
-        var timings = vibration_trains_timings[tactile_pattern]
+        val timings = vibration_trains_timings[tactile_pattern]
 
         if(V_delay > 0) {
             vibration_trains_timings[tactile_pattern].mapIndexed { index, it ->
@@ -487,7 +498,7 @@ class TestTVB(ctx: Context,
 
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced){
 
-        var type:Int = 0
+        var type = 0
         val corr_delays:CorrectedStimuliDelay = when(trial.type) {
             TYPE_TV     -> {
                 type = mStimuliManager.typeTV

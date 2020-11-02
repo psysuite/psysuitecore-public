@@ -264,6 +264,7 @@
     <string-array name="sample_audio_types">
         <item>tone</item>
         <item>resource</item>
+        <item>assets</item>
     </string-array>
 
     <string-array name="sample_visual_types">
@@ -284,6 +285,12 @@
         <item>t200hz_1s</item>
         <item>t200hz_2s</item>
         <item>wnoise_20s</item>
+    </string-array>
+
+    <string-array name="sample_audioassets_array">
+        <item>t1000hz_10ms.wav</item>
+        <item>t1000hz_30ms.wav</item>
+        <item>t200hz_1s.wav</item>
     </string-array>
 
 </resources>

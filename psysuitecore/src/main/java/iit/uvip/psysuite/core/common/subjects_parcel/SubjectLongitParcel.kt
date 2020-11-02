@@ -22,10 +22,11 @@ open class SubjectLongitParcel(
     override var vercode: Int = -1,
     override var showResult: Boolean = false,
     override var population: Int = TestBasic.POPULATION_TD,
+    override var isDebug: Boolean = false,
 
     override var spinner_sel: Int = -1,
     override var spinner_data_resource: Int = -1
-) : SubjectBasicListParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, vercode, showResult, population, spinner_sel, "session", spinner_data_resource)
+) : SubjectBasicListParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, vercode, showResult, population, isDebug, spinner_sel, "session", spinner_data_resource)
 {
     var session: Int
         get() = spinner_sel

@@ -12,10 +12,9 @@ abstract class StimulusManager(open val type:Int, open val amplitude:Any, open v
     override fun toString():String{
         return "${StimulusManager::class.java.simpleName}, ampl=$amplitude, duration=$duration"
     }
-    abstract fun deliver(dur:Any?=null)
+    abstract fun deliver(dur:Any?=null, id:Int=0)
     abstract fun stop()
     abstract fun getHandler():Any?
-    abstract fun isValid():Boolean
 }
 
 // used when dealing with very short sounds (50-100ms) that on their first playback are not audible

@@ -27,9 +27,8 @@ class TestTID(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
               subjectparcel: SubjectTIDParcel,
-              vibrator: VibrationManager?,
-              isDebug:Boolean
-) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator, isDebug = isDebug)
+              vibrator: VibrationManager?
+) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator)
 {
     override var LOG_TAG:String = TestTID::class.java.simpleName
 
@@ -109,19 +108,9 @@ class TestTID(ctx: Context,
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
-    init{
-        if(vibrator == null)    throw VibratorNotDefinedException(
-            "VIBRATOR_NOT_DEFINED"
-        )
-        else{
-            initTest()
-            mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-                                             TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
-                                null)
-        }
-    }
-
     override fun initTest(){
+
+        if(vibrator == null)    throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
 
         nextTrailModality   = subjectparcel.nextTrailModality
         abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
@@ -153,12 +142,15 @@ class TestTID(ctx: Context,
         mQuest      = QuestObject()
         currTrial   = 0
 
-        // set question & create mTrials list
-        if(isUsingQuest){
+        if(!subjectparcel.isDebug){
+            // set question & create mTrials list
+            if(isUsingQuest){
                 createQuestTrials(currStimulusDuration)
                 setTrialNonRefDelta(0, mQuest.getFirstValue())
+            }
+            else    createConstantTrials(currStimulusDuration)
         }
-        else    createConstantTrials(currStimulusDuration)
+        else                        createTrialsDebug()
 
         nTrials     = mTrials.size
 
@@ -171,6 +163,11 @@ class TestTID(ctx: Context,
         createResultFile(subjectparcel, TrialTID.LOG_HEADER)
 
         mNoise = AudioManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
+
+        mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+            TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),null)
+
+        testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
 
     // =============================================================================================================================
@@ -233,6 +230,20 @@ class TestTID(ctx: Context,
         mTrials.mapIndexed { index, trial -> trial.id = (index + 1) }
     }
 
+    private fun createTrialsDebug(){
+        val duration = currStimulusDuration
+
+        for(b in 0 until 10000){
+            mTrials.add(TrialTID(-1, TEST_TID_SHORT_AUDIO, b,  (subjectparcel as SubjectTIDParcel).group, subjectparcel.session,  REF_STIM_DUR_SHORT.toInt(),         100, true, duration.toInt(), validAnswers))
+            mTrials.add(TrialTID(-1, TEST_TID_SHORT_TACTILE, b,
+                subjectparcel.group, subjectparcel.session,  REF_STIM_DUR_SHORT.toInt(),         100, true, duration.toInt(), validAnswers))
+
+            mTrials.add(TrialTID(-1, TEST_TID_SHORT_AUDIO, b,  subjectparcel.group, subjectparcel.session,  REF_STIM_DUR_LONG.toInt(),         2000, true, duration.toInt(), validAnswers))
+            mTrials.add(TrialTID(-1, TEST_TID_SHORT_TACTILE, b,
+                subjectparcel.group, subjectparcel.session,  REF_STIM_DUR_LONG.toInt(),         2000, true, duration.toInt(), validAnswers))
+        }
+        setTrialsID()   // set trial id according to its order in the list
+    }
     // =============================================================================================================================
     // MANAGE TRIALS END
     // =============================================================================================================================

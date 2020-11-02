@@ -17,9 +17,8 @@ import org.albaspazio.core.ui.showToast
 class TestMMD(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
-              data: SubjectBasicParcel,
-              isDebug:Boolean
-) : TestBasic(ctx, activity, hostfragment, data, isDebug = isDebug) {
+              data: SubjectBasicParcel
+) : TestBasic(ctx, activity, hostfragment, data) {
 
     override var LOG_TAG: String = TestMMD::class.java.simpleName
 
@@ -40,17 +39,13 @@ class TestMMD(ctx: Context,
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
-    init{
-        initTest()
-        mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1,  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx), null, null)
-    }
-
     override fun initTest(){
         // set question & create mTrials list
         validAnswers = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
         mQuestion = ctx.resources.getString(R.string.mmeters_question_text)
-        createTrials()
 
+        if(!subjectparcel.isDebug)  createTrials()
+        else                        createTrialsDebug()
 
         nTrials     = mTrials.size
         currTrial   = 0
@@ -62,6 +57,9 @@ class TestMMD(ctx: Context,
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         createResultFile(subjectparcel, TrialMMD.LOG_HEADER)
+
+        mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1,  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx), null, null)
+        testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
 
     // =============================================================================================================================
@@ -77,6 +75,14 @@ class TestMMD(ctx: Context,
         // set trial id according to its order in the list
         for(i in 0 until mTrials.size)
             mTrials[i].id = (i + 1)
+    }
+
+    private fun createTrialsDebug(){
+        for(i in 1 until 10000 ){
+            mTrials.add(TrialMMD(-1, 0, "same", validAnswers[0], i))
+            mTrials.add(TrialMMD(-1, 1, "diff", validAnswers[1], i))
+        }
+        setTrialsID()   // set trial id according to its order in the list
     }
 
     // =============================================================================================================================

@@ -21,9 +21,8 @@ class TestATB(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
               subjectparcel: SubjectBasicParcel,
-              vibrator: VibrationManager?,
-              isDebug:Boolean
-) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator, isDebug = isDebug)
+              vibrator: VibrationManager?
+) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator)
 {
     override var LOG_TAG:String = TestATB::class.java.simpleName
 
@@ -138,19 +137,9 @@ class TestATB(ctx: Context,
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
-    init{
-        if(vibrator == null)    throw VibratorNotDefinedException(
-            "VIBRATOR_NOT_DEFINED"
-        )
-        else{
-            initTest()
-            mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-                                             TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
-                                            null)
-        }
-    }
-
     override fun initTest() {
+
+        if(vibrator == null)    throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
 
         nextTrailModality   = subjectparcel.nextTrailModality
         abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
@@ -187,27 +176,34 @@ class TestATB(ctx: Context,
             }
         }
 
-        // create trials/summary
-        when (subjectparcel.type) {
-            TEST_ATB_TIME_DOUBLESTIM_TOD,
-            TEST_ATB_TIME_DOUBLESTIM ->{
-                createTrialsTimeDouble()
-                createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
-                initSummary()
+        if(!subjectparcel.isDebug) {
+            // create trials/summary
+            when (subjectparcel.type) {
+                TEST_ATB_TIME_DOUBLESTIM_TOD,
+                TEST_ATB_TIME_DOUBLESTIM ->{
+                    createTrialsTimeDouble()
+                    createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+                    initSummary()
 
-            }
-            TEST_ATB_TIME_SINGLESTIM_TOD,
-            TEST_ATB_TIME_SINGLESTIM       -> {
-                createTrialsTimeSingle()
-                createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
-                initSummary()
-            }
-            TEST_ATB_TIME_INF   -> {
-                initTimeArrays()
-                createTrialsTimeInfants()
-                createResultFile(subjectparcel, TrialBindingsInfants.LOG_HEADER)
+                }
+                TEST_ATB_TIME_SINGLESTIM_TOD,
+                TEST_ATB_TIME_SINGLESTIM       -> {
+                    createTrialsTimeSingle()
+                    createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+                    initSummary()
+                }
+                TEST_ATB_TIME_INF   -> {
+                    initTimeArrays()
+                    createTrialsTimeInfants()
+                    createResultFile(subjectparcel, TrialBindingsInfants.LOG_HEADER)
+                }
             }
         }
+        else{
+            createTrialsDebug()
+            createResultFile(subjectparcel, TrialBindingsUnBalanced.LOG_HEADER)
+        }
+
 
         nTrials     = mTrials.size
         currTrial   = 0
@@ -221,6 +217,13 @@ class TestATB(ctx: Context,
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         if (subjectparcel.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
+
+        mStimuliManager = StimuliManager(
+                AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+                TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
+                null)
+
+        testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
     //              _   _   _   _   _
     // 9 segments  | |_| |_| |_| |_| |
@@ -316,6 +319,20 @@ class TestATB(ctx: Context,
         setTrialsID()   // set id according to their order
     }
 
+    private fun createTrialsDebug(){
+        var cnt = -1
+        mTrials = mutableListOf()
+        for (i in 0 until 100000) {
+
+            val trials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
+            for (j in 0 until 2) {
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_AT, 0, validAnswers[0]))
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_T, 50, validAnswers[0]))
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_T_A, 50, validAnswers[0]))
+            }
+            mTrials.addAll(trials)
+        }
+    }
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
@@ -409,7 +426,7 @@ class TestATB(ctx: Context,
 
         // assuming audio is faster than vibro, I delay the former
         var A_delay     = delaysAligner.getStimuliDelay(BIMODAL_CODE).t - delaysAligner.getStimuliDelay(BIMODAL_CODE).a
-        var timings     = vibration_trains_timings[tactile_pattern]
+        val timings     = vibration_trains_timings[tactile_pattern]
 
         if(A_delay < 0L){  // audio delayed wrt vibro: delay vibro timings and preserve audio onsets
             vibration_trains_timings[tactile_pattern].mapIndexed { index, it -> timings[index] = it - A_delay }
@@ -485,7 +502,7 @@ class TestATB(ctx: Context,
 
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced){
 
-        var type:Int = 0
+        var type = 0
         val corr_delays:CorrectedStimuliDelay = when(trial.type) {
             TYPE_AT     -> {
                 type = mStimuliManager.typeAT

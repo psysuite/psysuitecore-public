@@ -51,6 +51,7 @@ class AnswerDialogFragmentTFI: DialogFragment()
         val str_trial   = "trial " +  (requireArguments().getInt("trial_id", 0) + 1).toString() + " of " + requireArguments().getInt("tot_trials", 0)
         val question    = requireArguments().getString("question", "Enter Name")
         val debug_info  = requireArguments().getString("debug")
+        isDebug         = requireArguments().getBoolean("isDebug", false)
 
         dialog?.setTitle(title)
 

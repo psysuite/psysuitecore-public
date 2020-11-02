@@ -29,6 +29,7 @@ open class SubjectSampleParcel(
     override var vercode: Int = -1,
     override var showResult: Boolean = false,
     override var population: Int = TestBasic.POPULATION_TD,
+    override var isDebug: Boolean = false,
 
     var stim_sources:Int = 0,       // according to modalities selection
 
@@ -49,7 +50,7 @@ open class SubjectSampleParcel(
     var repetitions:Int = 1,
     var iti:Long = 1000
 
-) : SubjectBasicParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, vercode, showResult, population)
+) : SubjectBasicParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, vercode, showResult, population, isDebug)
 
 
 

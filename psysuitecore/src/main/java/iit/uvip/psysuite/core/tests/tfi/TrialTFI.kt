@@ -37,17 +37,18 @@ class TrialTFI(id:Int=-1, type:Int, label:String, corr_answer:String, val soa:Lo
         return "${super.debugInfo()}, soa=$soa"
     }
 
+    // e.g. codes = [2,2,2]
     private fun processModalities(codes:List<String>){
         // e.g.   1,2,2  =>  stims[V2T1, A1, V2T1]
         //        0,1,2  =>  stims[V2, T1, V2]
         //        1,1,2  =>  stims[V2, A1T1, V2]
 
-        //                 a/t/v      never, only second, first & third
+        //              0:a, 1:t, 2:v      never, only second, first & third
         codes.mapIndexed { modality, occurrence ->
             when(occurrence.toInt()){
                 1 -> {
                     when(modality){
-                        0 ->    stims[1] = stims[1] or TestBasic.STIM_TYPE_A1
+                        0 ->    stims[1] = stims[1] or TestTFI.UNIMODAL_AUDIO_CODE
                         1 ->    stims[1] = stims[1] or TestBasic.STIM_TYPE_T1
                         2 ->    stims[1] = stims[1] or TestBasic.STIM_TYPE_V2
                     }
@@ -55,8 +56,8 @@ class TrialTFI(id:Int=-1, type:Int, label:String, corr_answer:String, val soa:Lo
                 2 -> {
                     when(modality){
                         0 ->    {
-                            stims[0] = stims[0] or TestBasic.STIM_TYPE_A1
-                            stims[2] = stims[2] or TestBasic.STIM_TYPE_A1
+                            stims[0] = stims[0] or TestTFI.UNIMODAL_AUDIO_CODE
+                            stims[2] = stims[2] or TestTFI.UNIMODAL_AUDIO_CODE
                         }
                         1 ->    {
                             stims[0] = stims[0] or TestBasic.STIM_TYPE_T1
@@ -69,8 +70,10 @@ class TrialTFI(id:Int=-1, type:Int, label:String, corr_answer:String, val soa:Lo
                     }
                 }
             }
-
         }
+
+
+
 //        when(codes[0].toInt()){
 //            1 ->    stims[1] = A
 //            2 -> {

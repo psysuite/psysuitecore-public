@@ -5,7 +5,6 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.os.Environment
 import android.os.Handler
-import android.util.Log
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.jakewharton.rxrelay2.PublishRelay
@@ -27,8 +26,7 @@ abstract class TestBasic(protected val ctx: Context,
                          protected val hostfragment: Fragment,
                          protected val subjectparcel: SubjectBasicParcel,
                          protected val vibrator: VibrationManager? = null,
-                         protected val mImageView: ImageView? = null,
-                         protected val isDebug:Boolean = false
+                         protected val mImageView: ImageView? = null
 ) {
     open var LOG_TAG:String = TestBasic::class.java.simpleName
 
@@ -65,11 +63,12 @@ abstract class TestBasic(protected val ctx: Context,
         //-----------------------------------------------------------------------------------------
         //
         //-----------------------------------------------------------------------------------------
-        @JvmStatic val EVENT_STIMULI_START              = 200   // unused
-        @JvmStatic val EVENT_STIMULI_END                = 201   // unused
+        @JvmStatic val EVENT_TEST_SETUP_COMPLETED       = 200
 
-        @JvmStatic val EVENT_GIVE_ANSWER                = 202
-        @JvmStatic val EVENT_GIVE_VOCAL_ANSWER          = 203
+        @JvmStatic val EVENT_STIMULI_START              = 201   // unused
+        @JvmStatic val EVENT_STIMULI_END                = 202   // unused
+        @JvmStatic val EVENT_GIVE_ANSWER                = 203
+        @JvmStatic val EVENT_GIVE_VOCAL_ANSWER          = 204
         @JvmStatic val EVENT_ANSWER_GIVEN               = 205
         @JvmStatic val EVENT_TRIAL_REPEAT               = 206
         @JvmStatic val EVENT_TRIAL_ABORT                = 207
@@ -132,6 +131,7 @@ abstract class TestBasic(protected val ctx: Context,
         // A1: tone, A2:resource, V1: view made visible/invisible, V2: imageview with different color frame (one as background), T1: single, T2:sequence
         @JvmStatic val STIM_TYPE_A1                 = 1     //  000 000 001
         @JvmStatic val STIM_TYPE_A2                 = 2     //  000 000 010
+        @JvmStatic val STIM_TYPE_A3                 = 4     //  000 000 100
         @JvmStatic val STIM_TYPE_T1                 = 8     //  000 001 000
         @JvmStatic val STIM_TYPE_T2                 = 16    //  000 010 000
         @JvmStatic val STIM_TYPE_V1                 = 64    //  001 000 000
@@ -144,7 +144,11 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val STIM_TYPE_A2T1               = 10    //  000 001 010
         @JvmStatic val STIM_TYPE_A2T2               = 18    //  000 010 010
         @JvmStatic val STIM_TYPE_A2V1               = 66    //  001 000 010
-        @JvmStatic val STIM_TYPE_A2V2               = 130   //  010 000 010
+        @JvmStatic val STIM_TYPE_A2V2               = 131   //  010 000 011
+        @JvmStatic val STIM_TYPE_A3T1               = 12    //  000 001 100
+        @JvmStatic val STIM_TYPE_A3T2               = 20    //  000 010 100
+        @JvmStatic val STIM_TYPE_A3V1               = 68    //  001 000 100
+        @JvmStatic val STIM_TYPE_A3V2               = 131   //  010 000 100
         @JvmStatic val STIM_TYPE_T1V1               = 72    //  001 001 000
         @JvmStatic val STIM_TYPE_T2V1               = 80    //  001 010 000
         @JvmStatic val STIM_TYPE_T1V2               = 136   //  010 001 000
@@ -158,6 +162,10 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val STIM_TYPE_A2T2V1             = 82    //  001 010 010
         @JvmStatic val STIM_TYPE_A2T1V2             = 138   //  010 001 010
         @JvmStatic val STIM_TYPE_A2T2V2             = 146   //  010 010 010
+        @JvmStatic val STIM_TYPE_A3T1V1             = 76    //  001 001 100
+        @JvmStatic val STIM_TYPE_A3T2V1             = 84    //  001 010 100
+        @JvmStatic val STIM_TYPE_A3T1V2             = 140   //  010 001 100
+        @JvmStatic val STIM_TYPE_A3T2V2             = 148   //  010 010 100
         //-----------------------------------------------------------------------------------------
 
         @JvmStatic val TEST_ABORT                       = 230
@@ -183,16 +191,16 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val POPULATION_ADHD                  = 30
 
         @JvmStatic val populations:List<SpinnerData> = listOf(
-            SpinnerData("TD", TestBasic.POPULATION_TD),
-            SpinnerData("CB", TestBasic.POPULATION_CB),
-            SpinnerData("LB", TestBasic.POPULATION_LB),
-            SpinnerData("CLV", TestBasic.POPULATION_CLV),
-            SpinnerData("LLV", TestBasic.POPULATION_LLV),
-            SpinnerData("CD", TestBasic.POPULATION_CD),
-            SpinnerData("LD", TestBasic.POPULATION_LD),
-            SpinnerData("CAI", TestBasic.POPULATION_CAI),
-            SpinnerData("LAI", TestBasic.POPULATION_LAI),
-            SpinnerData("ADHD", TestBasic.POPULATION_ADHD))
+            SpinnerData("TD",   POPULATION_TD),
+            SpinnerData("CB",   POPULATION_CB),
+            SpinnerData("LB",   POPULATION_LB),
+            SpinnerData("CLV",  POPULATION_CLV),
+            SpinnerData("LLV",  POPULATION_LLV),
+            SpinnerData("CD",   POPULATION_CD),
+            SpinnerData("LD",   POPULATION_LD),
+            SpinnerData("CAI",  POPULATION_CAI),
+            SpinnerData("LAI",  POPULATION_LAI),
+            SpinnerData("ADHD", POPULATION_ADHD))
 
         //-----------------------------------------------------------------------------------------
 
@@ -201,6 +209,7 @@ abstract class TestBasic(protected val ctx: Context,
             val a = when {
                 source and STIM_TYPE_A1 > 0 -> STIM_TYPE_A1
                 source and STIM_TYPE_A2 > 0 -> STIM_TYPE_A2
+                source and STIM_TYPE_A3 > 0 -> STIM_TYPE_A3
                 else -> -1
             }
 
@@ -268,7 +277,7 @@ abstract class TestBasic(protected val ctx: Context,
     protected var ITI:Long                      = 0             // default ITI
 
     // proxy for methods to be implemented in each subclass
-    protected abstract fun initTest()
+    abstract fun initTest()
     abstract fun onTrialEnd()
     abstract fun show(trial:TrialBasic, isRepeat:Boolean=false)
 
@@ -281,12 +290,12 @@ abstract class TestBasic(protected val ctx: Context,
         return  try {
                     adjustBlocks(subjectparcel.block)     // set currTrial, mCurrBlock, mTrial
 
-                    if(!mStimuliManager.isValid() || !this::mTrial.isInitialized){
+                    if(!mStimuliManager.isValid || !this::mTrial.isInitialized){
                         onCriticalError(ctx.resources.getString(R.string.test_failure), true)
                         return false
                     }
 
-                    if(isDebug) testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))    // send debug info
+                    if(subjectparcel.isDebug) testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))    // send debug info
 
                     show(mTrial)
                     true
@@ -333,7 +342,7 @@ abstract class TestBasic(protected val ctx: Context,
         return  try {
                     mTrial = getNewTrial()  // it also updates currTrial
 
-                    if(isDebug) testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))    // send debug info
+                    if(subjectparcel.isDebug) testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))    // send debug info
 
                     show(mTrial)
                     currTrial
@@ -437,32 +446,28 @@ abstract class TestBasic(protected val ctx: Context,
     // STIMULUS DELIVERY
     // =============================================================================================================================
     // ---------------------------------------------------------------------------------------------
-    // PAIRS
+    // PAIRS  (deliverAlignedStimuliPair -> deliverShiftedStimuliPair -> 2 deliverShiftedStimulus)
     // ---------------------------------------------------------------------------------------------
     // deliver a pair of identical aligned stimuli, separated by "isi" ms.
     // calculate delay correction and call the following function
     protected fun deliverAlignedStimuliPair(isi:Long, type:Int, stimuliManager: StimuliManager? = null, onEnd:()-> Unit = {}) {
         val corr_delays = delaysAligner.arrangeDelays(type, 0, 0,0) // here type filters (can set to -1) corr_delays values
-        deliverShiftedStimuliPair(isi, type, corr_delays.a, corr_delays.t, corr_delays.v, corr_delays.shift, stimuliManager, onEnd)
+        deliverShiftedStimuliPair(isi, type, corr_delays.a, corr_delays.t, corr_delays.v, stimuliManager){ onEnd()}
     }
 
     private fun deliverShiftedStimuliPair(isi:Long, type:Int,
-                                          a:Long, t:Long, v:Long, shift:Long,
+                                          a:Long, t:Long, v:Long,
                                           stimuliManager: StimuliManager? = null,
                                           onEnd:() -> Unit = {}){
-        // use given manager or default one
-        val am              = mStimuliManager.getValidAudioManager(stimuliManager?.mAudioManager)
-        val tm              = mStimuliManager.getValidTactileManager(stimuliManager?.mTactileManager)
-        val vm              = mStimuliManager.getValidVisualManager(stimuliManager?.mVisualManager)
-        val meanduration    = mStimuliManager.getDuration(am, tm, vm)?.third ?: currStimulusDuration
 
         deliverShiftedStimulus(type, a, t, v, stimuliManager)
         mStimuliHandler.postDelayed({
             deliverShiftedStimulus(type, a, t, v, stimuliManager){ onEnd() }
-        }, (meanduration + isi + shift))
+        }, isi)
     }
     // ---------------------------------------------------------------------------------------------
-    // SHIFTED STIMULUS (deliver unimodal stimuli at different latencies, receive already corrected shifting)
+    // SHIFTED STIMULUS (call 1-to-3 deliverUnimodalStimulus at different latencies, receive already corrected shifting)
+    // the only method that call
     // ---------------------------------------------------------------------------------------------
     protected fun deliverShiftedStimulus(type:Int,
                                          a:Long, t:Long, v:Long,
@@ -474,55 +479,53 @@ abstract class TestBasic(protected val ctx: Context,
         val ttype           = unimodal_types[1]
         val vtype           = unimodal_types[2]
 
-        val offset          = 0L
         val durlist         = mutableListOf<Long>()
+
+//        Log.d("TestBasic", "---------A=$a, T=$t, V=$v")
+//        val onsetDate           = Date()
 
         try{
             val am: AudioManager?
             if(a > -1 && atype > -1) {
                 am = mStimuliManager.getValidAudioManager(stimuliManager?.mAudioManager) ?: throw Exception("error in deliverShiftedStimulus: a valid audio manager was not found")
-                if(am.type != atype){
-                    showAlert(activity, ctx.resources.getString(R.string.error),  ctx.resources.getString(R.string.error_audiomanager))
-                    return
-                }
+                if(am.type != atype)    throw Exception(ctx.resources.getString(R.string.error_audiomanager))
+
                 durlist.add(am.duration + a)
                 mStimuliHandler.postDelayed({
-                    Log.d("TestBasic", "audio: type=${am.type}")
+//                    val elapsedms = getTimeDifference(onsetDate)
+//                    Log.d("TestBasic", "audio: type=${am.type}, onset=$a, elapsed=$elapsedms")
                     deliverUnimodalStimulus(am)
-                }, a + offset)
+                }, a)
             }
 
             val tm: TactileManager?
             if(t > -1 && ttype > -1) {
                 tm = mStimuliManager.getValidTactileManager(stimuliManager?.mTactileManager) ?: throw Exception("error in deliverShiftedStimulus: a valid tactile manager was not found")
+                if(tm.type != ttype)    throw Exception(ctx.resources.getString(R.string.error_tactilemanager))
 
-                if(tm.type != ttype){
-                    showAlert(activity, ctx.resources.getString(R.string.error),  ctx.resources.getString(R.string.error_tactilemanager))
-                    return
-                }
                 durlist.add(tm.duration + t)
                 mStimuliHandler.postDelayed({
-                    Log.d("TestBasic", "tactile: type=${tm.type}")
+//                    val elapsedms = getTimeDifference(onsetDate)
+//                    Log.d("TestBasic", "tactile: type=${tm.type}, onset=$t, elapsed=$elapsedms")
                     deliverUnimodalStimulus(tm)
-                }, t + offset)
+                }, t)
             }
 
             val vm: VisualManager?
             if(v > -1 && vtype > -1) {
                 vm = mStimuliManager.getValidVisualManager(stimuliManager?.mVisualManager) ?: throw Exception("error in deliverShiftedStimulus: a valid visual manager was not found")
-                if(vm.type != vtype){
-                    showAlert(activity, ctx.resources.getString(R.string.error),  ctx.resources.getString(R.string.error_visualmanager))
-                    return
-                }
+                if(vm.type != vtype)    throw Exception(ctx.resources.getString(R.string.error_visualmanager))
+
                 durlist.add(vm.duration + v)
                 mStimuliHandler.postDelayed({
-                    Log.d("TestBasic", "visual: type=${vm.type}")
+//                    val elapsedms = getTimeDifference(onsetDate)
+//                    Log.d("TestBasic", "visual: type=${vm.type}, onset=$v, elapsed=$elapsedms")
                     deliverUnimodalStimulus(vm)
-                }, v + offset)
+                }, v)
             }
 
             val end:Long = max(durlist)
-            mStimuliHandler.postDelayed({   onEnd() }, end + offset)
+            mStimuliHandler.postDelayed({   onEnd() }, end)
         }
         catch (e:Exception){
             val msg = e.message ?: ctx.resources.getString(R.string.error_tactilemanager)
@@ -538,16 +541,18 @@ abstract class TestBasic(protected val ctx: Context,
                                          onEnd:()-> Unit = {}){
 
         val corr_delays = delaysAligner.arrangeDelays(type, 0,0,0)
-        deliverShiftedStimulus(type, corr_delays.a, corr_delays.t, corr_delays.v, stimuliManager, onEnd)
+        deliverShiftedStimulus(type, corr_delays.a, corr_delays.t, corr_delays.v, stimuliManager){onEnd()}
     }
 
-    // ---------------------------------------------------------------------------------------------
+    // --------------------------------------------------------------------------------------------------------------
     // UNIMODAL STIMULUS
-    // ---------------------------------------------------------------------------------------------
+    // here I give the final deliver command, latencies and delays corrections have been already defined
+    // --------------------------------------------------------------------------------------------------------------
     protected fun deliverUnimodalStimulus(type:Int, manager: StimulusManager? = null, onEnd:() -> Unit = {}){
         when(type){
             STIM_TYPE_A1                -> deliverA1Stimulus(manager as AudioManager?   , onEnd)
             STIM_TYPE_A2                -> deliverA2Stimulus(manager as AudioManager?   , onEnd)
+            STIM_TYPE_A3                -> deliverA3Stimulus(manager as AudioManager?   , onEnd)
             STIM_TYPE_T1,STIM_TYPE_T2   -> deliverTStimulus(manager as TactileManager? , onEnd)
             STIM_TYPE_V1,STIM_TYPE_V2   -> deliverVStimulus(manager as VisualManager?  , onEnd)
         }
@@ -561,7 +566,7 @@ abstract class TestBasic(protected val ctx: Context,
 
         try {
             val am = mStimuliManager.getValidAudioManager(managerA) ?:  throw Exception("deliverA1Stimulus: mAudioManager is null")
-            if (!am.isValid())                                          throw Exception("deliverA1Stimulus: mAudioManager is not valid")
+            if (!am.isValid)                                          throw Exception("deliverA1Stimulus: mAudioManager is not valid")
 
             am.deliver()
             mStimuliHandler.postDelayed({ onEnd() }, am.duration)
@@ -572,7 +577,7 @@ abstract class TestBasic(protected val ctx: Context,
         }
     }
 
-     protected fun deliverA2Stimulus(managerA: AudioManager? = null, onEnd:() -> Unit = {}){
+     private fun deliverA2Stimulus(managerA: AudioManager? = null, onEnd:() -> Unit = {}){
 
         try {
             if(mStimuliManager.getValidAudioManager(managerA) == null) throw Exception("deliverA1Stimulus: mAudioManager and given audio manager are both null")
@@ -600,10 +605,50 @@ abstract class TestBasic(protected val ctx: Context,
         }
     }
 
+     private fun deliverA3Stimulus(managerA: AudioManager? = null, onEnd:() -> Unit = {}){
+
+         try {
+             val am = mStimuliManager.getValidAudioManager(managerA) ?:  throw Exception("deliverA3Stimulus: mAudioManager is null")
+             if (!am.isValid)                                          throw Exception("deliverA3Stimulus: mAudioManager is not valid")
+
+             am.deliver()
+             mStimuliHandler.postDelayed({ onEnd() }, am.duration)
+         }
+         catch (e:Exception){
+             val msg = e.message ?: ctx.resources.getString(R.string.error_audiomanager)
+             onCriticalError(msg)
+         }
+
+//        try {
+//            if(mStimuliManager.getValidAudioManager(managerA) == null) throw Exception("deliverA1Stimulus: mAudioManager and given audio manager are both null")
+//            // one of the two is not null
+//
+//            var duration:Long = mStimuliManager.audioDuration
+//            val audio = if(managerA != null) {
+//                            duration = managerA.duration
+//                            when {
+//                                managerA.isLoaded(managerA.resource as String) -> managerA
+//                                (managerA.resource as String).isNotEmpty()       -> {
+//                                    managerA.loadResource(managerA.resource as String)
+//                                    managerA
+//                                }
+//                                else        -> throw Exception("deliverA2Stimulus: mediaplayer audio resource is empty")
+//                            }
+//                        } else mStimuliManager.mAudioManager
+//
+//            audio!!.deliver()
+//            mStimuliHandler.postDelayed({ onEnd() }, duration)
+//        }
+//        catch (e:Exception){
+//            val msg = e.message ?: ctx.resources.getString(R.string.error_audiomanager)
+//            onCriticalError(msg)
+//        }
+    }
+
     protected fun deliverTStimulus(managerT: TactileManager? = null, onEnd:() -> Unit = {}){
         try {
             val tm = mStimuliManager.getValidTactileManager(managerT) ?:    throw Exception("deliverT1Stimulus: mTactileManager is null")
-            if(!tm.isValid())                                               throw Exception("deliverT1Stimulus: mTactileManager is not valid")
+            if(!tm.isValid)                                               throw Exception("deliverT1Stimulus: mTactileManager is not valid")
 
             tm.deliver()
             mStimuliHandler.postDelayed({ onEnd() }, tm.duration)
@@ -618,7 +663,7 @@ abstract class TestBasic(protected val ctx: Context,
 
         try {
             val vm = mStimuliManager.getValidVisualManager(managerV) ?:     throw Exception("deliverVStimulus: mVisualManager is null")
-            if(!vm.isValid())                                               throw Exception("deliverVStimulus: mVisualManager is not valid")
+            if(!vm.isValid)                                               throw Exception("deliverVStimulus: mVisualManager is not valid")
 
             vm.deliver()
             mStimuliHandler.postDelayed({ onEnd() }, vm.duration)

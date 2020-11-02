@@ -28,12 +28,12 @@ open class SubjectBasicListParcel(
     override var vercode: Int = -1,
     override var showResult: Boolean = false,
     override var population: Int = TestBasic.POPULATION_TD,
-
+    override var isDebug: Boolean = false,
 
     open var spinner_sel: Int = -1,
     open var spinner_label: String = "",
     open var spinner_data_resource: Int = -1
-) : SubjectBasicParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, vercode, showResult, population)
+) : SubjectBasicParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, vercode, showResult, population, isDebug)
 
 
 

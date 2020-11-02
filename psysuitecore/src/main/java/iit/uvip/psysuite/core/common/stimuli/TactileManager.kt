@@ -10,6 +10,9 @@ class TactileManager(private val vibrator: VibrationManager, override val amplit
 )
     : StimulusManager(TestBasic.STIM_TYPE_T1, amplitude, duration, handler){
 
+    val isValid:Boolean
+        get() = duration > 0
+
     companion object{
 
         fun validatePattern(pattern:String):List<Int>?{
@@ -26,7 +29,7 @@ class TactileManager(private val vibrator: VibrationManager, override val amplit
         }
     }
 
-    override fun deliver(dur:Any?){
+    override fun deliver(dur: Any?, id: Int){
         val d = dur ?: duration
         vibrator.vibrateSingle(d as Long, amplitude)
     }
@@ -37,9 +40,5 @@ class TactileManager(private val vibrator: VibrationManager, override val amplit
 
     override fun getHandler(): VibrationManager? {
         return vibrator
-    }
-
-    override fun isValid(): Boolean {
-        return (duration > 0)
     }
 }

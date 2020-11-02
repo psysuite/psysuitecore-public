@@ -68,7 +68,7 @@ class TestFragment : BaseFragment(
     private val ANSWER_DIALOG_TAG                   = "ANSWER_DIALOG_TAG"
     private val TARGET_FRAGMENT_REQUEST_CODE:Int    = 1
 
-    private var answerDialogFragment:DialogFragment?      = null
+    private var answerDialogFragment:DialogFragment? = null
     private var isAnswerDialogOn:Boolean            = false
 
     private var isPaused:Boolean                    = false
@@ -111,6 +111,11 @@ class TestFragment : BaseFragment(
 
         super.onActivityCreated(savedInstanceState)
 
+        bt_next.visibility      = View.INVISIBLE
+        bt_abort.visibility     = View.INVISIBLE
+        bt_pause.visibility     = View.INVISIBLE
+        txtDebugInfo.visibility = View.INVISIBLE
+
         speechRecognitionManager    = SpeechRecognitionManager(requireContext())
         speechManager               = SpeechManager(resources, requireContext())
         vibrator                    = VibrationManager(requireContext()).init()
@@ -118,50 +123,50 @@ class TestFragment : BaseFragment(
         mSubjectParcel              = arguments?.getParcelable(TestBasic.TESTINFO_BUNDLE_LABEL) ?: return
 
         try{
-            when(mSubjectParcel!!.type)
-            {
+            when(mSubjectParcel!!.type){
+
                 TestBasic.TEST_BISECTION_AUDIO,
                 TestBasic.TEST_BISECTION_TACTILE,
                 TestBasic.TEST_BISECTION_AUDIO_TACTILE,
-                TestBasic.TEST_BISECTION_AUDIO_VIDEO    -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, isDebug)
+                TestBasic.TEST_BISECTION_AUDIO_VIDEO    -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView)
 
-                TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), requireActivity(), this, mSubjectParcel!!, isDebug)
+                TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), requireActivity(), this, mSubjectParcel!!)
 
                 TestBasic.TEST_TID_SHORT_AUDIO,
                 TestBasic.TEST_TID_SHORT_TACTILE,
                 TestBasic.TEST_TID_LONG_AUDIO,
-                TestBasic.TEST_TID_LONG_TACTILE         -> mTest = TestTID(requireContext(), requireActivity(), this, mSubjectParcel as SubjectTIDParcel, vibrator, isDebug)
+                TestBasic.TEST_TID_LONG_TACTILE         -> mTest = TestTID(requireContext(), requireActivity(), this, mSubjectParcel as SubjectTIDParcel, vibrator)
 
                 TestBasic.TEST_ATB_TIME_SINGLESTIM,
                 TestBasic.TEST_ATB_TIME_DOUBLESTIM,
                 TestBasic.TEST_ATB_TIME_SINGLESTIM_TOD,
                 TestBasic.TEST_ATB_TIME_DOUBLESTIM_TOD,
-                TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, isDebug)
+                TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator)
 
 
                 TestBasic.TEST_AVB_TIME_SINGLESTIM,
                 TestBasic.TEST_AVB_TIME_DOUBLESTIM,
                 TestBasic.TEST_AVB_TIME_SINGLESTIM_TOD,
                 TestBasic.TEST_AVB_TIME_DOUBLESTIM_TOD,
-                TestBasic.TEST_AVB_TIME_INF             -> mTest = TestAVB(requireContext(), requireActivity(), this, mSubjectParcel!!, circleView, isDebug)
+                TestBasic.TEST_AVB_TIME_INF             -> mTest = TestAVB(requireContext(), requireActivity(), this, mSubjectParcel!!, circleView)
 
                 TestBasic.TEST_TVB_TIME_SINGLESTIM,
                 TestBasic.TEST_TVB_TIME_DOUBLESTIM,
                 TestBasic.TEST_TVB_TIME_SINGLESTIM_TOD,
                 TestBasic.TEST_TVB_TIME_DOUBLESTIM_TOD,
-                TestBasic.TEST_TVB_TIME_INF             -> mTest = TestTVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, isDebug)
+                TestBasic.TEST_TVB_TIME_INF             -> mTest = TestTVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView)
 
                 TestBasic.TEST_ATVB_TIME_S_UNBAL,
                 TestBasic.TEST_ATVB_TIME_S_BAL,
                 TestBasic.TEST_ATVB_TIME_D_UNBAL,
-                TestBasic.TEST_ATVB_TIME_D_BAL          -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, isDebug)
+                TestBasic.TEST_ATVB_TIME_D_BAL          -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView)
 
                 TestBasic.TEST_SAMPLE_ALIGNED,
                 TestBasic.TEST_SAMPLE_SHIFTED,
-                TestBasic.TEST_SAMPLE_PAIR              -> mTest = TestSample(requireContext(), requireActivity(), this, mSubjectParcel as SubjectSampleParcel, vibrator, circleView, isDebug)
+                TestBasic.TEST_SAMPLE_PAIR              -> mTest = TestSample(requireContext(), requireActivity(), this, mSubjectParcel as SubjectSampleParcel, vibrator, circleView)
 
                 TestBasic.TEST_TFI,
-                TestBasic.TEST_TFI_TODDLERS             -> mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, isDebug)
+                TestBasic.TEST_TFI_TODDLERS             -> mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView)
 
                 else    -> {
                     showAlert(requireActivity(),resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
@@ -169,6 +174,16 @@ class TestFragment : BaseFragment(
                     return
                 }
             }
+
+            // get a reference to the AnswerDialogFragment
+            val answerDialogClass = if(mSubjectParcel!!.classes.size > 1 && mSubjectParcel!!.classes[1].isNotEmpty())
+                mSubjectParcel!!.classes[1]
+            else    "iit.uvip.psysuite.core.fragments.AnswerDialogFragment"
+            answerDialogRef       = getCompanionObjectMethod(answerDialogClass, "newInstance")
+
+            setTestEventsObservable()
+            mTest.initTest()    // then wait for EVENT_TEST_SETUP_COMPLETED
+
         }
         catch (e:Exception){
             e.logLastTwo(LOG_TAG)
@@ -177,17 +192,10 @@ class TestFragment : BaseFragment(
             Navigation.findNavController(requireView()).popBackStack()
             return
         }
+    }
 
-        // get a reference to the AnswerDialogFragment
-        val answerDialogClass = if(mSubjectParcel!!.classes.size > 1 && mSubjectParcel!!.classes[1].isNotEmpty())
-                                        mSubjectParcel!!.classes[1]
-                                else    "iit.uvip.psysuite.core.fragments.AnswerDialogFragment"
-        answerDialogRef       = getCompanionObjectMethod(answerDialogClass, "newInstance")
-
-        bt_next.visibility      = View.INVISIBLE
-        bt_abort.visibility     = View.INVISIBLE
-        bt_pause.visibility     = View.INVISIBLE
-        txtDebugInfo.visibility = View.INVISIBLE
+    // triggered by testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null)) run on each Test class
+    private fun onTestSetupComplete(){
 
         if (mTest.abortMode == TestBasic.TEST_ABORT_ALWAYS){
             bt_abort.visibility = View.VISIBLE
@@ -210,7 +218,16 @@ class TestFragment : BaseFragment(
     override fun onResume() {
         super.onResume()
 
-        setEventsFlow()
+        setTestEventsObservable()
+
+        // button is shown when an answer dialog is not displayed
+        bt_next.setOnClickListener{
+
+            bt_next.visibility      = View.INVISIBLE
+            bt_pause.visibility     = View.INVISIBLE
+
+            onNewTrial()
+        }
 
         bt_abort.setOnClickListener{
             onAbortTest()
@@ -236,24 +253,18 @@ class TestFragment : BaseFragment(
     }
 
     // here I manage all trial-by-trial behaviours invoked by Tests
-    // normal flow is
-    private fun setEventsFlow(){
-
-        // button is shown when an answer dialog is not displayed
-        bt_next.setOnClickListener{
-
-            bt_next.visibility      = View.INVISIBLE
-            bt_pause.visibility     = View.INVISIBLE
-
-            onNewTrial()
-        }
+    private fun setTestEventsObservable(){
 
         if(!this::mTest.isInitialized) return
+
+        if(disposable.size() > 0) return
 
         mTest.testEvent
         .observeOn(AndroidSchedulers.mainThread())
         .subscribe {
             when(it.first){
+
+                TestBasic.EVENT_TEST_SETUP_COMPLETED-> onTestSetupComplete()
                 TestBasic.EVENT_STIMULI_START       -> {}
                 TestBasic.EVENT_STIMULI_END         -> {}
 
@@ -455,6 +466,7 @@ class TestFragment : BaseFragment(
         b.putString("question",         mTest.mQuestion)
         b.putStringArrayList("answers", mTest.validAnswers as ArrayList<String>)
         b.putString("debug",            currDebugInfo)
+        b.putBoolean("isDebug",         mSubjectParcel?.isDebug ?: false)
 
         b.putBoolean("show_result",     mTest.showResult)
         b.putString("correct_answer",   mTest.getTrialCorrectAnswer())
@@ -464,8 +476,6 @@ class TestFragment : BaseFragment(
             showAlert(requireActivity(),resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer) + "\nAnswer dialog was not available")
             return
         }
-
-        Log.d("TestFragment", "ok")
         answerDialogFragment?.setTargetFragment(this , TARGET_FRAGMENT_REQUEST_CODE)
         answerDialogFragment?.arguments    = b
         answerDialogFragment?.isCancelable = false

@@ -20,9 +20,8 @@ class TestBIS(
     hostfragment: Fragment,
     data: SubjectBasicParcel,
     vibrator: VibrationManager?,
-    mImageView: ImageView?,
-    isDebug:Boolean
-) : TestBasic(ctx, activity, hostfragment, data, vibrator, mImageView, isDebug = isDebug){
+    mImageView: ImageView?
+) : TestBasic(ctx, activity, hostfragment, data, vibrator, mImageView){
 
     override var LOG_TAG:String = TestBIS::class.java.simpleName
 
@@ -101,38 +100,25 @@ class TestBIS(
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
-    init{
-        when {
-            mImageView == null -> throw ImageViewDefinedException(
-                "IMAGE_VIEW_NOT_DEFINED"
-            )
-            vibrator == null -> throw VibratorNotDefinedException(
-                "VIBRATOR_NOT_DEFINED"
-            )
-            else -> {
-                validAnswers    = mutableListOf(ctx.resources.getString(R.string.bisection_rb1_text), ctx.resources.getString(R.string.bisection_rb3_text))
-                initTest()
-
-//                mAudioManager   = AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx)
-//                mTactileManager = TactileManager(vibrator, duration = STIMULUS_DURATION_TACTILE, handler = mStimuliHandler)
-//                mVisualManager  = VisualManager(STIM_TYPE_V2, mImageView, mDrawablesResource[1], mDrawablesResource[0], duration = STIMULUS_DURATION_VISUAL, handler = mStimuliHandler)
-                mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-                                                TactileManager(vibrator, duration = STIMULUS_DURATION_TACTILE, handler = mStimuliHandler),
-                                                VisualManager(STIM_TYPE_V2, mImageView, mDrawablesResource[1], mDrawablesResource[0], duration = STIMULUS_DURATION_VISUAL, handler = mStimuliHandler))
-            }
-        }
-    }
-
     override fun initTest(){
         // set stimuli default & create mTrials list
-
-        when(subjectparcel.type)
-        {
-            TEST_BISECTION_AUDIO            -> initBisectionAudio()
-            TEST_BISECTION_TACTILE          -> initBisectionTactile()
-            TEST_BISECTION_AUDIO_TACTILE    -> initBisectionAudioTactile()
-            TEST_BISECTION_AUDIO_VIDEO      -> initBisectionAudioVideo()
+        when {
+            mImageView == null -> throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
+            vibrator == null -> throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
         }
+
+        validAnswers    = mutableListOf(ctx.resources.getString(R.string.bisection_rb1_text), ctx.resources.getString(R.string.bisection_rb3_text))
+
+        if(!subjectparcel.isDebug)
+            when(subjectparcel.type)
+            {
+                TEST_BISECTION_AUDIO            -> initBisectionAudio()
+                TEST_BISECTION_TACTILE          -> initBisectionTactile()
+                TEST_BISECTION_AUDIO_TACTILE    -> initBisectionAudioTactile()
+                TEST_BISECTION_AUDIO_VIDEO      -> initBisectionAudioVideo()
+            }
+        else                        createTrialsDebug()
+
         nTrials     = mTrials.size
         currTrial   = 0
 
@@ -147,6 +133,12 @@ class TestBIS(
         createResultFile(subjectparcel, TrialBIS.LOG_HEADER)
 
         mNoise = AudioManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
+
+        mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+            TactileManager(vibrator!!, duration = STIMULUS_DURATION_TACTILE, handler = mStimuliHandler),
+            VisualManager(STIM_TYPE_V2, mImageView!!, mDrawablesResource[1], mDrawablesResource[0], duration = STIMULUS_DURATION_VISUAL, handler = mStimuliHandler))
+
+        testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
 
     // =============================================================================================================================
@@ -201,6 +193,21 @@ class TestBIS(
         createAudioVideoTrials(STIMULUS_DURATION_AUDIO.toInt(), STIMULUS_DURATION_VISUAL.toInt())
     }
 
+    private fun createTrialsDebug(){
+        mQuestion = ctx.resources.getString(R.string.bisection_question_text_mixed)
+        for(i in 0 until 10000){
+            val corr_answ = validAnswers[0]
+                //                     id   type                        label,                        corr_answ, position          conflict_type   duration       duration2
+                mTrials.add(TrialBIS(-1, TEST_BISECTION_AUDIO_TACTILE, STIMULUS_TYPE_AUDIO_TACTILE, corr_answ, 100, CONFLICT_TYPE_NONE, STIMULUS_DURATION_AUDIO.toInt(), STIMULUS_DURATION_TACTILE.toInt()))
+                mTrials.add(TrialBIS(-1, TEST_BISECTION_AUDIO_TACTILE, STIMULUS_TYPE_AUDIO_TACTILE, corr_answ, 900, CONFLICT_TYPE_NONE, STIMULUS_DURATION_AUDIO.toInt(), STIMULUS_DURATION_TACTILE.toInt()))
+
+                mTrials.add(TrialBIS(-1, TEST_BISECTION_AUDIO_VIDEO, STIMULUS_TYPE_AUDIO_VIDEO, corr_answ, 100, STIMULUS_TYPE_VIDEO_AUDIO_LOG, STIMULUS_DURATION_AUDIO.toInt(), STIMULUS_DURATION_VISUAL.toInt()))
+                mTrials.add(TrialBIS(-1, TEST_BISECTION_AUDIO_VIDEO, STIMULUS_TYPE_AUDIO_VIDEO, corr_answ, 900, STIMULUS_TYPE_VIDEO_AUDIO_LOG, STIMULUS_DURATION_AUDIO.toInt(), STIMULUS_DURATION_VISUAL.toInt()))
+                mTrials.add(TrialBIS(-1, TEST_BISECTION_AUDIO_VIDEO, STIMULUS_TYPE_AUDIO_VIDEO, corr_answ, 100, STIMULUS_TYPE_AUDIO_VIDEO_LOG, STIMULUS_DURATION_VISUAL.toInt(), STIMULUS_DURATION_AUDIO.toInt()))
+                mTrials.add(TrialBIS(-1, TEST_BISECTION_AUDIO_VIDEO, STIMULUS_TYPE_AUDIO_VIDEO, corr_answ, 900, STIMULUS_TYPE_AUDIO_VIDEO_LOG, STIMULUS_DURATION_VISUAL.toInt(), STIMULUS_DURATION_AUDIO.toInt()))
+        }
+        setTrialsID()   // set trial id according to its order in the list
+    }
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================

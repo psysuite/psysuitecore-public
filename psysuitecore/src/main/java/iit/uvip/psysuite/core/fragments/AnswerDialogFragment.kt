@@ -55,6 +55,7 @@ class AnswerDialogFragment: DialogFragment()
         val question        = requireArguments().getString("question", "Enter Name")
         val answers         = requireArguments().getStringArrayList("answers")
         val debug_info      = requireArguments().getString("debug")
+        isDebug             = requireArguments().getBoolean("isDebug", false)
 
         showResult          = requireArguments().getBoolean("show_result", false)
         if(showResult)

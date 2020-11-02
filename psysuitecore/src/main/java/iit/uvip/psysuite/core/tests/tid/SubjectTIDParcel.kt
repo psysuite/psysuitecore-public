@@ -28,11 +28,12 @@ class SubjectTIDParcel(
     override var vercode: Int = -1,
     override var showResult: Boolean = false,
     override var population: Int = TestBasic.POPULATION_TD,
+    override var isDebug: Boolean = false,
 
     override var spinner_sel: Int = -1,
     override var spinner_data_resource: Int = -1,
     var group: Int = -1
-) : SubjectLongitParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, vercode, showResult, population, spinner_sel, spinner_data_resource){
+) : SubjectLongitParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, vercode, showResult, population, isDebug, spinner_sel, spinner_data_resource){
 
     override fun getFilesPrefix(ctx:Context):String{
 

@@ -95,7 +95,7 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
 
         etPairStimDistance.isEnabled = false
 
-        etRepetitionNum.setText("1")
+        etRepetitionNum.setText("10000")
 
         //------------------------------------------------------
         // NEXT TRIAL MODALITY
@@ -261,7 +261,8 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
         if(swAudio.isChecked) {
             src = when (spAudio.selectedItemPosition) {
                 0       ->  src or TestBasic.STIM_TYPE_A1
-                else    ->  src or TestBasic.STIM_TYPE_A2
+                1       ->  src or TestBasic.STIM_TYPE_A2
+                else    ->  src or TestBasic.STIM_TYPE_A3
             }
             (subject as SubjectSampleParcel).audioDuration   = etDurationAudio.text.toString().toLong()
             (subject as SubjectSampleParcel).audioResource   = spAudioResource.selectedItem as String
