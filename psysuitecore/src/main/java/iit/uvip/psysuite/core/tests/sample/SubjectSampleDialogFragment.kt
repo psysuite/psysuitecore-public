@@ -10,9 +10,10 @@ import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.subjects_dialog.SubjectBasicDialogFragment
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.stimuli.StimuliManager
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.ui.subjects_dialog.SubjectBasicDialogFragment
 import kotlinx.android.synthetic.main.fragment_subject_info_sample.*
 import org.albaspazio.core.ui.show2ChoisesDialog
 import org.albaspazio.core.ui.showAlert
@@ -192,7 +193,6 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
         }
     }
 
-    override fun onNothingSelected(parent: AdapterView<*>) {}
 
     // on change spTactile/spAudio
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
@@ -260,9 +260,9 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
         var src = 0
         if(swAudio.isChecked) {
             src = when (spAudio.selectedItemPosition) {
-                0       ->  src or TestBasic.STIM_TYPE_A1
-                1       ->  src or TestBasic.STIM_TYPE_A2
-                else    ->  src or TestBasic.STIM_TYPE_A3
+                0       ->  src or StimuliManager.STIM_TYPE_A1
+                1       ->  src or StimuliManager.STIM_TYPE_A2
+                else    ->  src or StimuliManager.STIM_TYPE_A3
             }
             (subject as SubjectSampleParcel).audioDuration   = etDurationAudio.text.toString().toLong()
             (subject as SubjectSampleParcel).audioResource   = spAudioResource.selectedItem as String
@@ -271,8 +271,8 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
 
         if(swTactile.isChecked) {
             src = when (spTactile.selectedItemPosition) {
-                0       ->  src or TestBasic.STIM_TYPE_T1
-                else    ->  src or TestBasic.STIM_TYPE_T2
+                0       ->  src or StimuliManager.STIM_TYPE_T1
+                else    ->  src or StimuliManager.STIM_TYPE_T2
             }
             (subject as SubjectSampleParcel).tactileAmplitude    = etTactileAmplitude.text.toString().toInt()
             (subject as SubjectSampleParcel).tactileSequence     = etTactileSchema.text.toString()
@@ -280,8 +280,8 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
 
         if(swVisual.isChecked) {
             src = when (spVisual.selectedItemPosition) {
-                0       ->  src or TestBasic.STIM_TYPE_V1
-                else    ->  src or TestBasic.STIM_TYPE_V2
+                0       ->  src or StimuliManager.STIM_TYPE_V1
+                else    ->  src or StimuliManager.STIM_TYPE_V2
             }
             (subject as SubjectSampleParcel).visualDuration      = etDurationVisual.text.toString().toLong()
             (subject as SubjectSampleParcel).visualDrawableOn    = etVisualDrawableOn.text.toString().toInt()

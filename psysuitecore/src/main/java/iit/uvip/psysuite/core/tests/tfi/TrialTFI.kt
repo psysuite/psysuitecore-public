@@ -1,7 +1,6 @@
 package iit.uvip.psysuite.core.tests.tfi
 
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.TrialBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
 
 /*
     the answer is represented by a comma-separated string: e.g. 1,0,2
@@ -16,6 +15,8 @@ class TrialTFI(id:Int=-1, type:Int, label:String, corr_answer:String, val soa:Lo
         val A: Int = 0
         val T: Int = 1
         val V: Int = 2
+
+
     }
     val stims:MutableList<Int> = mutableListOf(0,0,0)
 
@@ -48,24 +49,24 @@ class TrialTFI(id:Int=-1, type:Int, label:String, corr_answer:String, val soa:Lo
             when(occurrence.toInt()){
                 1 -> {
                     when(modality){
-                        0 ->    stims[1] = stims[1] or TestTFI.UNIMODAL_AUDIO_CODE
-                        1 ->    stims[1] = stims[1] or TestBasic.STIM_TYPE_T1
-                        2 ->    stims[1] = stims[1] or TestBasic.STIM_TYPE_V2
+                        0 ->    stims[1] = stims[1] or TestTFI.STIM_A
+                        1 ->    stims[1] = stims[1] or TestTFI.STIM_T
+                        2 ->    stims[1] = stims[1] or TestTFI.STIM_V
                     }
                 }
                 2 -> {
                     when(modality){
                         0 ->    {
-                            stims[0] = stims[0] or TestTFI.UNIMODAL_AUDIO_CODE
-                            stims[2] = stims[2] or TestTFI.UNIMODAL_AUDIO_CODE
+                            stims[0] = stims[0] or TestTFI.STIM_A
+                            stims[2] = stims[2] or TestTFI.STIM_A
                         }
                         1 ->    {
-                            stims[0] = stims[0] or TestBasic.STIM_TYPE_T1
-                            stims[2] = stims[2] or TestBasic.STIM_TYPE_T1
+                            stims[0] = stims[0] or TestTFI.STIM_T
+                            stims[2] = stims[2] or TestTFI.STIM_T
                         }
                         2 ->    {
-                            stims[0] = stims[0] or TestBasic.STIM_TYPE_V2
-                            stims[2] = stims[2] or TestBasic.STIM_TYPE_V2
+                            stims[0] = stims[0] or TestTFI.STIM_V
+                            stims[2] = stims[2] or TestTFI.STIM_V
                         }
                     }
                 }

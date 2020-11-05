@@ -4,15 +4,17 @@ import android.app.Activity
 import android.content.Context
 import androidx.fragment.app.Fragment
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.SpinnerData
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.TrialBasic
-import iit.uvip.psysuite.core.common.stimuli.AudioManager
-import iit.uvip.psysuite.core.common.stimuli.StimuliManager
-import iit.uvip.psysuite.core.common.stimuli.TactileManager
-import iit.uvip.psysuite.core.common.stimuli.VibratorNotDefinedException
+import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.stimuli.AudioManager
+import iit.uvip.psysuite.core.stimuli.StimuliManager
+import iit.uvip.psysuite.core.stimuli.TactileManager
+import iit.uvip.psysuite.core.stimuli.VibratorNotDefinedException
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.QuestObject
 import org.albaspazio.core.accessory.VibrationManager
+import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
 
 // type     : audio/vibro
@@ -27,7 +29,8 @@ class TestTID(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
               subjectparcel: SubjectTIDParcel,
-              vibrator: VibrationManager?
+              vibrator: VibrationManager?,
+              speechManager: SpeechManager?
 ) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator)
 {
     override var LOG_TAG:String = TestTID::class.java.simpleName
@@ -76,7 +79,7 @@ class TestTID(ctx: Context,
         @JvmStatic val STIMULUS_TYPE_AUDIO          = "A"
         @JvmStatic val STIMULUS_TYPE_TACTILE        = "T"
 
-        fun getConditionsInfo(ctx: Context): List<SpinnerData> {
+        fun getConditionsInfo(ctx: Context): List<ConditionData> {
 
             val sts     = ctx.resources.getString(R.string.tid_rb_short_text)
             val stl     = ctx.resources.getString(R.string.tid_rb_long_text)
@@ -85,19 +88,18 @@ class TestTID(ctx: Context,
             val stl_sh  = ctx.resources.getString(R.string.tid_rb_long_text_short)
 
             return mutableListOf(
-                SpinnerData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts"    , TEST_TID_SHORT_AUDIO, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts_sh"),
-                SpinnerData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$sts"  , TEST_TID_SHORT_TACTILE, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$sts_sh"),
-                SpinnerData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl"    , TEST_TID_LONG_AUDIO, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl_sh"),
-                SpinnerData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$stl"  , TEST_TID_LONG_TACTILE, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$stl_sh")
+                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts"    , TEST_TID_SHORT_AUDIO, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts_sh", Populations.hearing_populations),
+                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$sts"  , TEST_TID_SHORT_TACTILE, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$sts_sh", Populations.all_populations),
+                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl"    , TEST_TID_LONG_AUDIO, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl_sh", Populations.hearing_populations),
+                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$stl"  , TEST_TID_LONG_TACTILE, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$stl_sh", Populations.all_populations)
             )
         }
 
-        fun getNextTrialModes():List<List<Int>>{
-            return listOf(  listOf(TEST_NEXTTRIAL_ANSWER),
+        fun getNextTrialModes():List<List<Int>> = listOf(  listOf(TEST_NEXTTRIAL_ANSWER),
                             listOf(TEST_NEXTTRIAL_ANSWER),
                             listOf(TEST_NEXTTRIAL_ANSWER),
                             listOf(TEST_NEXTTRIAL_ANSWER)) //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
-        }
+
 
         fun getEmailRecipients():Array<String> = recipients
     }
@@ -164,8 +166,9 @@ class TestTID(ctx: Context,
 
         mNoise = AudioManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
 
-        mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-            TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),null)
+        mStimuliManager = StimuliManager(AudioManager(StimuliManager.STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+            TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),null,
+            delaysAligner, ctx)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
@@ -270,7 +273,7 @@ class TestTID(ctx: Context,
     }
 
     // in case of quest-based task, define new trial's nonref-delta & success
-    override fun getNewTrial():TrialBasic{
+    override fun getNewTrial(): TrialBasic {
 
         return  if(isUsingQuest) {
             val newdelta: Float = mQuest.getNewValue(mTrial.success)
@@ -288,7 +291,7 @@ class TestTID(ctx: Context,
         else                                                (mTrials[trial_id] as TrialTID).delta1 = nonref_delta.toInt()
 
         (mTrials[trial_id] as TrialTID).correct_answer =    if((mTrials[trial_id] as TrialTID).delta1 > (mTrials[trial_id] as TrialTID).delta2) validAnswers[0]
-        else                                                                                validAnswers[1]
+                                                            else                                                                                validAnswers[1]
     }
 
     override fun initSummary(){}
@@ -301,7 +304,7 @@ class TestTID(ctx: Context,
     // PAIR1:          FIRST_STIMULUS_DELAY
     // PAIR2:          FIRST_STIMULUS_DELAY + duration + mTrial.delta1 + duration + ISI
     // QUESTION:    FIRST_STIMULUS_DELAY + duration + mTrial.delta1 + duration + ISI + duration + mTrial.delta2 + duration + QUESTION_DELAY
-    override fun show(trial:TrialBasic, isRepeat:Boolean){
+    override fun show(trial: TrialBasic, isRepeat:Boolean){
 
         mNoise?.start()
         // PAIR 1
@@ -324,8 +327,8 @@ class TestTID(ctx: Context,
     private fun deliverPair(type:Int, delta:Long){
 
         when(type) {
-            TEST_TID_SHORT_AUDIO, TEST_TID_LONG_AUDIO       -> deliverAlignedStimuliPair(delta, STIM_TYPE_A1)
-            TEST_TID_SHORT_TACTILE, TEST_TID_LONG_TACTILE   -> deliverAlignedStimuliPair(delta, STIM_TYPE_T1)
+            TEST_TID_SHORT_AUDIO, TEST_TID_LONG_AUDIO       -> mStimuliManager.deliverAlignedStimuliPair(delta, StimuliManager.STIM_TYPE_A1)
+            TEST_TID_SHORT_TACTILE, TEST_TID_LONG_TACTILE   -> mStimuliManager.deliverAlignedStimuliPair(delta, StimuliManager.STIM_TYPE_T1)
         }
     }
 

@@ -1,8 +1,9 @@
-package iit.uvip.psysuite.core.fragments
+package iit.uvip.psysuite.core.ui.fragments
 
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
 import android.util.Log
@@ -10,9 +11,9 @@ import android.view.View
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.Navigation
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.TestResult
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.tests.bis.TestBIS
 import iit.uvip.psysuite.core.tests.mmd.TestMMD
 import iit.uvip.psysuite.core.tests.sample.SubjectSampleParcel
@@ -24,6 +25,8 @@ import iit.uvip.psysuite.core.tests.temporalbinding.tvb.TestTVB
 import iit.uvip.psysuite.core.tests.tfi.TestTFI
 import iit.uvip.psysuite.core.tests.tid.SubjectTIDParcel
 import iit.uvip.psysuite.core.tests.tid.TestTID
+import iit.uvip.psysuite.core.utility.TestResult
+import iit.uvip.psysuite.core.utility.getIds
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
@@ -61,10 +64,10 @@ class TestFragment : BaseFragment(
     hideAndroidControls = true
 ){
 
-    private lateinit var mTest:TestBasic
+    private lateinit var mTest: TestBasic
     private var mSubjectParcel:SubjectBasicParcel?  = null
 
-    override val LOG_TAG                            = TestFragment::class.java.simpleName
+    override val LOG_TAG                     = TestFragment::class.java.simpleName
     private val ANSWER_DIALOG_TAG                   = "ANSWER_DIALOG_TAG"
     private val TARGET_FRAGMENT_REQUEST_CODE:Int    = 1
 
@@ -74,8 +77,8 @@ class TestFragment : BaseFragment(
     private var isPaused:Boolean                    = false
     private var mHandler: Handler                   = Handler()
 
-    private lateinit var speechRecognitionManager: SpeechRecognitionManager
     private var abortRecognition:Boolean            = false  // set true when I answer manually and speech rec is going to be restarted (e.g. rec busy or error)
+    private lateinit var speechRecognitionManager: SpeechRecognitionManager
     private lateinit var speechManager: SpeechManager
     private var vibrator:VibrationManager?          = null
 
@@ -128,45 +131,44 @@ class TestFragment : BaseFragment(
                 TestBasic.TEST_BISECTION_AUDIO,
                 TestBasic.TEST_BISECTION_TACTILE,
                 TestBasic.TEST_BISECTION_AUDIO_TACTILE,
-                TestBasic.TEST_BISECTION_AUDIO_VIDEO    -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView)
+                TestBasic.TEST_BISECTION_AUDIO_VIDEO    -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
 
-                TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), requireActivity(), this, mSubjectParcel!!)
+                TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), requireActivity(), this, mSubjectParcel!!, speechManager)
 
                 TestBasic.TEST_TID_SHORT_AUDIO,
                 TestBasic.TEST_TID_SHORT_TACTILE,
                 TestBasic.TEST_TID_LONG_AUDIO,
-                TestBasic.TEST_TID_LONG_TACTILE         -> mTest = TestTID(requireContext(), requireActivity(), this, mSubjectParcel as SubjectTIDParcel, vibrator)
+                TestBasic.TEST_TID_LONG_TACTILE         -> mTest = TestTID(requireContext(), requireActivity(), this, mSubjectParcel as SubjectTIDParcel, vibrator, speechManager)
 
                 TestBasic.TEST_ATB_TIME_SINGLESTIM,
                 TestBasic.TEST_ATB_TIME_DOUBLESTIM,
                 TestBasic.TEST_ATB_TIME_SINGLESTIM_TOD,
                 TestBasic.TEST_ATB_TIME_DOUBLESTIM_TOD,
-                TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator)
-
+                TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, speechManager)
 
                 TestBasic.TEST_AVB_TIME_SINGLESTIM,
                 TestBasic.TEST_AVB_TIME_DOUBLESTIM,
                 TestBasic.TEST_AVB_TIME_SINGLESTIM_TOD,
                 TestBasic.TEST_AVB_TIME_DOUBLESTIM_TOD,
-                TestBasic.TEST_AVB_TIME_INF             -> mTest = TestAVB(requireContext(), requireActivity(), this, mSubjectParcel!!, circleView)
+                TestBasic.TEST_AVB_TIME_INF             -> mTest = TestAVB(requireContext(), requireActivity(), this, mSubjectParcel!!, circleView, speechManager)
 
                 TestBasic.TEST_TVB_TIME_SINGLESTIM,
                 TestBasic.TEST_TVB_TIME_DOUBLESTIM,
                 TestBasic.TEST_TVB_TIME_SINGLESTIM_TOD,
                 TestBasic.TEST_TVB_TIME_DOUBLESTIM_TOD,
-                TestBasic.TEST_TVB_TIME_INF             -> mTest = TestTVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView)
+                TestBasic.TEST_TVB_TIME_INF             -> mTest = TestTVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
 
                 TestBasic.TEST_ATVB_TIME_S_UNBAL,
                 TestBasic.TEST_ATVB_TIME_S_BAL,
                 TestBasic.TEST_ATVB_TIME_D_UNBAL,
-                TestBasic.TEST_ATVB_TIME_D_BAL          -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView)
+                TestBasic.TEST_ATVB_TIME_D_BAL          -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
 
                 TestBasic.TEST_SAMPLE_ALIGNED,
                 TestBasic.TEST_SAMPLE_SHIFTED,
-                TestBasic.TEST_SAMPLE_PAIR              -> mTest = TestSample(requireContext(), requireActivity(), this, mSubjectParcel as SubjectSampleParcel, vibrator, circleView)
+                TestBasic.TEST_SAMPLE_PAIR              -> mTest = TestSample(requireContext(), requireActivity(), this, mSubjectParcel as SubjectSampleParcel, vibrator, circleView, speechManager)
 
                 TestBasic.TEST_TFI,
-                TestBasic.TEST_TFI_TODDLERS             -> mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView)
+                TestBasic.TEST_TFI_TODDLERS             -> mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
 
                 else    -> {
                     showAlert(requireActivity(),resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
@@ -176,9 +178,14 @@ class TestFragment : BaseFragment(
             }
 
             // get a reference to the AnswerDialogFragment
-            val answerDialogClass = if(mSubjectParcel!!.classes.size > 1 && mSubjectParcel!!.classes[1].isNotEmpty())
-                mSubjectParcel!!.classes[1]
-            else    "iit.uvip.psysuite.core.fragments.AnswerDialogFragment"
+            val answerDialogClass = if(Populations.vi_populations.getIds().contains(mSubjectParcel!!.population))
+                                        // population is visually impaired. use AnswerGestureDF
+                                        "iit.uvip.psysuite.core.ui.fragments.AnswerGestureDialogFragment"
+                                    else {
+                                        if (mSubjectParcel!!.classes.size > 1 && mSubjectParcel!!.classes[1].isNotEmpty())
+                                            mSubjectParcel!!.classes[1]
+                                        else "iit.uvip.psysuite.core.ui.fragments.AnswerDialogFragment"
+                                    }
             answerDialogRef       = getCompanionObjectMethod(answerDialogClass, "newInstance")
 
             setTestEventsObservable()
@@ -314,9 +321,10 @@ class TestFragment : BaseFragment(
 
         // dont' know whether an answer dialog was present or it was listening for vocal response or it was playbacking something. stop all!
         abortRecognition = true
-        speechRecognitionManager.stop()
-        speechManager.stop()
-
+        Handler(Looper.getMainLooper()).post {
+            speechRecognitionManager.stop()
+            speechManager.stop()
+        }
         closeAnswerDialog()
 
         // call next trial & check whether it was the last => test ended
@@ -471,7 +479,7 @@ class TestFragment : BaseFragment(
         b.putBoolean("show_result",     mTest.showResult)
         b.putString("correct_answer",   mTest.getTrialCorrectAnswer())
 
-        answerDialogFragment = answerDialogRef.first?.call(answerDialogRef.second, "") as DialogFragment
+        answerDialogFragment = answerDialogRef.first?.call(answerDialogRef.second, "", speechManager) as DialogFragment
         if(answerDialogFragment == null){
             showAlert(requireActivity(),resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer) + "\nAnswer dialog was not available")
             return

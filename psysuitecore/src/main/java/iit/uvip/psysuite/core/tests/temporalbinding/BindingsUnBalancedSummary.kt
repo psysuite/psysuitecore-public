@@ -1,8 +1,8 @@
 package iit.uvip.psysuite.core.tests.temporalbinding
 
 import android.content.Context
-import iit.uvip.psysuite.core.common.Summary
-import iit.uvip.psysuite.core.common.TrialBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.utility.Summary
 import kotlin.math.roundToInt
 
 

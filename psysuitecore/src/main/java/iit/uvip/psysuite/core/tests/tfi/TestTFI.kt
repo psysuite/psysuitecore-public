@@ -5,12 +5,14 @@ import android.content.Context
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.SpinnerData
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.TrialBasic
-import iit.uvip.psysuite.core.common.stimuli.*
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.stimuli.*
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.utility.ConditionData
 import org.albaspazio.core.accessory.VibrationManager
+import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
 import kotlin.math.roundToInt
 
@@ -22,7 +24,8 @@ class TestTFI(ctx: Context,
               hostfragment: Fragment,
               subjectparcel: SubjectBasicParcel,
               vibrator: VibrationManager?,
-              mImageView: ImageView?
+              mImageView: ImageView?,
+              speechManager: SpeechManager?
 ) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator, mImageView)
 {
     override var LOG_TAG:String = TestTFI::class.java.simpleName
@@ -44,8 +47,10 @@ class TestTFI(ctx: Context,
 
     companion object {
 
-        @JvmStatic val UNIMODAL_AUDIO_CODE     = STIM_TYPE_A1
-        @JvmStatic val TRIMODAL_AUDIO_CODE     = (STIM_TYPE_T1V2 or UNIMODAL_AUDIO_CODE)
+        @JvmStatic val STIM_A     = StimuliManager.STIM_TYPE_A1
+        @JvmStatic val STIM_V     = StimuliManager.STIM_TYPE_V2
+        @JvmStatic val STIM_T     = StimuliManager.STIM_TYPE_T1
+        @JvmStatic val STIM_ATV   = STIM_A or STIM_T or STIM_V
 
         @JvmStatic val TEST_BASIC_LABEL                 = "TFI"
         @JvmStatic val TEST_BASIC_TODDLERS_LABEL        = "TFI toddlers"
@@ -53,12 +58,13 @@ class TestTFI(ctx: Context,
                                                                     "psysuite.uvip@gmail.com",
                                                                     "alessia.tonelli@iit.it")
 
-        fun getConditionsInfo(ctx: Context): List<SpinnerData> = mutableListOf( SpinnerData(TEST_BASIC_LABEL, TEST_TFI, TEST_BASIC_LABEL),
-                                                                                SpinnerData(TEST_BASIC_TODDLERS_LABEL, TEST_TFI_TODDLERS, "TFITOD"))
+        fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
+            ConditionData(TEST_BASIC_LABEL, TEST_TFI, TEST_BASIC_LABEL, Populations.sighted_hearing_populations),
+            ConditionData(TEST_BASIC_TODDLERS_LABEL, TEST_TFI_TODDLERS, "TFITOD", Populations.sighted_hearing_populations)
+        )
 
-        fun getNextTrialModes():List<List<Int>>{
-            return listOf(  listOf(TEST_NEXTTRIAL_ANSWER))
-        }
+        fun getNextTrialModes():List<List<Int>> = listOf(listOf(TEST_NEXTTRIAL_ANSWER))
+
         fun getEmailRecipients():Array<String> = recipients
     }
 
@@ -104,11 +110,12 @@ class TestTFI(ctx: Context,
                         else                                  2
 
         mStimuliManager = StimuliManager(
-            AudioManager(UNIMODAL_AUDIO_CODE, -1,  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+            AudioManager(STIM_A, -1,  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
 //                                            AudioManager(UNIMODAL_AUDIO_CODE, listOf("t1000hz_30ms.wav"), 100, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
 //                                            AudioManager(UNIMODAL_AUDIO_CODE, "t1000hz_30ms",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
             TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
-            VisualManager(STIM_TYPE_V2, mImageView!!, mDrawablesResource[onImage], mDrawablesResource[0], duration = currStimulusDuration, handler = mStimuliHandler))
+            VisualManager(STIM_V, mImageView!!, mDrawablesResource[onImage], mDrawablesResource[0], duration = currStimulusDuration, handler = mStimuliHandler),
+            delaysAligner, ctx)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
@@ -275,7 +282,7 @@ class TestTFI(ctx: Context,
 //
 //        mStimuliHandler.postDelayed({   onTrialEnd()    }, onsetEnd)
 
-        var corr_delays = delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, -25,0, 0)
+        var corr_delays = delaysAligner.arrangeDelays(STIM_ATV, -25,0, 0)
 
 //        Log.d("TFI show1", "Trial type ${trial.correct_answer}")
 //        Log.d("TFI show2", "delays ${corr_delays.a} | , ${corr_delays.t} | ${corr_delays.v}")
@@ -284,15 +291,16 @@ class TestTFI(ctx: Context,
         mStimuliHandler.postDelayed({
 
             if(trial.stims[0] > 0)
-                deliverShiftedStimulus(trial.stims[0], corr_delays.a, corr_delays.t, corr_delays.v)
+                mStimuliManager.deliverShiftedStimulus(trial.stims[0], corr_delays.a, corr_delays.t, corr_delays.v)
+//                deliverShiftedStimulus(trial.stims[0], corr_delays.a, corr_delays.t, corr_delays.v)
 //                mStimuliHandler.postDelayed({   deliverShiftedStimulus(trial.stims[0], corr_delays.a, corr_delays.t, corr_delays.v) }, onset0)
 
             if(trial.stims[1] > 0)
-                mStimuliHandler.postDelayed({   deliverShiftedStimulus(trial.stims[1], corr_delays.a, corr_delays.t, corr_delays.v) }, onset1)
+                mStimuliHandler.postDelayed({   mStimuliManager.deliverShiftedStimulus(trial.stims[1], corr_delays.a, corr_delays.t, corr_delays.v) }, onset1)
 
             if(trial.stims[2] > 0){
-                corr_delays = delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0,0, 0)
-                mStimuliHandler.postDelayed({   deliverShiftedStimulus(trial.stims[2], corr_delays.a, corr_delays.t, corr_delays.v) }, onset2)
+                corr_delays = delaysAligner.arrangeDelays(STIM_ATV)
+                mStimuliHandler.postDelayed({   mStimuliManager.deliverShiftedStimulus(trial.stims[2], corr_delays.a, corr_delays.t, corr_delays.v) }, onset2)
             }
 
             mStimuliHandler.postDelayed({   onTrialEnd()    }, onsetEnd)

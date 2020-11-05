@@ -1,6 +1,6 @@
 package iit.uvip.psysuite.core.tests.tid
 
-import iit.uvip.psysuite.core.common.TrialBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
 
 
 class TrialTID(id:Int=-1, type:Int, val block:Int, val group:Int, val session:Int, var delta1:Int, var delta2:Int, val ref_first:Boolean, val duration:Int, answers:List<String>): TrialBasic(id, type,"", ""){

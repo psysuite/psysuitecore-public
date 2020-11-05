@@ -1,8 +1,9 @@
 package iit.uvip.psysuite.core.tests.sample
 
-import iit.uvip.psysuite.core.common.DelaysAligner
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.stimuli.DelaysAligner
+import iit.uvip.psysuite.core.tests.TestBasic
 import kotlinx.android.parcel.Parcelize
 import org.albaspazio.core.accessory.Device
 
@@ -28,7 +29,7 @@ open class SubjectSampleParcel(
     override var whitenoise: Int = TestBasic.TEST_WNOISE_CHOOSE_ON,
     override var vercode: Int = -1,
     override var showResult: Boolean = false,
-    override var population: Int = TestBasic.POPULATION_TD,
+    override var population: Int = Populations.POPULATION_TD,
     override var isDebug: Boolean = false,
 
     var stim_sources:Int = 0,       // according to modalities selection

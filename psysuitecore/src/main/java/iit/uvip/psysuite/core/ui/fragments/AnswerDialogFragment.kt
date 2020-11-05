@@ -1,4 +1,4 @@
-package iit.uvip.psysuite.core.fragments
+package iit.uvip.psysuite.core.ui.fragments
 
 import android.app.Activity
 import android.os.Bundle
@@ -9,33 +9,37 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.TestBasic
+import iit.uvip.psysuite.core.tests.TestBasic
 import kotlinx.android.synthetic.main.fragment_answer.*
 import org.albaspazio.core.accessory.getTimeDifference
+import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
 import java.lang.Math.random
 import java.util.*
 
 
-class AnswerDialogFragment: DialogFragment()
+open class AnswerDialogFragment: DialogFragment()
 {
-    val LOG_TAG = AnswerDialogFragment::class.java.simpleName
+    open val LOG_TAG = AnswerDialogFragment::class.java.simpleName
 
-    private var isDebug:Boolean = false
+    protected var isDebug:Boolean = false
 
-    private var showResult:Boolean = false
+    protected var showResult:Boolean = false
     private var correctAnswer:String = ""
 
-    private lateinit var mAnswers:ArrayList<String>
-    lateinit var onsetDate:Date
+    protected var mAnswers:ArrayList<String> = arrayListOf()
+    protected var onsetDate:Date  = Date()
     private val mHandler:Handler = Handler()
 
+    protected var tts: SpeechManager?                     = null
+
     companion object {
-        fun newInstance(title: String): AnswerDialogFragment {
+        fun newInstance(title: String, speechManager: SpeechManager): AnswerDialogFragment {
             val frag = AnswerDialogFragment()
             val args = Bundle()
             args.putString("title", title)
             frag.setArguments(args)
+            frag.tts = speechManager
 
             return frag
         }
@@ -53,13 +57,13 @@ class AnswerDialogFragment: DialogFragment()
         val title           = requireArguments().getString("title", "Enter Name")
         val str_trial       = "trial " +  (requireArguments().getInt("trial_id", 0) + 1).toString() + " di " + requireArguments().getInt("tot_trials", 0)
         val question        = requireArguments().getString("question", "Enter Name")
-        val answers         = requireArguments().getStringArrayList("answers")
+        mAnswers            = requireArguments().getStringArrayList("answers") ?: arrayListOf<String>()
         val debug_info      = requireArguments().getString("debug")
         isDebug             = requireArguments().getBoolean("isDebug", false)
 
         showResult          = requireArguments().getBoolean("show_result", false)
-        if(showResult)
-            correctAnswer   = requireArguments().getString("correct_answer", answers?.get(0))
+        if(showResult && mAnswers.size > 0)
+            correctAnswer   = requireArguments().getString("correct_answer", mAnswers[0])
 
         dialog?.setTitle(title)
         imgvResult.visibility   = View.INVISIBLE
@@ -69,14 +73,10 @@ class AnswerDialogFragment: DialogFragment()
         txt_question.text   = question
         txt_debug.text      = debug_info
 
-        if (answers != null)
-            if (answers.isNotEmpty()) {
-                mAnswers = answers
-                rb_a_0.text = mAnswers[0]
-                rb_a_1.text = mAnswers[1]
-            }
-
-        onsetDate           = Date()
+        if (mAnswers.isNotEmpty()) {
+            rb_a_0.text = mAnswers[0]
+            rb_a_1.text = mAnswers[1]
+        }
 
         clear()
 
@@ -99,11 +99,7 @@ class AnswerDialogFragment: DialogFragment()
         super.onResume()
 
         bt_confirm.setOnClickListener{
-
-            if(radioGroupAudio.checkedRadioButtonId != -1)
-                checkResult(mAnswers[radioGroupAudio.indexOfChild(radioGroupAudio.findViewById(radioGroupAudio.checkedRadioButtonId))])
-            else
-                showToast("Seleziona un'opzione", requireContext())
+            confirm()
         }
 
         bt_clear.setOnClickListener{
@@ -111,10 +107,21 @@ class AnswerDialogFragment: DialogFragment()
         }
 
         bt_abort_test.setOnClickListener{
-            mHandler.removeCallbacksAndMessages(null)
-            sendResult("", 0, TestBasic.EVENT_TRIAL_ABORT)
-            dismiss()
+            abort()
         }
+    }
+
+    protected open fun confirm(){
+        if(radioGroupAudio.checkedRadioButtonId != -1)
+            checkResult(mAnswers[radioGroupAudio.indexOfChild(radioGroupAudio.findViewById(radioGroupAudio.checkedRadioButtonId))])
+        else
+            showToast("Seleziona un'opzione", requireContext())
+    }
+
+    protected fun abort(){
+        mHandler.removeCallbacksAndMessages(null)
+        sendResult("", 0, TestBasic.EVENT_TRIAL_ABORT)
+        dismiss()
     }
 
     private fun checkResult(curr_answer:String){
@@ -134,7 +141,7 @@ class AnswerDialogFragment: DialogFragment()
         else    sendResult(curr_answer, elapsedms, TestBasic.EVENT_ANSWER_GIVEN)
     }
 
-    private fun sendResult(response: String, elapsedTime: Int, response_id: Int) {
+    protected fun sendResult(response: String, elapsedTime: Int, response_id: Int) {
         if (targetFragment == null) return
 
         val intent = TestFragment.newIntent(response, elapsedTime, response_id)

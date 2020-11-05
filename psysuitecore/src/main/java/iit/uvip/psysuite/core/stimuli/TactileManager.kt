@@ -1,14 +1,13 @@
-package iit.uvip.psysuite.core.common.stimuli
+package iit.uvip.psysuite.core.stimuli
 
 import android.os.Handler
-import iit.uvip.psysuite.core.common.TestBasic
 import org.albaspazio.core.accessory.VibrationManager
 
 class TactileManager(private val vibrator: VibrationManager, override val amplitude:Int=-1,
                      val timings:List<Int> = listOf(), val amplitudes:List<Int> = listOf(),
                      override val duration:Long=-1L, handler: Handler
 )
-    : StimulusManager(TestBasic.STIM_TYPE_T1, amplitude, duration, handler){
+    : StimulusManager(StimuliManager.STIM_TYPE_T1, amplitude, duration, handler){
 
     val isValid:Boolean
         get() = duration > 0

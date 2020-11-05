@@ -5,14 +5,20 @@ import android.content.Context
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.*
-import iit.uvip.psysuite.core.common.stimuli.AudioManager
-import iit.uvip.psysuite.core.common.stimuli.ImageViewDefinedException
-import iit.uvip.psysuite.core.common.stimuli.StimuliManager
-import iit.uvip.psysuite.core.common.stimuli.VisualManager
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.stimuli.AudioManager
+import iit.uvip.psysuite.core.stimuli.ImageViewDefinedException
+import iit.uvip.psysuite.core.stimuli.StimuliManager
+import iit.uvip.psysuite.core.stimuli.VisualManager
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsInfants
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
+import iit.uvip.psysuite.core.utility.ConditionData
+import iit.uvip.psysuite.core.utility.CorrectedStimuliDelay
+import iit.uvip.psysuite.core.utility.StimulusBindingsUnbalanced
+import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
 import kotlin.math.roundToInt
 
@@ -21,15 +27,18 @@ class TestAVB(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
               subjectparcel: SubjectBasicParcel,
-              mImageView: ImageView?
-) : TestBasic(ctx, activity, hostfragment, subjectparcel, mImageView = mImageView)
+              mImageView: ImageView?,
+              speechManager: SpeechManager?
+) : TestBasic(ctx, activity, hostfragment, subjectparcel, mImageView = mImageView, speechManager=speechManager)
 {
     override var LOG_TAG:String = TestAVB::class.java.simpleName
 
     private var curISI: Long = 0L
 
     // stimuli combinations
-    private val BIMODAL_CODE            = STIM_TYPE_A1V1
+    private val STIM_A              = StimuliManager.STIM_TYPE_A1
+    private val STIM_V              = StimuliManager.STIM_TYPE_V1
+    private val BIMODAL_CODE            = STIM_A or STIM_V
 
     private var allQuestions:MutableList<String> = mutableListOf()
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle)
@@ -96,23 +105,19 @@ class TestAVB(ctx: Context,
 
          @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com")
 
-        fun getConditionsInfo(ctx: Context): List<SpinnerData> {
-            return mutableListOf(
-                SpinnerData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_single)}" , TEST_AVB_TIME_SINGLESTIM          ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_single_tag)}"),
-                SpinnerData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double)}" , TEST_AVB_TIME_DOUBLESTIM          ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_double_tag)}"),
-                SpinnerData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_single_tod)}" , TEST_AVB_TIME_SINGLESTIM_TOD  ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_single_tod_tag)}"),
-                SpinnerData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double_tod)}" , TEST_AVB_TIME_DOUBLESTIM_TOD  ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_double_tod_tag)}"),
-                SpinnerData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_infants)}", TEST_AVB_TIME_INF                 ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_infants_tag)}"))
-        }
+        fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
+                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_single)}" , TEST_AVB_TIME_SINGLESTIM          ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_single_tag)}", Populations.sighted_hearing_populations),
+                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double)}" , TEST_AVB_TIME_DOUBLESTIM          ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_double_tag)}", Populations.sighted_hearing_populations),
+                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_single_tod)}" , TEST_AVB_TIME_SINGLESTIM_TOD  ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_single_tod_tag)}", Populations.sighted_hearing_populations),
+                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double_tod)}" , TEST_AVB_TIME_DOUBLESTIM_TOD  ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_double_tod_tag)}", Populations.sighted_hearing_populations),
+                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_infants)}", TEST_AVB_TIME_INF                 ,"${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atb_subtask_time_infants_tag)}", Populations.sighted_hearing_populations))
 
-        fun getNextTrialModes():List<List<Int>> {
-            return listOf(
+        fun getNextTrialModes():List<List<Int>> = listOf(
                 listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
                 listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
                 listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
                 listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
                 listOf(TEST_NEXTTRIAL_AUTO, TEST_NEXTTRIAL_BUTTON))
-        }
 
         fun getEmailRecipients():Array<String> = recipients
     }
@@ -199,9 +204,10 @@ class TestAVB(ctx: Context,
 
         if (subjectparcel.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
-        mStimuliManager = StimuliManager(AudioManager(STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+        mStimuliManager = StimuliManager(AudioManager(STIM_A, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
             null,
-            VisualManager(STIM_TYPE_V1, mImageView, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler))
+            VisualManager(STIM_V, mImageView, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
+            delaysAligner, ctx)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
@@ -364,7 +370,7 @@ class TestAVB(ctx: Context,
 
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+                    mStimuliManager.deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
                 }, shift)
                 mStimuliHandler.postDelayed({
                     deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced){ onTrialEnd() }
@@ -384,17 +390,17 @@ class TestAVB(ctx: Context,
         // first train
         mStimuliHandler.postDelayed({
             testEvent.accept(Pair(EVENT_STIMULI_START, null))
-            deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+            mStimuliManager.deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
         }, shift)
 
         mStimuliHandler.postDelayed({
             testEvent.accept(Pair(EVENT_STIMULI_START, null))
-            deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+            mStimuliManager.deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
         }, shift + curISI)
 
         mStimuliHandler.postDelayed({
             testEvent.accept(Pair(EVENT_STIMULI_START, null))
-            deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+            mStimuliManager.deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
         }, shift + 2*curISI)
 
         // second train
@@ -414,7 +420,7 @@ class TestAVB(ctx: Context,
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced, onEnd:() -> Unit = {}){
 
         var type = 0
-        val corr_delays:CorrectedStimuliDelay = when(trial.type) {
+        val corr_delays: CorrectedStimuliDelay = when(trial.type) {
             TYPE_AV     -> {
                 type = mStimuliManager.typeAV
                 delaysAligner.arrangeDelays(type, 0,-1, 0)
@@ -440,7 +446,7 @@ class TestAVB(ctx: Context,
                 CorrectedStimuliDelay(0, -1, 0)
             }
         }
-        deliverShiftedStimulus(type, corr_delays.a, corr_delays.t, corr_delays.v){ onEnd()}
+        mStimuliManager.deliverShiftedStimulus(type, corr_delays.a, corr_delays.t, corr_delays.v){ onEnd()}
     }
     // =============================================================================================================================
 }

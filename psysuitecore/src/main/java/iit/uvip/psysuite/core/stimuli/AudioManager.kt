@@ -1,4 +1,4 @@
-package iit.uvip.psysuite.core.common.stimuli
+package iit.uvip.psysuite.core.stimuli
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -8,7 +8,6 @@ import android.media.SoundPool
 import android.media.ToneGenerator
 import android.os.Handler
 import android.util.Log
-import iit.uvip.psysuite.core.common.TestBasic
 import java.io.IOException
 
 
@@ -82,20 +81,20 @@ class AudioManager(type: Int, var resource: Any, override var amplitude: Int = -
 
     init{
         when(type){
-            TestBasic.STIM_TYPE_A1 -> {
+            StimuliManager.STIM_TYPE_A1 -> {
                 if ((resource as Int) == -1) resource = ToneGenerator.TONE_CDMA_ALERT_INCALL_LITE
                 if (amplitude == -1) amplitude = ToneGenerator.MAX_VOLUME
 
                 mToneGen            = ToneGenerator(AudioManager.STREAM_SYSTEM, amplitude)
                 isResourcesLoaded   = true
             }
-            TestBasic.STIM_TYPE_A2 -> {
+            StimuliManager.STIM_TYPE_A2 -> {
                 if ((resource as String).isNotEmpty()) {
                     loadResource(resource as String, amplitude.toFloat())   // also set isResourcesLoaded/loadedResource...otherwise throw AudioResourceException
                     if(isValid) currMPAudio?.dummyUse(amplitude.toFloat())
                 }
             }
-            TestBasic.STIM_TYPE_A3 -> {
+            StimuliManager.STIM_TYPE_A3 -> {
                 try {
                     // is a not null/empty list + first element is not empty string
                     if (resource is List<*> && !(resource as List<*>).isNullOrEmpty() && (resource as List<*>)[0] is String && ((resource as List<*>)[0] as String).isNotEmpty()) {
@@ -135,12 +134,12 @@ class AudioManager(type: Int, var resource: Any, override var amplitude: Int = -
         val d = dur ?: duration
 
         when(type) {
-            TestBasic.STIM_TYPE_A1 -> mToneGen!!.startTone(resource as Int, (d as Long).toInt())
-            TestBasic.STIM_TYPE_A2 -> {
+            StimuliManager.STIM_TYPE_A1 -> mToneGen!!.startTone(resource as Int, (d as Long).toInt())
+            StimuliManager.STIM_TYPE_A2 -> {
                 currMPAudio?.start()
                 handler.postDelayed({ stop() }, d as Long)
             }
-            TestBasic.STIM_TYPE_A3 -> {
+            StimuliManager.STIM_TYPE_A3 -> {
                 sndPoolPlayingID = sndPool!!.play(sndPoolIDs[id], (amplitude*1.0F)/100, (amplitude*1.0F)/100, 1, 0, 1.0f)
                 handler.postDelayed({ stop() }, d as Long)
             }
@@ -149,8 +148,8 @@ class AudioManager(type: Int, var resource: Any, override var amplitude: Int = -
 
     override fun getHandler():Any? {
         return  when(type){
-                TestBasic.STIM_TYPE_A1  -> mToneGen
-                TestBasic.STIM_TYPE_A2  -> currMPAudio
+            StimuliManager.STIM_TYPE_A1  -> mToneGen
+            StimuliManager.STIM_TYPE_A2  -> currMPAudio
                 else                    -> sndPool
         }
     }
@@ -158,8 +157,8 @@ class AudioManager(type: Int, var resource: Any, override var amplitude: Int = -
     override fun stop(){
 
         when(type){
-            TestBasic.STIM_TYPE_A1  ->  mToneGen!!.stopTone()
-            TestBasic.STIM_TYPE_A2  -> {
+            StimuliManager.STIM_TYPE_A1  ->  mToneGen!!.stopTone()
+            StimuliManager.STIM_TYPE_A2  -> {
                                         currMPAudio!!.stop()
                                         currMPAudio!!.prepare()
             }
@@ -174,8 +173,8 @@ class AudioManager(type: Int, var resource: Any, override var amplitude: Int = -
 
     fun isLoaded(res: String):Boolean{
         return when(type){
-            TestBasic.STIM_TYPE_A2  -> (res == loadedResource && currMPAudio != null)
-            TestBasic.STIM_TYPE_A3  -> (loadedAssets == (resource as List<*>).size && sndPool != null)
+            StimuliManager.STIM_TYPE_A2  -> (res == loadedResource && currMPAudio != null)
+            StimuliManager.STIM_TYPE_A3  -> (loadedAssets == (resource as List<*>).size && sndPool != null)
             else  -> true
         }
     }

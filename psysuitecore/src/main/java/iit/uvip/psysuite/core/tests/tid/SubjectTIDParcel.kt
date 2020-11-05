@@ -1,11 +1,12 @@
 package iit.uvip.psysuite.core.tests.tid
 
 import android.content.Context
-import iit.uvip.psysuite.core.common.DelaysAligner
-import iit.uvip.psysuite.core.common.SpinnerData
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.getLabelLog
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectLongitParcel
+import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.model.parcel.SubjectLongitParcel
+import iit.uvip.psysuite.core.stimuli.DelaysAligner
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.utility.IdLabelData
+import iit.uvip.psysuite.core.utility.getLabelLog
 import kotlinx.android.parcel.Parcelize
 import org.albaspazio.core.accessory.Device
 import org.albaspazio.core.accessory.getCompanionObjectMethod
@@ -27,7 +28,7 @@ class SubjectTIDParcel(
     override var whitenoise: Int = TestBasic.TEST_WNOISE_DISABLED,
     override var vercode: Int = -1,
     override var showResult: Boolean = false,
-    override var population: Int = TestBasic.POPULATION_TD,
+    override var population: Int = Populations.POPULATION_TD,
     override var isDebug: Boolean = false,
 
     override var spinner_sel: Int = -1,
@@ -38,7 +39,7 @@ class SubjectTIDParcel(
     override fun getFilesPrefix(ctx:Context):String{
 
         val ci          = getCompanionObjectMethod(classes[0], "getConditionsInfo")
-        val type_label  = (ci.first?.call(ci.second, ctx) as List<SpinnerData>).getLabelLog(type)
+        val type_label  = (ci.first?.call(ci.second, ctx) as List<IdLabelData>).getLabelLog(type)
 
         return "${label}_${population}_${group}_s${session}_$type_label"
     }

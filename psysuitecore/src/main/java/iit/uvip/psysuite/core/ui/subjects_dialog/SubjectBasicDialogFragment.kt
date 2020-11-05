@@ -1,4 +1,4 @@
-package iit.uvip.psysuite.core.common.subjects_dialog
+package iit.uvip.psysuite.core.ui.subjects_dialog
 
 import android.app.Activity
 import android.content.Intent
@@ -7,30 +7,33 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.SpinnerData
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.utility.ConditionData
+import iit.uvip.psysuite.core.utility.IdLabelData
 import kotlinx.android.synthetic.main.fragment_subject_info_basic.*
 import org.albaspazio.core.accessory.deleteFilesStartingWith
 import org.albaspazio.core.accessory.getCompanionObjectMethod
 import org.albaspazio.core.ui.show2ChoisesDialog
 import org.albaspazio.core.ui.showAlert
 
-open class SubjectBasicDialogFragment: DialogFragment(){
+open class SubjectBasicDialogFragment: DialogFragment(), AdapterView.OnItemSelectedListener{
 
     open val LOG_TAG: String = SubjectBasicDialogFragment::class.java.simpleName
 
 
-    protected var nPopulations: Int = 0
-    protected var selPopulation: Int = -1
+    private var allowedPopulations:List<IdLabelData> = listOf()
+    private var nPopulations: Int = 0
+    private var selPopulation: Int = -1
 
     protected var nConditions: Int = 0
-    protected var selCondition: Int = -1
+    private var selCondition: Int = -1
 
-    protected lateinit var mTaskCodeLabels: List<SpinnerData>
+    protected lateinit var mTaskCodeLabels: List<ConditionData>
     protected lateinit var mNextTrialModes:List<List<Int>>
     protected lateinit var subject: SubjectBasicParcel
 
@@ -44,6 +47,8 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        spCondition.onItemSelectedListener = this
 
         val subj: SubjectBasicParcel? = arguments?.getParcelable(EVENT_SUBJECT)
 
@@ -60,7 +65,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         mNextTrialModes = ntm.first?.call(ntm.second) as List<List<Int>>
 
         val ci          = getCompanionObjectMethod(subject.classes[0], "getConditionsInfo")
-        mTaskCodeLabels = ci.first?.call(ci.second, requireContext()) as List<SpinnerData>
+        mTaskCodeLabels = ci.first?.call(ci.second, requireContext()) as List<ConditionData>
 
         initData(subject)
 
@@ -92,7 +97,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
         // SUB TASKS & POPULATION
         setConditions(mTaskCodeLabels)
-        setPopulation()
+        setPopulation(selCondition)
         //------------------------------------------------------
         // NEXT TRIAL MODALITY
         //------------------------------------------------------
@@ -131,9 +136,9 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
     }
 
-    protected fun setConditions(tc:List<SpinnerData>){
+    protected fun setConditions(tc:List<ConditionData>){
 
-        val adapter: ArrayAdapter<SpinnerData> = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tc)
+        val adapter: ArrayAdapter<ConditionData> = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tc)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spCondition.adapter = adapter
         nConditions         = adapter.count
@@ -164,22 +169,28 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         }
     }
 
-    protected fun setPopulation(){
+    private fun setPopulation(pop_index:Int){
 
-        nPopulations = TestBasic.populations.size
+        allowedPopulations  = mTaskCodeLabels[pop_index].allowedPopulations
+        nPopulations        = allowedPopulations.size
 
-        val adapter: ArrayAdapter<SpinnerData> = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, TestBasic.populations)
+        val adapter: ArrayAdapter<IdLabelData> = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, allowedPopulations)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spPopulation.adapter = adapter
 
         // set condition spinner to subject.type
-        TestBasic.populations.mapIndexed { index, pair ->
-            if (pair.id == subject.population){
-                spPopulation.setSelection(index)
-                selPopulation            = index
-            }
+        selPopulation            = 0
+        allowedPopulations.mapIndexed { index, pair ->
+            if (pair.id == subject.population)  selPopulation = index
         }
+        spPopulation.setSelection(selPopulation)
     }
+
+    override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+        setPopulation(spCondition.selectedItemPosition)
+    }
+
+    override fun onNothingSelected(p0: AdapterView<*>?) {}
 
     //  ---- UI presses ----------------------------------------------------------------
     protected open fun confirmData(){
@@ -207,6 +218,8 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         if (nConditions > 1)
             spCondition.setSelection(-1)
 
+        spPopulation.setSelection(-1)
+
         txtName.setText("")
         txtAge.setText("")
         radioGroupGender.clearCheck()
@@ -229,8 +242,10 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
         if(SubjectBasicParcel.validate(txtName.text.toString(), txtAge.text.toString()).isNotBlank())
                                                                 errors.add(" - " + resources.getString(R.string.select_subject_info))
+
         if(radioGroupGender.checkedRadioButtonId == -1)         errors.add(" - " + resources.getString(R.string.select_gender))
         if (spCondition.selectedItemPosition == -1)             errors.add(" - " + resources.getString(R.string.select_condition))
+        if (spPopulation.selectedItemPosition == -1)            errors.add(" - " + resources.getString(R.string.select_population))
 
         return errors
     }
@@ -241,7 +256,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         val gender:Int              = radioGroupGender.indexOfChild(radioGroupGender.findViewById(radioGroupGender.checkedRadioButtonId))
 
         subject.type                = mTaskCodeLabels[spCondition.selectedItemPosition].id
-        subject.population          = TestBasic.populations[spPopulation.selectedItemPosition].id
+        subject.population          = allowedPopulations[spPopulation.selectedItemPosition].id
 
         subject.label               = txtName.text.toString()
         subject.age                 = txtAge.text.toString().toInt()

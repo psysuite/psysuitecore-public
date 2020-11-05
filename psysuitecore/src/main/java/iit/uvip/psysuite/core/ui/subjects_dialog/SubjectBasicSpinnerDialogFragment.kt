@@ -1,4 +1,4 @@
-package iit.uvip.psysuite.core.common.subjects_dialog
+package iit.uvip.psysuite.core.ui.subjects_dialog
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicListParcel
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicListParcel
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import kotlinx.android.synthetic.main.fragment_subject_info_basic_spinner.*
 
 open class SubjectBasicSpinnerDialogFragment : SubjectBasicDialogFragment()

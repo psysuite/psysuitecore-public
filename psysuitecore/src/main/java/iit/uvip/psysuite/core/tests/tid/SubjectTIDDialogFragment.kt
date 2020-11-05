@@ -7,9 +7,9 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.SpinnerData
-import iit.uvip.psysuite.core.common.subjects_dialog.SubjectLongitudinalDialogFragment
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.ui.subjects_dialog.SubjectLongitudinalDialogFragment
+import iit.uvip.psysuite.core.utility.ConditionData
 import kotlinx.android.synthetic.main.fragment_subject_info_tid.*
 
 class SubjectTIDDialogFragment : SubjectLongitudinalDialogFragment(), AdapterView.OnItemSelectedListener
@@ -34,7 +34,7 @@ class SubjectTIDDialogFragment : SubjectLongitudinalDialogFragment(), AdapterVie
         //------------------------------------------------------
         // GROUPS <=> mTaskCodes
         //------------------------------------------------------
-        val adapter:ArrayAdapter<SpinnerData> = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, mTaskCodeLabels)
+        val adapter:ArrayAdapter<ConditionData> = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, mTaskCodeLabels)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spGroup.adapter = adapter
 
@@ -64,9 +64,6 @@ class SubjectTIDDialogFragment : SubjectLongitudinalDialogFragment(), AdapterVie
             }
         }
     }
-
-
-    override fun onNothingSelected(parent: AdapterView<*>) {}
 
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
 

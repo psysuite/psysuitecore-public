@@ -1,6 +1,6 @@
 package iit.uvip.psysuite.core.tests.mmd
 
-import iit.uvip.psysuite.core.common.TrialBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
 
 //                trial_id    0/1      same/diff        si/no                   1-18
 class TrialMMD(id: Int = -1, type: Int, label: String, correct_answer:String, var audio_id: Int) :

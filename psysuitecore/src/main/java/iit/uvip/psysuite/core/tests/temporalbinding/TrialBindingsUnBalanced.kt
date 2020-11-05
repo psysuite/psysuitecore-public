@@ -1,10 +1,11 @@
 package iit.uvip.psysuite.core.tests.temporalbinding
 
-import iit.uvip.psysuite.core.common.TrialBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
 
 
 //                     trial_id    0-8      "none"
-class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, val delay:Long=0L, correct_answer:String=""):TrialBasic(id, type, "", correct_answer) {
+class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, val delay:Long=0L, correct_answer:String=""):
+    TrialBasic(id, type, "", correct_answer) {
 
     companion object {
         @JvmStatic

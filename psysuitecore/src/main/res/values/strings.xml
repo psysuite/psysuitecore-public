@@ -22,6 +22,7 @@
     <string name="block_ended">Questa parte del test è terminata\nVuoi continuare o interrompere per poi proseguire un\'altra volta?</string>
     <string name="test_ended">Il Test è terminato</string>
     <string name="test_aborted">Hai deciso di interrompere il test. Vuoi cancellare i risultati fin qui scritti\n o li vuoi mantenere?</string>
+    <string name="new_trial">Nuovo stimolo</string>
 
     <string name="name">NOME</string>
     <string name="gender">SESSO</string>
@@ -64,28 +65,21 @@
     <string name="subject_block_present">Esiste una precedente sessione di test\nVuoi proseguirla o vuoi cancellare tutto e ricominciare da zero?</string>
     <string name="select_subject_info">Indicare nome ed età</string>
     <string name="select_gender">Indicare il sesso</string>
+    <string name="select_population">Seleziona una popolazione</string>
     <string name="select_condition">Seleziona una condizione sperimentale</string>
     <string name="select_session">Seleziona una sessione sperimentale</string>
     <string name="select_spinner">Seleziona %1$s</string>
+    <string name="select_one_answer">Seleziona una risposta</string>
+    <string name="warning_dt_again2abort">Vuoi interrompere il test? esegui un altro doppio tocco per confermare o un tocco singolo per continuare il test</string>
+
+    <string name="answer_selected">risposta %1$s</string>
     <string name="subject_info_notcorrected">Le seguenti informazioni del soggetto sono errate:\n\n%1$s</string>
 
-    <string name="yes">yes</string>
+    <string name="yes">si</string>
     <string name="no">no</string>
     <string name="whitenoise">aggiungi rumore bianco</string>
 
     <string name="session">sessione</string>
-
-    <string-array name="populations_array">
-        <item>TD</item>
-        <item>CB</item>
-        <item>LB</item>
-        <item>CLV</item>
-        <item>LLV</item>
-        <item>CAI</item>
-        <item>LAI</item>
-        <item>ADHD</item>
-    </string-array>
-
 
     <string name="empty_subject_parcel">SOGGETTO E\' VUOTO</string>
     <string name="critical_error">ERRORE IRRECUPERABILE</string>

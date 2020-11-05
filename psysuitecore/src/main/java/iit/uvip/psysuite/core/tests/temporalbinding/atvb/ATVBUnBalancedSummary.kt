@@ -1,8 +1,7 @@
 package iit.uvip.psysuite.core.tests.temporalbinding.atvb
 
 import android.content.Context
-import iit.uvip.psysuite.core.common.Summary
-import iit.uvip.psysuite.core.common.TrialBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
 import iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB.Companion.TYPE_ATV
 import iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB.Companion.TYPE_AT_V
@@ -11,6 +10,7 @@ import iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB.Companion.TYPE
 import iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB.Companion.TYPE_TV_A
 import iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB.Companion.TYPE_T_AV
 import iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB.Companion.TYPE_V_AT
+import iit.uvip.psysuite.core.utility.Summary
 import kotlin.math.roundToInt
 
 

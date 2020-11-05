@@ -1,13 +1,14 @@
-package iit.uvip.psysuite.core.common.subjects_parcel
+package iit.uvip.psysuite.core.model.parcel
 
 import android.content.Context
 import android.os.Parcelable
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import iit.uvip.psysuite.core.common.DelaysAligner
-import iit.uvip.psysuite.core.common.SpinnerData
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.getLabelLog
+import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.stimuli.DelaysAligner
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.utility.ConditionData
+import iit.uvip.psysuite.core.utility.getLabelLog
 import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 import org.albaspazio.core.accessory.*
@@ -31,13 +32,13 @@ open class SubjectBasicParcel(
     open var classes:List<String> = listOf(),
     open var device:Device? = null,
     open var block:Int = -1,
-    open var stimuliDelays:DelaysAligner = DelaysAligner(),
+    open var stimuliDelays: DelaysAligner = DelaysAligner(),
     open var whitenoise: Int = TestBasic.TEST_WNOISE_CHOOSE_ON,
     open var vercode: Int = -1,
     open var showResult: Boolean = false,
-    open var population: Int = TestBasic.POPULATION_TD,
+    open var population: Int = Populations.POPULATION_TD,
     open var isDebug:Boolean = false
-) : Parcelable {
+    ) : Parcelable {
 
     @IgnoredOnParcel
     var subjectFileName:String = ""
@@ -104,8 +105,8 @@ open class SubjectBasicParcel(
     open fun getFilesPrefix(ctx:Context):String {
 
         val ci                  = getCompanionObjectMethod(classes[0], "getConditionsInfo")
-        val type_label          = (ci.first?.call(ci.second, ctx) as List<SpinnerData>).getLabelLog(type)
-        val population_label    = TestBasic.populations.getLabelLog(population)
+        val type_label          = (ci.first?.call(ci.second, ctx) as List<ConditionData>).getLabelLog(type)
+        val population_label    = Populations.all_populations.getLabelLog(population)
 
         return "${label}_${type_label}_$population_label"
     }

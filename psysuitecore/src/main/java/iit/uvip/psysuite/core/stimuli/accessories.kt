@@ -1,4 +1,4 @@
-package iit.uvip.psysuite.core.common.stimuli
+package iit.uvip.psysuite.core.stimuli
 
 import android.media.MediaPlayer
 import android.os.Handler

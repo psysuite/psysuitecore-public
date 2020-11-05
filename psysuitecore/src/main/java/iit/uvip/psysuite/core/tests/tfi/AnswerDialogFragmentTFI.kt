@@ -9,10 +9,11 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.fragments.TestFragment
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.ui.fragments.TestFragment
 import kotlinx.android.synthetic.main.fragment_answer_tfi.*
 import org.albaspazio.core.accessory.getTimeDifference
+import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
 import java.lang.Math.random
 import java.util.*
@@ -27,12 +28,15 @@ class AnswerDialogFragmentTFI: DialogFragment()
     lateinit var onsetDate:Date
     private val mHandler:Handler = Handler()
 
+    private var tts: SpeechManager?                     = null
+
     companion object {
-        fun newInstance(title: String): AnswerDialogFragmentTFI {
+        fun newInstance(title: String, speechManager: SpeechManager): AnswerDialogFragmentTFI {
             val frag = AnswerDialogFragmentTFI()
             val args = Bundle()
             args.putString("title", title)
             frag.setArguments(args)
+            frag.tts = speechManager
 
             return frag
         }

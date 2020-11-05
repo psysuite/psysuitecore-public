@@ -1,6 +1,6 @@
 package iit.uvip.psysuite.core.tests.bis
 
-import iit.uvip.psysuite.core.common.TrialBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
 
 
 class TrialBIS(id:Int=-1, type:Int, label:String, corr_answer:String, val position:Int, val conflict_type:String, val duration:Int, private val duration2:Int=0): TrialBasic(id,type,label, corr_answer){

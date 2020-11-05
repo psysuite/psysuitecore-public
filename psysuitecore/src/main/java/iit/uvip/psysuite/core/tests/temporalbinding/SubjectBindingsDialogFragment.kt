@@ -6,10 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.SpinnerData
-import iit.uvip.psysuite.core.common.TestBasic
-import iit.uvip.psysuite.core.common.subjects_dialog.SubjectBasicDialogFragment
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.ui.subjects_dialog.SubjectBasicDialogFragment
+import iit.uvip.psysuite.core.utility.ConditionData
 import kotlinx.android.synthetic.main.fragment_subject_info_basic.*
 
 // add whitenoise check button
@@ -26,11 +26,9 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
         spCondition.onItemSelectedListener = this
     }
 
-    override fun onNothingSelected(parent: AdapterView<*>) {}
-
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
 
-        when((spCondition.selectedItem as SpinnerData).id){
+        when((spCondition.selectedItem as ConditionData).id){
              TestBasic.TEST_ATB_TIME_DOUBLESTIM,
              TestBasic.TEST_ATB_TIME_SINGLESTIM,
              TestBasic.TEST_ATVB_TIME_D_UNBAL,

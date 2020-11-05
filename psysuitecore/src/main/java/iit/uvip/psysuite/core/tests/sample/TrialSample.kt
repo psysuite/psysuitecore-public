@@ -1,6 +1,6 @@
 package iit.uvip.psysuite.core.tests.sample
 
-import iit.uvip.psysuite.core.common.TrialBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
 
 
 class TrialSample(id:Int=-1, type:Int, label:String, val source:Int, val extraTrial:Any?): TrialBasic(id,type,label, ""){

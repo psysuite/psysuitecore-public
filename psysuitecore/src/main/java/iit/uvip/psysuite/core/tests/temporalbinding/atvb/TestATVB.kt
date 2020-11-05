@@ -5,12 +5,19 @@ import android.content.Context
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.common.*
-import iit.uvip.psysuite.core.common.stimuli.*
-import iit.uvip.psysuite.core.common.subjects_parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.stimuli.*
+import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.tests.TrialBasic
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindings3latencies
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
+import iit.uvip.psysuite.core.utility.ConditionData
+import iit.uvip.psysuite.core.utility.CorrectedStimuliDelay
+import iit.uvip.psysuite.core.utility.Stimulus3delay
+import iit.uvip.psysuite.core.utility.StimulusBindingsUnbalanced
 import org.albaspazio.core.accessory.VibrationManager
+import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
 import kotlin.math.roundToInt
 
@@ -20,16 +27,18 @@ class TestATVB(
     hostfragment: Fragment,
     subjectparcel: SubjectBasicParcel,
     vibrator: VibrationManager?,
-    mImageView: ImageView?
+    mImageView: ImageView?,
+    speechManager: SpeechManager?
 ) : TestBasic(ctx, activity, hostfragment, subjectparcel, vibrator, mImageView) {
 
     override var LOG_TAG: String = TestATVB::class.java.simpleName
 
     private var tone2sec:String = "t200hz_2s"
 
-    private val UNIMODAL_AUDIO_CODE     = STIM_TYPE_A1
-    private val AV_CODE                 = (UNIMODAL_AUDIO_CODE or STIM_TYPE_V1 )
-    private val TRIMODAL_AUDIO_CODE     = (UNIMODAL_AUDIO_CODE or STIM_TYPE_V1 or STIM_TYPE_T1)
+    private val STIM_A      = StimuliManager.STIM_TYPE_A1
+    private val STIM_V      = StimuliManager.STIM_TYPE_V1
+    private val STIM_T      = StimuliManager.STIM_TYPE_T1
+    private val STIM_ATV    = (STIM_A or STIM_T or STIM_V)
 
     private var curISI: Long = 0L
 
@@ -188,20 +197,18 @@ class TestATVB(
 
         @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com") // "psysuite.uvip@gmail.com",
 
-        fun getConditionsInfo(ctx: Context): List<SpinnerData> {
-            return mutableListOf(SpinnerData(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_single),  TEST_ATVB_TIME_S_UNBAL, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atvb_subtask_time_single_tag)}"),
-                                 SpinnerData(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_double), TEST_ATVB_TIME_D_UNBAL, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atvb_subtask_time_double_tag)}"))
+        fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
+            ConditionData(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_single),  TEST_ATVB_TIME_S_UNBAL, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atvb_subtask_time_single_tag)}", Populations.sighted_hearing_populations),
+            ConditionData(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_double), TEST_ATVB_TIME_D_UNBAL, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atvb_subtask_time_double_tag)}", Populations.sighted_hearing_populations))
 //                                 TaskCode(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_single2), TEST_ATVB_TIME_S_BAL, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atvb_subtask_time_single2_tag)}"),
 //                                 TaskCode(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_double2), TEST_ATVB_TIME_D_BAL, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.atvb_subtask_time_double2_tag)}"))
-        }
 
         // unbalanced stimuli temporarily disabled
-        fun getNextTrialModes():List<List<Int>>{
-            return listOf(  listOf(TEST_NEXTTRIAL_ANSWER),
+        fun getNextTrialModes():List<List<Int>> = listOf(
+                            listOf(TEST_NEXTTRIAL_ANSWER),
                             listOf(TEST_NEXTTRIAL_ANSWER))
 //                            listOf(TEST_NEXTTRIAL_ANSWER),
 //                            listOf(TEST_NEXTTRIAL_ANSWER)) //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
-        }
 
         fun getEmailRecipients():Array<String> = recipients
     }
@@ -266,9 +273,10 @@ class TestATVB(
         }
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
-        mStimuliManager = StimuliManager(AudioManager(UNIMODAL_AUDIO_CODE, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+        mStimuliManager = StimuliManager(AudioManager(STIM_A, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
             TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
-            VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler))
+            VisualManager(STIM_V, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
+            delaysAligner, ctx)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
@@ -395,12 +403,12 @@ class TestATVB(
             TEST_ATVB_TIME_D_UNBAL -> {
                 // to align trimodal stimuli, I have to delay the fastest modality by time_shift ms.
                 // Thus I anticipate all main onsets by the same ms
-                val corr_delays = delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0,0, 0)
+                val corr_delays = delaysAligner.arrangeDelays(STIM_ATV)
                 val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
 
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+                    mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v) // simult
                 }, shift)
 
                 // this second stimuli onset could be improved. I should calculate here the final corrected delay (sum of trial specs & system delay)
@@ -432,17 +440,17 @@ class TestATVB(
 
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced){
 
-        val corr_delays:CorrectedStimuliDelay = when(trial.type){
-            TYPE_ATV    ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0,0, 0)
-            TYPE_A_TV   ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0, trial.delay, trial.delay)
-            TYPE_TV_A   ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, trial.delay,0,0)
-            TYPE_T_AV   ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, trial.delay,0, trial.delay)
-            TYPE_AV_T   ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0, trial.delay,0)
-            TYPE_V_AT   ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, trial.delay, trial.delay,0)
-            TYPE_AT_V   ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0,0, trial.delay)
-            else        ->  delaysAligner.arrangeDelays(TRIMODAL_AUDIO_CODE, 0,0,0)
+        val corr_delays: CorrectedStimuliDelay = when(trial.type){
+            TYPE_ATV    ->  delaysAligner.arrangeDelays(STIM_ATV)
+            TYPE_A_TV   ->  delaysAligner.arrangeDelays(STIM_ATV, 0, trial.delay, trial.delay)
+            TYPE_TV_A   ->  delaysAligner.arrangeDelays(STIM_ATV, trial.delay,0,0)
+            TYPE_T_AV   ->  delaysAligner.arrangeDelays(STIM_ATV, trial.delay,0, trial.delay)
+            TYPE_AV_T   ->  delaysAligner.arrangeDelays(STIM_ATV, 0, trial.delay,0)
+            TYPE_V_AT   ->  delaysAligner.arrangeDelays(STIM_ATV, trial.delay, trial.delay,0)
+            TYPE_AT_V   ->  delaysAligner.arrangeDelays(STIM_ATV, 0,0, trial.delay)
+            else        ->  delaysAligner.arrangeDelays(STIM_ATV)
         }
-        deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
+        mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
     }
     // =============================================================================================================================
     // DEBUG
