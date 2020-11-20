@@ -24,17 +24,20 @@ class TVBUnBalancedSummary(ctx:Context) : Summary(ctx){
 
         override var rows:List<SummaryRow> = listOf(
             TVBsummaryRow(TYPE_T,  "T","0"),
+            TVBsummaryRow(TYPE_T_V,"T_V", "1200"),
             TVBsummaryRow(TYPE_T_V,"T_V", "800"),
             TVBsummaryRow(TYPE_T_V,"T_V","400"),
             TVBsummaryRow(TYPE_T_V,"T_V","300"),
             TVBsummaryRow(TYPE_T_V,"T_V","200"),
             TVBsummaryRow(TYPE_T_V,"T_V","100"),
             TVBsummaryRow(TYPE_TV, "TV","0"),
+            TVBsummaryRow(TYPE_V_T,"V_T","50"),
             TVBsummaryRow(TYPE_V_T,"V_T","100"),
             TVBsummaryRow(TYPE_V_T,"V_T","200"),
             TVBsummaryRow(TYPE_V_T,"V_T","300"),
             TVBsummaryRow(TYPE_V_T,"V_T","400"),
             TVBsummaryRow(TYPE_V_T,"V_T","800"),
+            TVBsummaryRow(TYPE_V_T,"V_T","1200"),
             TVBsummaryRow(TYPE_V,  "V","0")
         )
 

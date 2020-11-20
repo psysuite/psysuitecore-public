@@ -24,17 +24,21 @@ class ATBUnBalancedSummary(ctx:Context) : Summary(ctx){
 
         override var rows:List<SummaryRow> = listOf(
             ATBsummaryRow(TYPE_A,  "A","0"),
+            ATBsummaryRow(TYPE_A_T,"A_T","1200"),
             ATBsummaryRow(TYPE_A_T,"A_T", "800"),
             ATBsummaryRow(TYPE_A_T,"A_T","400"),
             ATBsummaryRow(TYPE_A_T,"A_T","300"),
             ATBsummaryRow(TYPE_A_T,"A_T","200"),
             ATBsummaryRow(TYPE_A_T,"A_T","100"),
+            ATBsummaryRow(TYPE_A_T,"A_T","50"),
             ATBsummaryRow(TYPE_AT, "AT","0"),
+            ATBsummaryRow(TYPE_T_A,"T_A","50"),
             ATBsummaryRow(TYPE_T_A,"T_A","100"),
             ATBsummaryRow(TYPE_T_A,"T_A","200"),
             ATBsummaryRow(TYPE_T_A,"T_A","300"),
             ATBsummaryRow(TYPE_T_A,"T_A","400"),
             ATBsummaryRow(TYPE_T_A,"T_A","800"),
+            ATBsummaryRow(TYPE_T_A,"T_A","1200"),
             ATBsummaryRow(TYPE_T,  "T","0")
         )
 

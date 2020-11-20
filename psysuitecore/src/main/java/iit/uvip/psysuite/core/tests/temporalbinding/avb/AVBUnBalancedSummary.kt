@@ -24,17 +24,21 @@ class AVBUnBalancedSummary(ctx:Context) : Summary(ctx){
 
         override var rows:List<SummaryRow> = listOf(
             AVBsummaryRow(TYPE_A,  "A","0"),
+            AVBsummaryRow(TYPE_A_V,"A_V", "1200"),
             AVBsummaryRow(TYPE_A_V,"A_V", "800"),
             AVBsummaryRow(TYPE_A_V,"A_V","400"),
             AVBsummaryRow(TYPE_A_V,"A_V","300"),
             AVBsummaryRow(TYPE_A_V,"A_V","200"),
             AVBsummaryRow(TYPE_A_V,"A_V","100"),
+            AVBsummaryRow(TYPE_A_V,"A_V","50"),
             AVBsummaryRow(TYPE_AV, "AV","0"),
+            AVBsummaryRow(TYPE_V_A,"V_A","50"),
             AVBsummaryRow(TYPE_V_A,"V_A","100"),
             AVBsummaryRow(TYPE_V_A,"V_A","200"),
             AVBsummaryRow(TYPE_V_A,"V_A","300"),
             AVBsummaryRow(TYPE_V_A,"V_A","400"),
             AVBsummaryRow(TYPE_V_A,"V_A","800"),
+            AVBsummaryRow(TYPE_V_A,"V_A","1200"),
             AVBsummaryRow(TYPE_V,  "V","0"))
 
         override fun add(trial: TrialBasic){

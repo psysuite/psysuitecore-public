@@ -46,20 +46,23 @@ class ATVBUnBalancedSummary(ctx:Context) : Summary(ctx){
 
         override var rows:List<SummaryRow> = when(inner_type) {
             A_TV -> listOf(
+                ATVBsummaryRow(TYPE_A_TV, "A_TV", "1200"),
                 ATVBsummaryRow(TYPE_A_TV, "A_TV", "800"),
                 ATVBsummaryRow(TYPE_A_TV, "A_TV", "400"),
                 ATVBsummaryRow(TYPE_A_TV, "A_TV", "300"),
                 ATVBsummaryRow(TYPE_A_TV, "A_TV", "200"),
-                ATVBsummaryRow(TYPE_A_TV, "A_TV", "1002"),
+                ATVBsummaryRow(TYPE_A_TV, "A_TV", "100"),
                 ATVBsummaryRow(TYPE_A_TV, "A_TV", "50"),
                 ATVBsummaryRow(TYPE_A_TV, "TV_A", "50"),
                 ATVBsummaryRow(TYPE_TV_A, "TV_A", "100"),
                 ATVBsummaryRow(TYPE_TV_A, "TV_A", "200"),
                 ATVBsummaryRow(TYPE_TV_A, "TV_A", "300"),
                 ATVBsummaryRow(TYPE_TV_A, "TV_A", "400"),
-                ATVBsummaryRow(TYPE_TV_A, "TV_A", "800")
+                ATVBsummaryRow(TYPE_TV_A, "TV_A", "800"),
+                ATVBsummaryRow(TYPE_TV_A, "TV_A", "1200")
             )
             T_AV -> listOf(
+                ATVBsummaryRow(TYPE_T_AV, "T_AV", "1200"),
                 ATVBsummaryRow(TYPE_T_AV, "T_AV", "800"),
                 ATVBsummaryRow(TYPE_T_AV, "T_AV", "400"),
                 ATVBsummaryRow(TYPE_T_AV, "T_AV", "300"),
@@ -71,10 +74,12 @@ class ATVBUnBalancedSummary(ctx:Context) : Summary(ctx){
                 ATVBsummaryRow(TYPE_AV_T, "AV_T", "200"),
                 ATVBsummaryRow(TYPE_AV_T, "AV_T", "300"),
                 ATVBsummaryRow(TYPE_AV_T, "AV_T", "400"),
-                ATVBsummaryRow(TYPE_AV_T, "AV_T", "800")
+                ATVBsummaryRow(TYPE_AV_T, "AV_T", "800"),
+                ATVBsummaryRow(TYPE_AV_T, "AV_T", "1200")
             )
             // V_AT
             V_AT -> listOf(
+                ATVBsummaryRow(TYPE_V_AT, "V_AT", "1200"),
                 ATVBsummaryRow(TYPE_V_AT, "V_AT", "800"),
                 ATVBsummaryRow(TYPE_V_AT, "V_AT", "400"),
                 ATVBsummaryRow(TYPE_V_AT, "V_AT", "300"),
@@ -86,7 +91,8 @@ class ATVBUnBalancedSummary(ctx:Context) : Summary(ctx){
                 ATVBsummaryRow(TYPE_AT_V, "AT_V", "200"),
                 ATVBsummaryRow(TYPE_AT_V, "AT_V", "300"),
                 ATVBsummaryRow(TYPE_AT_V, "AT_V", "400"),
-                ATVBsummaryRow(TYPE_AT_V, "AT_V", "800")
+                ATVBsummaryRow(TYPE_AT_V, "AT_V", "800"),
+                ATVBsummaryRow(TYPE_AT_V, "AT_V", "1200")
             )
             else -> listOf(ATVBsummaryRow(TYPE_ATV, "ATV", "0"))
         }
