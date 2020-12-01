@@ -367,6 +367,7 @@ class TestFragment : BaseFragment(
     }
 
     // called by: onAnswer, bt_next click, bt_pause click
+    // define whether: onTestEnded() or onBlockEnded()  or nothing (test continued or closed sending event error)
     private fun onNewTrial(prev_result: String = "", elapsed: Int = -1){
         when(mTest.nextTrial(prev_result, elapsed)){
             TestBasic.EVENT_TEST_END    -> onTestEnded()

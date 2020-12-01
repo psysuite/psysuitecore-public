@@ -132,20 +132,23 @@ open class SubjectBasicDialogFragment: DialogFragment(), AdapterView.OnItemSelec
         if (subj.gender != -1)  radioGroupGender.check(radioGroupGender.getChildAt(subj.gender).id)
         else                    radioGroupGender.clearCheck()
         //------------------------------------------------------
-        swWhiteNoise.visibility = View.VISIBLE
-        labWhiteNoise.visibility = View.VISIBLE
+        // noise visibility
+        swWhiteNoise.visibility     = View.VISIBLE
+        labWhiteNoise.visibility    = View.VISIBLE
         when(subj.whitenoise){
-            TestBasic.TEST_WNOISE_DISABLED      ->  {
-                                                    swWhiteNoise.visibility = View.INVISIBLE
-                                                    labWhiteNoise.visibility = View.INVISIBLE
-                                                    }
-            TestBasic.TEST_WNOISE_CHOOSE_OFF    ->  swWhiteNoise.isChecked = false
-            TestBasic.TEST_WNOISE_CHOOSE_ON     ->  swWhiteNoise.isChecked = true
-            TestBasic.TEST_WNOISE_ENABLED       ->  {
-                                                    swWhiteNoise.isChecked = true
-                                                    swWhiteNoise.isEnabled = false
-                                                    }
+            TestBasic.TEST_WNOISE_DISABLED,
+            TestBasic.TEST_WNOISE_ENABLED->  {
+                swWhiteNoise.visibility     = View.INVISIBLE
+                labWhiteNoise.visibility    = View.INVISIBLE
+            }
         }
+        // noise start value
+        swWhiteNoise.isChecked      = true
+        when(subj.whitenoise){
+            TestBasic.TEST_WNOISE_DISABLED,
+            TestBasic.TEST_WNOISE_CHOOSE_OFF    ->  swWhiteNoise.isChecked      = false
+        }
+        //------------------------------------------------------
     }
 
     protected fun setConditions(tc:List<ConditionData>){

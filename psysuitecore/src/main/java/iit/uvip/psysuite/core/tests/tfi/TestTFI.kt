@@ -30,13 +30,16 @@ class TestTFI(ctx: Context,
 {
     override var LOG_TAG:String = TestTFI::class.java.simpleName
 
-    private val N_RIP_X_COND_X_BLOCK:Int    = 6
-    private val NUM_BLOCKS:Int              = 3
+    private val N_RIP_X_COND_X_BLOCK:Int        = 4
+    private val N_RIP_X_COND_X_BLOCK_TOD:Int    = 2
+
+    private val NUM_BLOCKS:Int                  = 4
 
     private val WN_PRESTIM_INTERVAL     = 1000L
     private val WN_POSTTSTIM_INTERVAL   = 500L
     private val STIM_DURATION           = 35L
 
+    private var rip_x_cond_block        = N_RIP_X_COND_X_BLOCK
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle, R.drawable.ape)
 
     companion object {
@@ -90,10 +93,17 @@ class TestTFI(ctx: Context,
         if (subject.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
         if(!subject.isDebug)  createTrials()
-        else                        createTrialsDebug()
+        else                  createTrialsDebug()
         // mTrials list
-        nTrials         = mTrials.size
-        currTrial       = 0
+        nTrials             = mTrials.size
+        currTrial           = 0
+
+        rip_x_cond_block    = N_RIP_X_COND_X_BLOCK
+        var onImage         = 1
+        if(subject.type == TEST_TFI_TODDLERS) {
+            rip_x_cond_block = N_RIP_X_COND_X_BLOCK_TOD
+            onImage          = 2
+        }
 
         mListBlocks     = mutableListOf((nTrials * 0.25F).roundToInt(), (nTrials * 0.5F).roundToInt(), (nTrials * 0.75F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
         mTestLabel      = ""
@@ -101,9 +111,6 @@ class TestTFI(ctx: Context,
             if (it.id == subject.type) mTestLabel = it.label
         }
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
-
-        val onImage =   if(subject.type == TEST_TFI)    1
-                        else                                  2
 
         mStimuliManager = StimuliManager(
             AudioManager(STIM_A, -1,  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
@@ -118,15 +125,15 @@ class TestTFI(ctx: Context,
 
     // =============================================================================================================================
     // CREATE TRIALS
-    // =============================================================================================================================    // set question and create trials list
+    // =============================================================================================================================
+    // set question and create trials list
+    // [26 cond x 2 soa x 4/2 ] x 4 blocks = 208/104 x 4 blocks
     private fun createTrials(){
 
         var cond_type = 0
         for(b in 0 until NUM_BLOCKS){
-
             val block_trials:MutableList<TrialTFI> = mutableListOf()
-
-            for(rb in 0 until N_RIP_X_COND_X_BLOCK){
+            for(rb in 0 until rip_x_cond_block){
 
                 block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,1", soa_1))
                 block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,2", soa_1))
@@ -206,7 +213,7 @@ class TestTFI(ctx: Context,
 
             val block_trials:MutableList<TrialTFI> = mutableListOf()
 
-            for(rb in 0 until N_RIP_X_COND_X_BLOCK){
+            for(rb in 0 until rip_x_cond_block){
                 block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,2", soa_1))
                 block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,2", soa_1))
                 block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_1))

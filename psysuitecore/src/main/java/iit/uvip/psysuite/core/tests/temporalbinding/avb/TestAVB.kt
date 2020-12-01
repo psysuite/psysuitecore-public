@@ -194,8 +194,7 @@ class TestAVB(ctx: Context,
         nTrials     = mTrials.size
         currTrial   = 0
 
-//        mListBlocks = mutableListOf((3*nTrials / 5F).roundToInt(), (4*nTrials / 5F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
-        mListBlocks = mutableListOf((nTrials / 5F).roundToInt(), (2*nTrials / 5F).roundToInt(), (3*nTrials / 5F).roundToInt(), (4*nTrials / 5F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
+        mListBlocks = mutableListOf((nTrials *0.2F).roundToInt(), (nTrials * 0.4F).roundToInt(), (nTrials * 0.6F).roundToInt(), (nTrials * 0.8F).roundToInt())    // define 5 blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
 
         mTestLabel = ""
         getConditionsInfo(ctx).map {

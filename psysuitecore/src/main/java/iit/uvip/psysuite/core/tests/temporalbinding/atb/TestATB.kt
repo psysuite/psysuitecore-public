@@ -211,8 +211,7 @@ class TestATB(ctx: Context,
         nTrials     = mTrials.size
         currTrial   = 0
 
-        mListBlocks = mutableListOf((nTrials / 5F).roundToInt(), (2*nTrials / 5F).roundToInt(), (3*nTrials / 5F).roundToInt(), (4*nTrials / 5F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
-//        mListBlocks = mutableListOf(1,2,5,7)
+        mListBlocks = mutableListOf((nTrials *0.2F).roundToInt(), (nTrials * 0.4F).roundToInt(), (nTrials * 0.6F).roundToInt(), (nTrials * 0.8F).roundToInt())    // define 5 blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
 
         mTestLabel = ""
         getConditionsInfo(ctx).map {
@@ -272,7 +271,7 @@ class TestATB(ctx: Context,
     }
 
     //      at0  a   t  at1200  6latenze
-    // 2 x [ 2 + 2 + 2 +  2  +  4 x 6lat] = 64
+    // 2 x [ 2 + 2 + 2 +  2  +  4 x 6lat] = 2 x 32 = 64
     private fun createTrialsTimeDouble() {
         var cnt = -1
         mTrials = mutableListOf()
@@ -301,7 +300,7 @@ class TestATB(ctx: Context,
 
     // only-A & only-T were removed in single stimulus sub-task. 7/8/2020
     //      at0  at1200  6latenze
-    // 2 x [ 2  +  2  +  4 x 6lat] = 56
+    // 2 x [ 2  +  2  +  4 x 6lat] = 2 x 28 = 56
     private fun createTrialsTimeSingle() {
         var cnt = -1
         mTrials = mutableListOf()

@@ -264,8 +264,7 @@ class TestATVB(
         nTrials         = mTrials.size
         currTrial       = 0
 
-//        mListBlocks     = mutableListOf((nTrials / 2F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
-        mListBlocks     = mutableListOf((nTrials / 5F).roundToInt(), (2*nTrials / 5F).roundToInt(), (3*nTrials / 5F).roundToInt(), (4*nTrials / 5F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
+        mListBlocks     = mutableListOf((nTrials * 0.25F).roundToInt(), (nTrials * 0.5F).roundToInt(), (nTrials * 0.75F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
 
 //        mListBlocks     = mutableListOf(0,2)    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
 
@@ -286,7 +285,7 @@ class TestATVB(
     // =============================================================================================================================
     // CREATE TRIALS
     // =============================================================================================================================
-    // (39 + 3) * 2 * NUM_REPETITIONS(4)
+    // (39 + 3) * 2 * NUM_REPETITIONS(4) = 336
     private fun createTrialsTimeUnbalanced() {
         var cnt = -1
         mTrials = mutableListOf()

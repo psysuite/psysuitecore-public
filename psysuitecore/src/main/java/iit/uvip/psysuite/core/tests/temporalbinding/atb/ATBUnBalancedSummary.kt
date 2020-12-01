@@ -47,24 +47,28 @@ class ATBUnBalancedSummary(ctx:Context) : Summary(ctx){
                 TYPE_A          ->   rows[0].add(trial)
                 TYPE_A_T        -> {
                     when((trial as TrialBindingsUnBalanced).delay){
-                        800L    -> rows[1].add(trial)
-                        400L    -> rows[2].add(trial)
-                        300L    -> rows[3].add(trial)
-                        200L    -> rows[4].add(trial)
-                        100L    -> rows[5].add(trial)
+                        1200L   -> rows[1].add(trial)
+                        800L    -> rows[2].add(trial)
+                        400L    -> rows[3].add(trial)
+                        300L    -> rows[4].add(trial)
+                        200L    -> rows[5].add(trial)
+                        100L    -> rows[6].add(trial)
+                        50L     -> rows[7].add(trial)
                     }
                 }
-                TYPE_AT         ->  rows[6].add(trial)
+                TYPE_AT         -> rows[8].add(trial)
                 TYPE_T_A        -> {
                     when((trial as TrialBindingsUnBalanced).delay){
-                        100L    -> rows[7].add(trial)
-                        200L    -> rows[8].add(trial)
-                        300L    -> rows[9].add(trial)
-                        400L    -> rows[10].add(trial)
-                        800L    -> rows[11].add(trial)
+                        50L     -> rows[9].add(trial)
+                        100L    -> rows[10].add(trial)
+                        200L    -> rows[11].add(trial)
+                        300L    -> rows[12].add(trial)
+                        400L    -> rows[13].add(trial)
+                        800L    -> rows[14].add(trial)
+                        1200L   -> rows[15].add(trial)
                     }
                 }
-                TYPE_T          ->  rows[12].add(trial)
+                TYPE_T          ->  rows[16].add(trial)
             }
         }
     }

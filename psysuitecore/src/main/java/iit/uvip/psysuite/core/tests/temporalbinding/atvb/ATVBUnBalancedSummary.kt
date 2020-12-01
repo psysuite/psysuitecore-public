@@ -101,22 +101,24 @@ class ATVBUnBalancedSummary(ctx:Context) : Summary(ctx){
             when(trial.type){
                 TYPE_A_TV, TYPE_T_AV, TYPE_V_AT ->{
                     when((trial as TrialBindingsUnBalanced).delay){
-                        800L    -> rows[0].add(trial)
-                        400L    -> rows[1].add(trial)
-                        300L    -> rows[2].add(trial)
-                        200L    -> rows[3].add(trial)
-                        100L    -> rows[4].add(trial)
-                        50L     -> rows[5].add(trial)
+                        1200L   -> rows[0].add(trial)
+                        800L    -> rows[1].add(trial)
+                        400L    -> rows[2].add(trial)
+                        300L    -> rows[3].add(trial)
+                        200L    -> rows[4].add(trial)
+                        100L    -> rows[5].add(trial)
+                        50L     -> rows[6].add(trial)
                     }
                 }
                 TYPE_TV_A, TYPE_AV_T, TYPE_AT_V ->{
                     when((trial as TrialBindingsUnBalanced).delay){
-                        50L     -> rows[6].add(trial)
-                        100L    -> rows[7].add(trial)
-                        200L    -> rows[8].add(trial)
-                        300L    -> rows[9].add(trial)
-                        400L    -> rows[10].add(trial)
-                        800L    -> rows[11].add(trial)
+                        50L     -> rows[7].add(trial)
+                        100L    -> rows[8].add(trial)
+                        200L    -> rows[9].add(trial)
+                        300L    -> rows[10].add(trial)
+                        400L    -> rows[11].add(trial)
+                        800L    -> rows[12].add(trial)
+                        1200L   -> rows[13].add(trial)
                     }
                 }
                 TYPE_ATV ->{
