@@ -29,7 +29,7 @@ open class SubjectBasicSpinnerDialogFragment : SubjectBasicDialogFragment()
             spinner.adapter = adapter
             nSpinnerElements = adapter.count
         }
-        spinner.setSelection((subj as SubjectBasicListParcel).spinner_sel)
+        spinner.setSelection((subj as SubjectBasicListParcel).spinner_sel, false)
 
         labSpinner.text = (subject as SubjectBasicListParcel).spinner_label
     }

@@ -51,7 +51,7 @@ class SubjectTIDDialogFragment : SubjectLongitudinalDialogFragment(), AdapterVie
                 // set group spinner to subject.group
                 mTaskCodeLabels.mapIndexed { index, taskCode ->
                     if (taskCode.id == (subject as SubjectTIDParcel).group){
-                        spGroup.setSelection(index)
+                        spGroup.setSelection(index, false)
                         selGroup            = index
                     }
                 }
@@ -70,7 +70,7 @@ class SubjectTIDDialogFragment : SubjectLongitudinalDialogFragment(), AdapterVie
         // spGroup and spCondition data coincides.
         // when selecting training sessions => selCondition = selGroup (and condition spinner gets disabled)
 
-        // session changed
+        // check session change
         when(spinner.selectedItemPosition){
             in 2..6   -> {
                         setConditions(listOf(mTaskCodeLabels[spGroup.selectedItemPosition])) // make condition spinner GONE
@@ -90,6 +90,8 @@ class SubjectTIDDialogFragment : SubjectLongitudinalDialogFragment(), AdapterVie
         labCondition.visibility = View.VISIBLE
         spCondition.visibility  = View.VISIBLE
     }
+    override fun onNothingSelected(p0: AdapterView<*>?) {}
+
 
     override fun checkData():List<String>{
         val errors = super.checkData() as MutableList<String>

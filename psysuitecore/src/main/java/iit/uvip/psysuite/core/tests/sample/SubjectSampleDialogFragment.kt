@@ -201,6 +201,7 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
         updateVisual()
         updateCondition()
     }
+    override fun onNothingSelected(parent: AdapterView<*>?) {}
 
     private fun updateCondition(){
         when(spCondition.selectedItemPosition) {

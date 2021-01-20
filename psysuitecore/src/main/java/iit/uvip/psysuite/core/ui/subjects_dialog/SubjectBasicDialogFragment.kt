@@ -21,7 +21,7 @@ import org.albaspazio.core.filesystem.deleteFilesStartingWith
 import org.albaspazio.core.ui.show2ChoisesDialog
 import org.albaspazio.core.ui.showAlert
 
-open class SubjectBasicDialogFragment: DialogFragment(), AdapterView.OnItemSelectedListener{
+open class SubjectBasicDialogFragment: DialogFragment(){
 
     open val LOG_TAG: String = SubjectBasicDialogFragment::class.java.simpleName
 
@@ -47,8 +47,6 @@ open class SubjectBasicDialogFragment: DialogFragment(), AdapterView.OnItemSelec
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        spCondition.onItemSelectedListener = this
 
         val subj: SubjectBasicParcel? = arguments?.getParcelable(EVENT_SUBJECT)
 
@@ -170,7 +168,7 @@ open class SubjectBasicDialogFragment: DialogFragment(), AdapterView.OnItemSelec
                 // set condition spinner to subject.type
                 mTaskCodeLabels.mapIndexed { index, taskCode ->
                     if (taskCode.id == subject.type){
-                        spCondition.setSelection(index)
+                        spCondition.setSelection(index, false)
                         selCondition            = index
                     }
                 }
@@ -181,6 +179,12 @@ open class SubjectBasicDialogFragment: DialogFragment(), AdapterView.OnItemSelec
                 spCondition.setSelection(selCondition)
                 subject.type            = mTaskCodeLabels[0].id
             }
+        }
+
+        spCondition.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                setPopulation(spCondition.selectedItemPosition) }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
         }
     }
 
@@ -198,14 +202,8 @@ open class SubjectBasicDialogFragment: DialogFragment(), AdapterView.OnItemSelec
         allowedPopulations.mapIndexed { index, pair ->
             if (pair.id == subject.population)  selPopulation = index
         }
-        spPopulation.setSelection(selPopulation)
+        spPopulation.setSelection(selPopulation, false)
     }
-
-    override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-        setPopulation(spCondition.selectedItemPosition)
-    }
-
-    override fun onNothingSelected(p0: AdapterView<*>?) {}
 
     //------------------------------------------------------------------------------------
     // UI presses

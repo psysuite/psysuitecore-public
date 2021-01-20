@@ -21,24 +21,13 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
         return inflater.inflate(R.layout.fragment_subject_info_basic, container)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        spCondition.onItemSelectedListener = this
-    }
-
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
 
         when((spCondition.selectedItem as ConditionData).id){
-             TestBasic.TEST_ATB_TIME_DOUBLESTIM,
-             TestBasic.TEST_ATB_TIME_SINGLESTIM,
-             TestBasic.TEST_ATVB_TIME_D_UNBAL,
-             TestBasic.TEST_ATVB_TIME_D_BAL,
-             TestBasic.TEST_ATVB_TIME_S_UNBAL,
-             TestBasic.TEST_ATVB_TIME_S_BAL    -> {
-                swInteractive.visibility = View.GONE
-                labInteractive.visibility = View.GONE
-             }
-             else -> {
+
+            TestBasic.TEST_TVB_TIME_INF,
+            TestBasic.TEST_ATB_TIME_INF,
+            TestBasic.TEST_AVB_TIME_INF -> {
                 swInteractive.visibility = View.VISIBLE
                 labInteractive.visibility = View.VISIBLE
                 if (subject.nextTrailModality == TestBasic.TEST_NEXTTRIAL_AUTO || subject.nextTrailModality == TestBasic.TEST_NEXTTRIAL_BUTTON) {
@@ -46,27 +35,42 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
                     subject.nextTrailModality = TestBasic.TEST_NEXTTRIAL_AUTO
                 }
             }
+            else -> {
+                swInteractive.visibility = View.GONE
+                labInteractive.visibility = View.GONE
+            }
         }
     }
+    override fun onNothingSelected(parent: AdapterView<*>?) {}
 
     override fun updateSubject(): SubjectBasicParcel {
 
         subject = super.updateSubject()
 
         subject.nextTrailModality = when(subject.type) {                // could choose whether pausing each trial
+            TestBasic.TEST_AVB_TIME_INF,
+            TestBasic.TEST_TVB_TIME_INF,
             TestBasic.TEST_ATB_TIME_INF         ->  if(swInteractive.isChecked) TestBasic.TEST_NEXTTRIAL_BUTTON
                                                     else                        TestBasic.TEST_NEXTTRIAL_AUTO
-
-            TestBasic.TEST_ATB_TIME_SINGLESTIM,
-            TestBasic.TEST_ATB_TIME_DOUBLESTIM,
-            TestBasic.TEST_ATVB_TIME_D_UNBAL,
-            TestBasic.TEST_ATVB_TIME_D_BAL,
-            TestBasic.TEST_ATVB_TIME_S_UNBAL,
-            TestBasic.TEST_ATVB_TIME_S_BAL ->  if(subject.canRecordAudio)  TestBasic.TEST_NEXTTRIAL_ANSWER //TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER
-                                               else                        TestBasic.TEST_NEXTTRIAL_ANSWER
-
+//            TestBasic.TEST_ATB_TIME_SINGLESTIM,
+//            TestBasic.TEST_ATB_TIME_DOUBLESTIM,
+//            TestBasic.TEST_AVB_TIME_SINGLESTIM,
+//            TestBasic.TEST_AVB_TIME_DOUBLESTIM,
+//            TestBasic.TEST_TVB_TIME_SINGLESTIM,
+//            TestBasic.TEST_TVB_TIME_DOUBLESTIM,
+//            TestBasic.TEST_ATVB_TIME_D_UNBAL,
+//            TestBasic.TEST_ATVB_TIME_D_BAL,
+//            TestBasic.TEST_ATVB_TIME_S_UNBAL,
+//            TestBasic.TEST_ATVB_TIME_S_BAL,
+//            TestBasic.TEST_ATVB_TIME_S_BAL2 -> if(subject.canRecordAudio)  TestBasic.TEST_NEXTTRIAL_ANSWER //TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER
+//                                               else                        TestBasic.TEST_NEXTTRIAL_ANSWER
             else                                ->   subject.nextTrailModality
         }
+
+        if(subject.type == TestBasic.TEST_ATVB_TIME_S_BAL || subject.type == TestBasic.TEST_ATVB_TIME_S_BAL2)
+            subject.classes         = listOf(   "iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB",
+                                                "iit.uvip.psysuite.core.ui.fragments.answers.ThreeAFCAnswerDialogFragment")
+
 
         return subject
     }
