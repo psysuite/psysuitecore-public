@@ -1,6 +1,4 @@
 package iit.uvip.psysuite.core.stimuli
-
-// used when logging
 import android.app.Activity
 import android.content.Context
 import android.content.pm.PackageManager
@@ -8,45 +6,33 @@ import android.content.res.Resources
 import android.media.*
 import android.media.AudioManager
 import android.media.AudioTrack
-import android.os.Build
-import android.os.Handler
+import android.os.*
+import android.util.Log
 import androidx.annotation.RequiresApi
 import iit.uvip.psysuite.core.R
+import org.albaspazio.core.accessory.getOnsetDate
 import java.io.IOException
 import java.io.InputStream
+import java.util.*
 
 
-// resource is:
-// - A1 : Int     ToneGenerator.TONE_xxxxx
-// - A2 : String  resource name
-// - A3 : List<String> names of assets files
-//
-// in A3 assets are loaded asynchronously at object creation. Thus, we start the loading process and when all are loaded the clb(AUDIO_SUCCESS) is called.
-// I also set a timeout > (TIMEOUT * #assets) to free the app and raise an exception.
-// at its end a clb(failure) is called
-
-
-class AudioManager(
+class AudioManagerHT(
     override var type: Int,
     var resource: Any,
-    var amplitude : Float = 1F,
-    override val duration: Long = -1L,
-    var handler: Handler,
-    private val ctx: Context
-)
-    : iStimulusManager{
+    var amplitude: Float = 1F,
+    override var duration: Long = -1L,
+    var ctx: Context,
+    name: String = "AudioManagerHT", priority: Int = Process.THREAD_PRIORITY_URGENT_AUDIO
 
-    val outputSampleRate:Int
-        get() = getDeviceSampleRate(ctx as Activity, ctx.resources)
+) : HandlerThread(name, priority), iStimulusManager, Handler.Callback {
 
-    val framesPerBuffer:Int
-        get() = getDeviceBufferSize(ctx as Activity, ctx.resources)
+    private var mInternalHandler: Handler? = null // manage internal messages
 
-    val hasLowLatencyFeature: Boolean
-        get() = ctx.packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_LOW_LATENCY)
+    var outputSampleRate:Int                = getDeviceSampleRate(ctx as Activity, ctx.resources)
+    var framesPerBuffer:Int                 = getDeviceBufferSize(ctx as Activity, ctx.resources)
 
-    val hasProFeature: Boolean
-        get() = ctx.packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_PRO)
+    val hasLowLatencyFeature: Boolean       = ctx.packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_LOW_LATENCY)
+    val hasProFeature: Boolean              = ctx.packageManager.hasSystemFeature(PackageManager.FEATURE_AUDIO_PRO)
 
     private var mToneGen: ToneGenerator?    = null
     private var currMPAudio: MediaPlayer?   = null
@@ -55,12 +41,20 @@ class AudioManager(
     private var isResourcesLoaded:Boolean   = false
     private var loadedResource:String       = ""
 
+    private var onsets: LongArray           = longArrayOf()
+    private lateinit var onsetDate:Date
+
     override val isValid:Boolean
         get() = (duration > 0 && isResourcesLoaded)
 
-    companion object{
+    companion object {
 
         const val TAG = "AMANHT"
+
+        const val MSG_ENQUEUE_SINGLE    = 1
+        const val MSG_ENQUEUE_MULTI     = 2
+        const val MSG_STOP              = 3
+
         @Throws(AudioResourceException::class)
         fun getAudioResource(
             ctx: Context,
@@ -164,7 +158,7 @@ class AudioManager(
 
         fun getDeviceSampleRate(activity: Activity, res: Resources):Int {
             val am = activity.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            val sampleRateStr: String? = am.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
+            val sampleRateStr: String? = am.getProperty(android.media.AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)
             return sampleRateStr?.let { str ->
                 Integer.parseInt(str).takeUnless { it == 0 }
             }  ?: res.getInteger(R.integer.sampleRate) // Use a default value if property not found
@@ -172,7 +166,7 @@ class AudioManager(
 
         fun getDeviceBufferSize(activity: Activity, res: Resources):Int {
             val am = activity.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-            val framesPerBuffer: String? = am.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)
+            val framesPerBuffer: String? = am.getProperty(android.media.AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)
             return framesPerBuffer?.let { str ->
                 Integer.parseInt(str).takeUnless { it == 0 }
             } ?: res.getInteger(R.integer.bufferSize) // Use default
@@ -188,7 +182,7 @@ class AudioManager(
                 val ampl: Int = if (amplitude == 1F) ToneGenerator.MAX_VOLUME
                 else (amplitude * 100).toInt()
 
-                mToneGen = ToneGenerator(AudioManager.STREAM_SYSTEM, ampl)
+                mToneGen = ToneGenerator(android.media.AudioManager.STREAM_SYSTEM, ampl)
                 isResourcesLoaded = true
             }
             StimuliManager.STIM_TYPE_A2 -> {
@@ -203,20 +197,98 @@ class AudioManager(
             StimuliManager.STIM_TYPE_A3 -> {
                 if ((resource as String).isNotEmpty()) {
                     loadATResource(resource as String,amplitude)   // also set isResourcesLoaded/loadedResource...otherwise throw AudioResourceException
-                    if (isValid) currAudioTrack?.dummyUse(amplitude)
                 }
             }
         }
     }
 
-    override fun deliver(dur: Any?, id: Int){       // id is the index, within the list given during inizialization, of the sound to be played
-        val d = when(dur){
-                    null,0L  -> duration
-                    else    -> dur
-                }
+    //================================================================================================================
+    // calls from other threads
+    //================================================================================================================
+    fun deliverMultiStimuli(
+        onsets: LongArray = longArrayOf(),
+        durations: LongArray = longArrayOf(),
+        id: Int = -1
+    ){
 
+        val bundle = Bundle()
+
+        bundle.putLongArray("onsets", onsets)
+        bundle.putLongArray("durations", durations)
+        bundle.putInt("id", id)
+
+        val message     = mInternalHandler!!.obtainMessage()
+        message.what    = MSG_ENQUEUE_MULTI
+        message.data    = bundle
+        mInternalHandler!!.sendMessage(message)
+    }
+
+    fun deliverStimulus(onset: Long = 0, duration: Long = 0, id: Int = -1){
+
+        val bundle = Bundle()
+
+        bundle.putLong("onset", onset)
+        bundle.putLong("duration", duration)
+        bundle.putInt("id", id)
+
+        val message     = mInternalHandler!!.obtainMessage()
+        message.what    = MSG_ENQUEUE_SINGLE
+        message.data    = bundle
+        mInternalHandler!!.sendMessage(message)
+    }
+
+    fun stopAudio(){
+        val message     = mInternalHandler!!.obtainMessage()
+        message.what    = MSG_STOP
+        mInternalHandler!!.sendMessage(message)
+    }
+    //================================================================================================================
+    // messages handler
+    //================================================================================================================
+    override fun handleMessage(msg: Message): Boolean {
+
+        return try {
+            val b: Bundle = msg.data
+            when (msg.what) {
+                MSG_ENQUEUE_SINGLE -> {
+                    val dur = if (b.getLong("duration") == 0L) duration
+                    else b.getLong("duration")
+                    val onset = b.getLong("onset")
+                    val id = b.getInt("id")
+
+                    if (onset == 0L) deliverSingle(onset, dur, id)
+                    else mInternalHandler?.postDelayed(
+                        { deliverSingle(onset, dur, id) },
+                        onset
+                    )
+                }
+                MSG_ENQUEUE_MULTI -> deliverMulti(
+                    b.getLongArray("onsets") ?: longArrayOf(), b.getLongArray(
+                        "durations"
+                    ) ?: longArrayOf()
+                )
+                MSG_STOP -> _stop()
+            }
+            true
+        } catch (e: Exception) {
+            // TODO : implement Messaging.sendErrorString(mWlCb, e.message, ERRORS.CAPTURE_ERROR, true)
+            false
+        }
+    }
+
+    private fun deliverMulti(
+        onsets: LongArray = longArrayOf(),
+        durations: LongArray = longArrayOf()
+    ){
+        // TODO to be implemented
+    }
+
+    private fun deliverSingle(onset: Long, dur: Long, id: Int = -1){       // id is the index, within the list given during inizialization, of the sound to be played
+
+        onsetDate           = Date()
+//        Log.d("AudioHT", "audio stim: type=$type, local onset=${getOnsetDate()}, dur=$dur, id=$id")
         when(type) {
-            StimuliManager.STIM_TYPE_A1 -> mToneGen!!.startTone(resource as Int, (d as Long).toInt())
+            StimuliManager.STIM_TYPE_A1 -> mToneGen!!.startTone(resource as Int, dur.toInt())
             StimuliManager.STIM_TYPE_A2 -> {
                 currMPAudio?.start()
                 currMPAudio?.setOnCompletionListener {
@@ -225,32 +297,32 @@ class AudioManager(
                 }
             }
             StimuliManager.STIM_TYPE_A3 -> {
-//                Log.d(TAG,"${getOnsetDate()}: STARTED in thread, id=$id")   //, pos $a, state=$state, playstate=$playstate, dur=$dur")
+//                val a           = currAudioTrack?.playbackHeadPosition
+//                val state       = currAudioTrack?.state
+//                val playstate   = currAudioTrack?.playState
+                Log.d(TAG,"${getOnsetDate()}: STARTED in thread, id=$id")   //, pos $a, state=$state, playstate=$playstate, dur=$dur")
 
                 currAudioTrack?.setPlaybackPositionUpdateListener(object :
                     AudioTrack.OnPlaybackPositionUpdateListener {
                     override fun onPeriodicNotification(track: AudioTrack?) {}
 
                     override fun onMarkerReached(track: AudioTrack?) {
-//                        Log.d(TAG, "${getOnsetDate()}: STOPPED in thread, id=$id")
+                        Log.d(TAG, "${getOnsetDate()}: STOPPED in thread, id=$id")
                         track?.stop()
                         track?.reloadStaticData()
                     }
                 })
                 currAudioTrack?.play()
+//                mInternalHandler?.postDelayed({ _stop(id) }, dur)
             }
         }
     }
 
-    override fun getHandler():Any? {
-        return  when(type){
-            StimuliManager.STIM_TYPE_A1 -> mToneGen
-            StimuliManager.STIM_TYPE_A2 -> currMPAudio
-            else                        -> currAudioTrack
-        }
+    override fun onLooperPrepared() {
+        mInternalHandler = Handler(looper, this)
     }
 
-    override fun stop(id: Int){
+    private fun _stop(id: Int = -1){
 
         when(type){
             StimuliManager.STIM_TYPE_A1 -> mToneGen!!.stopTone()
@@ -261,7 +333,7 @@ class AudioManager(
                 }
             }
             StimuliManager.STIM_TYPE_A3 -> {
-//                Log.d(TAG, "${getOnsetDate()}: STOPPED in thread, id=$id")
+                Log.d(TAG, "${getOnsetDate()}: STOPPED in thread, id=$id")
                 currAudioTrack?.stop()
                 currAudioTrack?.reloadStaticData()
             }
@@ -299,7 +371,25 @@ class AudioManager(
         }
     }
 
+    override fun deliver(dur: Any?, id: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun stop(id: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getHandler(): Any? {
+        TODO("Not yet implemented")
+    }
+
 }
+
+
+//    fun getHandlerLooper(): Handler? {
+//        if (mInternalHandler == null) Log.w("", "AudioHandlerThread mInternalHandler is NULL !!!!!!!!!!!!!!!!!")
+//        return mInternalHandler
+//    }
 
 //    fun isLoaded(res: String):Boolean{
 //        return when(type){

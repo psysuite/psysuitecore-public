@@ -94,7 +94,7 @@ class TestBIS(
         StimulusBIS(4, 600, STIMULUS_TYPE_AUDIO_VIDEO_LOG)
     )
 
-    private var STIM_A  = StimuliManager.STIM_TYPE_A1
+    private var STIM_A  = StimuliManager.STIM_TYPE_A3
     private var STIM_V  = StimuliManager.STIM_TYPE_V2
     private var STIM_AV = STIM_A or STIM_V
 
@@ -137,10 +137,11 @@ class TestBIS(
 
         mNoise = AudioManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
 
-        mStimuliManager = StimuliManager(AudioManager(STIM_A, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+        mStimuliManager = StimuliManager(
+                                         AudioManager(STIM_A, "t1000_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
                                          TactileManager(vibrator!!, duration = STIMULUS_DURATION_TACTILE, handler = mStimuliHandler),
                                          VisualManager(STIM_V, mImageView!!, mDrawablesResource[1], mDrawablesResource[0], duration = STIMULUS_DURATION_VISUAL, handler = mStimuliHandler),
-                                         delaysAligner, ctx)
+                                         delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
@@ -269,7 +270,7 @@ class TestBIS(
     private fun deliverStimulus(trial: TrialBIS, stage:Int=0){
 
         when(trial.type) {
-            TEST_BISECTION_AUDIO            ->  mStimuliManager.deliverA1Stimulus()
+            TEST_BISECTION_AUDIO            ->  mStimuliManager.deliverAStimulus()
             TEST_BISECTION_TACTILE          ->  mStimuliManager.deliverTStimulus()
             TEST_BISECTION_AUDIO_TACTILE    ->  mStimuliManager.deliverAlignedStimulus(StimuliManager.STIM_TYPE_A1T1)
             TEST_BISECTION_AUDIO_VIDEO      ->  deliverAVStimuli(trial, stage)

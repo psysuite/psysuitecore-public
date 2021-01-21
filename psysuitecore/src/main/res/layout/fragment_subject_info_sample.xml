@@ -287,15 +287,26 @@
         app:layout_constraintStart_toEndOf="@+id/etRepetitionNum"
         app:layout_constraintTop_toTopOf="@+id/guideline3" />
 
+
     <Switch
         android:id="@+id/swInteractive"
         android:layout_width="126dp"
         android:layout_height="32dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="56dp"
         android:text="@string/end_trial_behaviour"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/labRepNum" />
+        app:layout_constraintTop_toTopOf="@+id/guideline3" />
+
+    <Switch
+        android:id="@+id/swWhiteNoise"
+        android:layout_width="140dp"
+        android:layout_height="45dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="56dp"
+        android:text="@string/whitenoise"
+        app:layout_constraintStart_toEndOf="@+id/swInteractive"
+        app:layout_constraintTop_toTopOf="@+id/guideline3" />
 
     <Button
         android:id="@+id/bt_cancel"

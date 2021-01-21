@@ -166,9 +166,10 @@ class TestTID(ctx: Context,
 
         mNoise = AudioManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
 
-        mStimuliManager = StimuliManager(AudioManager(StimuliManager.STIM_TYPE_A1, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+        mStimuliManager = StimuliManager(
+            AudioManager(StimuliManager.STIM_TYPE_A1, -1, duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
             TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),null,
-            delaysAligner, ctx)
+            delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }

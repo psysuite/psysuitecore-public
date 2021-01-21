@@ -209,10 +209,10 @@ abstract class TestBasic(protected val ctx: Context,
     // ===============================================================================================================
     fun start():Boolean{
         return  try {
-                    if(!mStimuliManager.isValid || !this::mTrial.isInitialized){
-                        onCriticalError(ctx.resources.getString(R.string.test_failure), true)
-                        return false
-                    }
+//                    if(!mStimuliManager.isValid || !this::mTrial.isInitialized){
+//                        onCriticalError(ctx.resources.getString(R.string.test_failure), true)
+//                        return false
+//                    }
 
                     if(subject.isDebug) testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))    // send debug info
 
@@ -256,13 +256,6 @@ abstract class TestBasic(protected val ctx: Context,
         }
     }
 
-    private fun saveText(text: String, overwrite: Boolean = false, notifyDm: Boolean = false){
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            saveTextQ(ctx, mResultUri!!, text, overwrite = overwrite, notifyDm = notifyDm)
-        else
-            saveText(ctx, mResultFile, text, overwrite = overwrite, notifyDm = notifyDm)
-    }
     // called by above nextTrial & by TestFragment after user decided to continue after block end
     private fun doNextTrial():Int{
         return  try {
@@ -294,8 +287,8 @@ abstract class TestBasic(protected val ctx: Context,
     }
 
     fun abortTest(deleteOrShow:Boolean, dir:String= Environment.DIRECTORY_DOWNLOADS){
-        mStimuliHandler.removeCallbacksAndMessages(null)
-        mNoise?.stop()
+
+        unloadStimuli()
 
         if(deleteOrShow){
                 deleteFile(mResultFile)
@@ -306,7 +299,7 @@ abstract class TestBasic(protected val ctx: Context,
 
     fun stopTestAfterBlock(dir:String= Environment.DIRECTORY_DOWNLOADS):Triple<String,String,String>{
 
-        mStimuliHandler.removeCallbacksAndMessages(null)
+        unloadStimuli()
 
         val newresname = subject.composeResultFileName(ctx, mCurrBlock)
         renameFile(mResultFile, newresname)
@@ -321,18 +314,29 @@ abstract class TestBasic(protected val ctx: Context,
         return Triple(newresname, newsubjname, newsummaryname)
     }
 
-    fun getTrialCorrectAnswer():String{
-        return  if(!this::mTrial.isInitialized)     validAnswers[0]
-                else                                mTrial.getCorrectAnswer()
-    }
-
+    // -> abortTest & send(event_test_error)
     private fun onCriticalError(msg:String, delete:Boolean=false){
         abortTest(delete)
         testEvent.accept(Pair(EVENT_TEST_ERROR, msg))
     }
+
     // ===============================================================================================================
     // ACCESSORY
     // ===============================================================================================================
+
+    fun unloadStimuli(){
+        mStimuliManager.unloadStimuli()
+        mStimuliHandler.removeCallbacksAndMessages(null)
+        mNoise?.stop()
+    }
+
+    private fun saveText(text: String, overwrite: Boolean = false, notifyDm: Boolean = false){
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+            saveTextQ(ctx, mResultUri!!, text, overwrite = overwrite, notifyDm = notifyDm)
+        else
+            saveText(ctx, mResultFile, text, overwrite = overwrite, notifyDm = notifyDm)
+    }
 
     fun adjustBlocks(blk:Int){
 
@@ -370,6 +374,11 @@ abstract class TestBasic(protected val ctx: Context,
     protected fun setTrialsID(){  mTrials.mapIndexed { index, trialBasic -> trialBasic.id = index } }
 
     protected fun getDebugInfo():String = mTrial.debugInfo()
+
+    fun getTrialCorrectAnswer():String{
+        return  if(!this::mTrial.isInitialized)     validAnswers[0]
+        else                                mTrial.getCorrectAnswer()
+    }
 
     protected fun getTestTitle():String = "${ctx.resources.getString(R.string.app_name)} - ${ctx.resources.getString(R.string.lab_test_res)}: $mTestLabel"
 }

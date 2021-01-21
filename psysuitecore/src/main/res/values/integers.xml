@@ -8,6 +8,7 @@
     <integer name="pref_delay_v1">29</integer>
     <integer name="pref_delay_v2">29</integer>
 
-    <integer name="sampleRate">44000</integer>
-    <integer name="bufferSize">256</integer>
+    <integer name="sampleRate">48000</integer>
+    <integer name="bufferSize">192</integer>
+
 </resources>

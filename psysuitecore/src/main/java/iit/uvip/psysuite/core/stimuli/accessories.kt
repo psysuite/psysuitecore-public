@@ -1,20 +1,22 @@
 package iit.uvip.psysuite.core.stimuli
 
+import android.media.AudioTrack
 import android.media.MediaPlayer
-import android.os.Handler
 
 // these handlers have a null property in TestBasic
 // in each subclass, their dependance (vibrator, ImageView) are validated in init.
 
 
-abstract class StimulusManager(open val type:Int, open val amplitude:Any, open val duration:Long, protected val handler: Handler){
+interface iStimulusManager{
 
-    override fun toString():String{
-        return "${StimulusManager::class.java.simpleName}, ampl=$amplitude, duration=$duration"
-    }
-    abstract fun deliver(dur:Any?=null, id:Int=0)
-    abstract fun stop()
-    abstract fun getHandler():Any?
+    val duration:Long
+    val type:Int
+
+    fun deliver(dur:Any?=null, id:Int=0)
+    fun stop(id:Int = -1)
+    fun getHandler():Any?
+
+    val isValid:Boolean
 }
 
 // used when dealing with very short sounds (50-100ms) that on their first playback are not audible
@@ -24,6 +26,15 @@ fun MediaPlayer.dummyUse(vol:Float){
     this.stop()
     this.prepare()
     this.setVolume(vol, vol)
+}
+
+// used when dealing with very short sounds (50-100ms) that on their first playback are not audible
+fun AudioTrack.dummyUse(vol:Float){
+    this.setVolume(0F)
+    this.play()
+    this.stop()
+    this.reloadStaticData()
+    this.setVolume(vol)
 }
 
 

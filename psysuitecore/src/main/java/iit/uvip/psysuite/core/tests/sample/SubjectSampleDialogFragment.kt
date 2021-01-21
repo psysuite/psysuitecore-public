@@ -88,7 +88,7 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
         }
         spTactile.setSelection(0)
 
-        ArrayAdapter.createFromResource(requireContext(), R.array.sample_audioresources_array, android.R.layout.simple_spinner_item).also { adapter ->
+        ArrayAdapter.createFromResource(requireContext(), R.array.sample_audioassets_array, android.R.layout.simple_spinner_item).also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             spAudioResource.adapter = adapter
         }
@@ -113,6 +113,10 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
                 swInteractive?.isChecked = false
             }
         }
+        //------------------------------------------------------
+        // noise
+        swWhiteNoise.visibility     = View.VISIBLE
+        swWhiteNoise.isChecked      = false
     }
 
     private fun setListeners() {
@@ -191,6 +195,7 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
             swInteractive?.isChecked    = false
             subject.nextTrailModality   = TestBasic.TEST_NEXTTRIAL_AUTO
         }
+        swWhiteNoise.isChecked = false
     }
 
 
@@ -243,7 +248,7 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
     private fun updateAudio(){
         when(spAudio.selectedItemPosition) {
             0   ->  spAudioResource.isEnabled   = false
-            1   ->  spAudioResource.isEnabled   = true
+            else   ->  spAudioResource.isEnabled   = true
         }
     }
 
@@ -267,7 +272,7 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
             }
             (subject as SubjectSampleParcel).audioDuration   = etDurationAudio.text.toString().toLong()
             (subject as SubjectSampleParcel).audioResource   = spAudioResource.selectedItem as String
-            (subject as SubjectSampleParcel).audioVolume     = etAudioVolume.text.toString().toFloat()
+            (subject as SubjectSampleParcel).audioVolume     = etAudioVolume.text.toString().toInt()
         }
 
         if(swTactile.isChecked) {
@@ -326,6 +331,9 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
 
         if((subject as SubjectSampleParcel).repetitions > 1)
             (subject as SubjectSampleParcel).iti = etITI.text.toString().toLong()
+
+        subject.whitenoise =    if(swWhiteNoise.isChecked)  TestBasic.TEST_WNOISE_CHOOSE_ON
+        else                        TestBasic.TEST_WNOISE_CHOOSE_OFF
 
         return subject
     }

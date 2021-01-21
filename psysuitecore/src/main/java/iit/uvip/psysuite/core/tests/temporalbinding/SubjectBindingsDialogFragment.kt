@@ -52,25 +52,15 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
             TestBasic.TEST_TVB_TIME_INF,
             TestBasic.TEST_ATB_TIME_INF         ->  if(swInteractive.isChecked) TestBasic.TEST_NEXTTRIAL_BUTTON
                                                     else                        TestBasic.TEST_NEXTTRIAL_AUTO
-//            TestBasic.TEST_ATB_TIME_SINGLESTIM,
-//            TestBasic.TEST_ATB_TIME_DOUBLESTIM,
-//            TestBasic.TEST_AVB_TIME_SINGLESTIM,
-//            TestBasic.TEST_AVB_TIME_DOUBLESTIM,
-//            TestBasic.TEST_TVB_TIME_SINGLESTIM,
-//            TestBasic.TEST_TVB_TIME_DOUBLESTIM,
-//            TestBasic.TEST_ATVB_TIME_D_UNBAL,
-//            TestBasic.TEST_ATVB_TIME_D_BAL,
-//            TestBasic.TEST_ATVB_TIME_S_UNBAL,
-//            TestBasic.TEST_ATVB_TIME_S_BAL,
-//            TestBasic.TEST_ATVB_TIME_S_BAL2 -> if(subject.canRecordAudio)  TestBasic.TEST_NEXTTRIAL_ANSWER //TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER
-//                                               else                        TestBasic.TEST_NEXTTRIAL_ANSWER
+
+
             else                                ->   subject.nextTrailModality
         }
 
-        if(subject.type == TestBasic.TEST_ATVB_TIME_S_BAL || subject.type == TestBasic.TEST_ATVB_TIME_S_BAL2)
-            subject.classes         = listOf(   "iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB",
-                                                "iit.uvip.psysuite.core.ui.fragments.answers.ThreeAFCAnswerDialogFragment")
 
+        if(subject.type == TestBasic.TEST_ATVB_TIME_S_BAL || subject.type == TestBasic.TEST_ATVB_TIME_S_BAL2)
+            subject.classes         = listOf("iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB",
+                                            "iit.uvip.psysuite.core.ui.fragments.answers.ThreeAFCAnswerDialogFragment")
 
         return subject
     }

@@ -1,24 +1,29 @@
 package iit.uvip.psysuite.core.stimuli
 
-// used for logging
 import android.content.Context
 import android.os.Handler
+import android.util.Log
 import iit.uvip.psysuite.core.R
+import org.albaspazio.core.accessory.getTimeDifference
 import java.util.*
 
+/*
+some tests can deliver a combination of stimuli (uni-bi-trimodal).
+I set the way I deliver each of them and then expose method allowing to select my modality
+*/
 
-class StimuliManager(
-    val mAudioManager: iStimulusManager? = null,
+class StimuliManagerOLD(
+    val mAudioManager: AudioManagerOLD? = null,
     val mTactileManager: TactileManager? = null,
     val mVisualManager: VisualManager? = null,
     private val delaysAligner: DelaysAligner,
     private val ctx: Context,
-    private var mStimuliHandler: Handler,
     private val clb: () -> Unit = {}
 ) {
 
+    private var mHandler: Handler = Handler()
+
     companion object {
-        const val TAG = "STIMMAN"
         //-----------------------------------------------------------------------------------------
         // STIMULUS TYPES UNIQUE CODES
         //-----------------------------------------------------------------------------------------
@@ -89,6 +94,8 @@ class StimuliManager(
         checkResourcesLoading()
     }
 
+    fun unloadStimuli(){}
+
     // to be used when one single modalities-combination is used
     val type:Int
         get() {
@@ -139,19 +146,17 @@ class StimuliManager(
 
         val runTask: Runnable = object : Runnable {
             override fun run() {
-                if(mAudioManager?.isValid ?: true && mTactileManager?.isValid ?: true && mVisualManager?.isValid ?: true ){
-                    mStimuliHandler.removeCallbacksAndMessages(null)
+                if(mAudioManager?.isValid ?: true && mTactileManager?.isValid ?: true && mAudioManager?.isValid ?: true ){
+                    mHandler.removeCallbacksAndMessages(null)
                     clb()
                 }
-                else    mStimuliHandler.postDelayed(this, 100)
+                else    mHandler.postDelayed(this, 100)
             }
         }
-        mStimuliHandler.post(runTask)  // Start the initial runnable task by posting through the handler
+        mHandler.post(runTask)  // Start the initial runnable task by posting through the handler
     }
 
-    fun unloadStimuli(){}
-
-    fun getValidAudioManager(manager: iStimulusManager?):iStimulusManager?{
+    fun getValidAudioManager(manager: AudioManagerOLD?):AudioManagerOLD?{
 
         val mam_dur =  mAudioManager?.isValid ?: false
         val am_dur  =  manager?.isValid ?: false
@@ -188,7 +193,7 @@ class StimuliManager(
     }
 
     // returns MAX, MIN, MEAN durations when they are defined in the single call or retrieve the test's default values
-    fun getDuration(managerA: iStimulusManager? = null, managerT: iStimulusManager? = null, managerV: iStimulusManager? = null):Triple<Long, Long, Long>?{
+    fun getDuration(managerA: StimulusManager? = null, managerT: StimulusManager? = null, managerV: StimulusManager? = null):Triple<Long, Long, Long>?{
 
         val durs:MutableList<Long> = mutableListOf()
 
@@ -208,6 +213,7 @@ class StimuliManager(
         return Triple(Collections.max(durs) as Long, Collections.min(durs) as Long, mean)
     }
 
+
     // =============================================================================================================================
     // STIMULUS DELIVERY
     // =============================================================================================================================
@@ -225,77 +231,11 @@ class StimuliManager(
                                           a:Long, t:Long, v:Long,
                                           onEnd:() -> Unit = {}){
 
-        deliverShiftedStimulus(type, a, t, v, 1)
-        mStimuliHandler.postDelayed({
-            deliverShiftedStimulus(type, a, t, v, 2){ onEnd() }
+        deliverShiftedStimulus(type, a, t, v)
+        mHandler.postDelayed({
+            deliverShiftedStimulus(type, a, t, v){ onEnd() }
         }, isi)
     }
-    // ---------------------------------------------------------------------------------------------
-    // SHIFTED STIMULUS (call 1-to-3 deliverUnimodalStimulus at different latencies, receive already corrected shifting)
-    // THIS IS THE ONLY METHOD THAT CALLS UNIMODAL STIMULI !!!!!!!
-    // ---------------------------------------------------------------------------------------------
-    fun deliverShiftedStimulus(type:Int, a:Long, t:Long, v:Long, id:Int = -1, onEnd:() -> Unit = {}) {
-
-        val unimodal_types  = maintype2unimodaltypes(type)
-        val atype           = unimodal_types[0]
-        val ttype           = unimodal_types[1]
-        val vtype           = unimodal_types[2]
-
-        val durlist         = mutableListOf<Long>()
-
-        val onsetDate           = Date()
-//        Log.d(TAG, "${getOnsetDate()}: NEW STIMULUS, reciprocal delays A=$a, T=$t, V=$v")
-
-        try{
-            if(a > -1 && atype > -1) {
-                if(mAudioManager == null)          throw Exception("error in deliverShiftedStimulus: a valid audio manager was not found")
-                if(mAudioManager.type != atype)    throw Exception(ctx.resources.getString(R.string.error_audiomanager))
-
-                durlist.add(mAudioManager.duration + a)
-
-                mStimuliHandler.postDelayed({
-//                    val elapsedms1 = getTimeDifference(onsetDate)
-                    deliverAStimulus()
-//                    val elapsedms2 = getTimeDifference(onsetDate)
-//                    Log.d(TAG, "${getOnsetDate()}: audio issued, type=${mAudioManager.type}, onset=$a, elapsedPre=$elapsedms1, elapsedPost=$elapsedms2")
-                }, t)
-
-            }
-
-            if(t > -1 && ttype > -1) {
-                if(mTactileManager == null)          throw Exception("error in deliverShiftedStimulus: a valid tactile manager was not found")
-                if(mTactileManager.type != ttype)    throw Exception(ctx.resources.getString(R.string.error_tactilemanager))
-
-                durlist.add(mTactileManager.duration + t)
-                mStimuliHandler.postDelayed({
-//                    val elapsedms1 = getTimeDifference(onsetDate)
-                    deliverTStimulus()
-//                    val elapsedms2 = getTimeDifference(onsetDate)
-//                    Log.d(TAG, "${getOnsetDate()}: tactile issued, type=${mTactileManager.type}, onset=$t, elapsedPre=$elapsedms1, elapsedPost=$elapsedms2")
-                }, t)
-            }
-
-            if(v > -1 && vtype > -1) {
-                if(mVisualManager == null)          throw Exception("error in deliverShiftedStimulus: a valid visual manager was not found")
-                if(mVisualManager.type != vtype)    throw Exception(ctx.resources.getString(R.string.error_visualmanager))
-
-                durlist.add(mVisualManager.duration + v)
-                mStimuliHandler.postDelayed({
-//                    val elapsedms1 = getTimeDifference(onsetDate)
-                    deliverVStimulus()
-//                    val elapsedms2 = getTimeDifference(onsetDate)
-//                    Log.d(TAG, "${getOnsetDate()}: visual issued, type=${mVisualManager.type}, onset=$v, elapsedPre=$elapsedms1, elapsedPost=$elapsedms2")
-                }, v)
-            }
-
-            val end:Long = Collections.max(durlist)
-            mStimuliHandler.postDelayed({ onEnd() }, end)
-        }
-        catch (e:Exception){
-            throw Exception(e.message)
-        }
-    }
-
     // ---------------------------------------------------------------------------------------------
     // ALIGNED STIMULUS (correct delays and call deliverShiftedStimulus)
     // ---------------------------------------------------------------------------------------------
@@ -305,25 +245,90 @@ class StimuliManager(
         deliverShiftedStimulus(type, corr_delays.a, corr_delays.t, corr_delays.v){onEnd()}
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // SHIFTED STIMULUS (call 1-to-3 deliverUnimodalStimulus at different latencies, receive already corrected shifting)
+    // THIS IS THE ONLY METHOD THAT CALLS UNIMODAL STIMULI !!!!!!!
+    // ---------------------------------------------------------------------------------------------
+    fun deliverShiftedStimulus(type:Int, a:Long, t:Long, v:Long, onEnd:() -> Unit = {}) {
+
+        val unimodal_types  = maintype2unimodaltypes(type)
+        val atype           = unimodal_types[0]
+        val ttype           = unimodal_types[1]
+        val vtype           = unimodal_types[2]
+
+        val durlist         = mutableListOf<Long>()
+
+        Log.d("TestBasic", "planned at A=$a, T=$t, V=$v")
+        val onsetDate           = Date()
+       
+        try{
+            if(a > -1 && atype > -1) {
+                if(mAudioManager == null)          throw Exception("error in deliverShiftedStimulus: a valid audio manager was not found")
+                if(mAudioManager.type != atype)    throw Exception(ctx.resources.getString(R.string.error_audiomanager))
+
+                durlist.add(mAudioManager.duration + a)
+                mHandler.postDelayed({
+                    val elapsedms1 = getTimeDifference(onsetDate)
+                    deliverUnimodalStimulus(atype)
+                    val elapsedms2 = getTimeDifference(onsetDate)
+                    Log.d("TestBasic", "audio issued: type=${mAudioManager.type}, onset=$a, elapsedPre=$elapsedms1, elapsedPost=$elapsedms2")
+                }, a)
+            }
+
+            if(t > -1 && ttype > -1) {
+                if(mTactileManager == null)          throw Exception("error in deliverShiftedStimulus: a valid tactile manager was not found")
+                if(mTactileManager.type != ttype)    throw Exception(ctx.resources.getString(R.string.error_tactilemanager))
+
+                durlist.add(mTactileManager.duration + t)
+                mHandler.postDelayed({
+                    val elapsedms1 = getTimeDifference(onsetDate)
+                    deliverUnimodalStimulus(ttype)
+                    val elapsedms2 = getTimeDifference(onsetDate)
+                    Log.d("TestBasic", "tactile issued: type=${mTactileManager.type}, onset=$t, elapsedPre=$elapsedms1, elapsedPost=$elapsedms2")
+                }, t)
+            }
+
+            if(v > -1 && vtype > -1) {
+                if(mVisualManager == null)          throw Exception("error in deliverShiftedStimulus: a valid visual manager was not found")
+                if(mVisualManager.type != vtype)    throw Exception(ctx.resources.getString(R.string.error_visualmanager))
+
+                durlist.add(mVisualManager.duration + v)
+                mHandler.postDelayed({
+                    val elapsedms1 = getTimeDifference(onsetDate)
+                    deliverUnimodalStimulus(vtype)
+                    val elapsedms2 = getTimeDifference(onsetDate)
+                    Log.d("TestBasic", "visual issued: type=${mVisualManager.type}, onset=$v, elapsedPre=$elapsedms1, elapsedPost=$elapsedms2")
+                }, v)
+            }
+
+            val end:Long = Collections.max(durlist)
+            mHandler.postDelayed({  onEnd() }, end)
+        }
+        catch (e:Exception){
+            throw Exception(e.message)
+        }
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     // UNIMODAL STIMULUS
     // here I give the final deliver command, latencies and delays corrections have been already defined
     // --------------------------------------------------------------------------------------------------------------
     fun deliverUnimodalStimulus(type:Int, onEnd:() -> Unit = {}){
         when(type){
-            STIM_TYPE_A1, STIM_TYPE_A2, STIM_TYPE_A3 -> deliverAStimulus(onEnd)
-            STIM_TYPE_T1, STIM_TYPE_T2 -> deliverTStimulus(onEnd)
-            STIM_TYPE_V1, STIM_TYPE_V2 -> deliverVStimulus(onEnd)
+            STIM_TYPE_A1, STIM_TYPE_A2, STIM_TYPE_A3    -> deliverAStimulus(onEnd)
+            STIM_TYPE_T1, STIM_TYPE_T2                  -> deliverTStimulus(onEnd)
+            STIM_TYPE_V1, STIM_TYPE_V2                  -> deliverVStimulus(onEnd)
         }
     }
 
     fun deliverAStimulus(onEnd:() -> Unit = {}){
+
         try {
-            if (mAudioManager == null) throw Exception("deliverAStimulus: mAudioManager is null")
-            if (!mAudioManager.isValid) throw Exception("deliverAStimulus: mAudioManager is not valid")
+            if(mAudioManager == null)               throw Exception("deliverAStimulus: mAudioManager is null")
+            if(!mAudioManager.isValid)              throw Exception("deliverAStimulus: mAudioManager is not valid")
 
             mAudioManager.deliver()
-            mStimuliHandler.postDelayed({ onEnd() }, mAudioManager.duration)
+            mHandler.postDelayed({ onEnd() }, mAudioManager.duration)
         }
         catch (e:Exception){
             throw Exception(e.message)
@@ -336,7 +341,7 @@ class StimuliManager(
             if(!mTactileManager.isValid)  throw Exception("deliverTStimulus: mTactileManager is not valid")
 
             mTactileManager.deliver()
-            mStimuliHandler.postDelayed({ onEnd() }, mTactileManager.duration)
+            mHandler.postDelayed({ onEnd() }, mTactileManager.duration)
         }
         catch (e:Exception){
             throw Exception(e.message)
@@ -350,7 +355,7 @@ class StimuliManager(
             if(!mVisualManager.isValid)  throw Exception("deliverVStimulus: mVisualManager is not valid")
 
             mVisualManager.deliver()
-            mStimuliHandler.postDelayed({ onEnd() }, mVisualManager.duration)
+            mHandler.postDelayed({ onEnd() }, mVisualManager.duration)
         }
         catch (e:Exception){
             throw Exception(e.message)
