@@ -47,7 +47,7 @@ class TestTFI(ctx: Context,
         @JvmStatic val soa_1:Long = 55L
         @JvmStatic val soa_2:Long = 85L
 
-        @JvmStatic val STIM_A     = StimuliManager.STIM_TYPE_A2
+        @JvmStatic val STIM_A     = StimuliManager.STIM_TYPE_A3
         @JvmStatic val STIM_V     = StimuliManager.STIM_TYPE_V1
         @JvmStatic val STIM_T     = StimuliManager.STIM_TYPE_T1
         @JvmStatic val STIM_ATV   = STIM_A or STIM_T or STIM_V
@@ -115,12 +115,9 @@ class TestTFI(ctx: Context,
 
         mStimuliManager = StimuliManager(
             AudioManager(STIM_A, "t1000hz_35ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-//            AudioManager(STIM_A, -1,  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-//                                            AudioManager(UNIMODAL_AUDIO_CODE, listOf("t1000hz_30ms.wav"), 100, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-//                                            AudioManager(UNIMODAL_AUDIO_CODE, "t1000hz_30ms",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
             TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
             VisualManager(STIM_V, mImageView!!, mDrawablesResource[onImage], mDrawablesResource[0], duration = currStimulusDuration, handler = mStimuliHandler),
-            delaysAligner, ctx)
+            delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
@@ -265,51 +262,25 @@ class TestTFI(ctx: Context,
 
         mNoise?.start()
 
-//        val onset0      = WN_PRESTIM_INTERVAL
-        val onset1      =  (trial as TrialTFI).soa
-        val onset2      =  2*trial.soa
-        val onsetEnd    =  2*trial.soa + currStimulusDuration + WN_POSTTSTIM_INTERVAL
+        val onset0      =  WN_PRESTIM_INTERVAL
+        val onset1      =  WN_PRESTIM_INTERVAL + (trial as TrialTFI).soa
+        val onset2      =  WN_PRESTIM_INTERVAL + 2*trial.soa
+        val onsetEnd    =  WN_PRESTIM_INTERVAL + 2*trial.soa + currStimulusDuration + WN_POSTTSTIM_INTERVAL
 
-//        mStimuliHandler.postDelayed({
-//            if(trial.stims[0] > 0)
-//                deliverAlignedStimuliPair(2*trial.soa, trial.stims[0])
-//
-//            mStimuliHandler.postDelayed({   onTrialEnd()    }, onsetEnd)
-//
-//        }, WN_PRESTIM_INTERVAL)
+        var corr_delays = delaysAligner.arrangeDelays(STIM_ATV, 0,0, 0)
 
-//        if(trial.stims[0] > 0)
-////           deliverAlignedStimuliPair(2*trial.soa, trial.stims[0])
-//            mStimuliHandler.postDelayed({   deliverAlignedStimuliPair(2*trial.soa, trial.stims[0]) }, WN_PRESTIM_INTERVAL)
-//
-//        if(trial.stims[1] > 0)
-//            mStimuliHandler.postDelayed({   deliverAlignedStimulus(trial.stims[1]) }, onset1)
-//
-//        mStimuliHandler.postDelayed({   onTrialEnd()    }, onsetEnd)
-
-        var corr_delays = delaysAligner.arrangeDelays(STIM_ATV, -25,0, 0)
-
-//        Log.d("TFI show1", "Trial type ${trial.correct_answer}")
-//        Log.d("TFI show2", "delays ${corr_delays.a} | , ${corr_delays.t} | ${corr_delays.v}")
-//        Log.d("TFI show3", "$onset0 | $onset1 | $onset2 | $onsetEnd ")
-
-        mStimuliHandler.postDelayed({
+//        Log.d("TFI show1", "---------------------Trial type ${trial.correct_answer}, @ $onset0 | $onset1 | $onset2 | $onsetEnd")
+//        Log.d("TFI show2", "delays ${corr_delays.a} | ${corr_delays.t} | ${corr_delays.v}")
 
             if(trial.stims[0] > 0)
-                mStimuliManager.deliverShiftedStimulus(trial.stims[0], corr_delays.a, corr_delays.t, corr_delays.v)
-//                deliverShiftedStimulus(trial.stims[0], corr_delays.a, corr_delays.t, corr_delays.v)
-//                mStimuliHandler.postDelayed({   deliverShiftedStimulus(trial.stims[0], corr_delays.a, corr_delays.t, corr_delays.v) }, onset0)
+                mStimuliHandler.postDelayed({   mStimuliManager.deliverShiftedStimulus(trial.stims[0], corr_delays.a, corr_delays.t, corr_delays.v, 1) }, onset0)
 
             if(trial.stims[1] > 0)
-                mStimuliHandler.postDelayed({   mStimuliManager.deliverShiftedStimulus(trial.stims[1], corr_delays.a, corr_delays.t, corr_delays.v) }, onset1)
+                mStimuliHandler.postDelayed({   mStimuliManager.deliverShiftedStimulus(trial.stims[1], corr_delays.a, corr_delays.t, corr_delays.v, 2) }, onset1)
 
-            if(trial.stims[2] > 0){
-                corr_delays = delaysAligner.arrangeDelays(STIM_ATV)
-                mStimuliHandler.postDelayed({   mStimuliManager.deliverShiftedStimulus(trial.stims[2], corr_delays.a, corr_delays.t, corr_delays.v) }, onset2)
-            }
+            if(trial.stims[2] > 0)
+                mStimuliHandler.postDelayed({   mStimuliManager.deliverShiftedStimulus(trial.stims[2], corr_delays.a, corr_delays.t, corr_delays.v, 3) }, onset2)
 
             mStimuliHandler.postDelayed({   onTrialEnd()    }, onsetEnd)
-
-        }, WN_PRESTIM_INTERVAL)
     }
 }

@@ -341,10 +341,11 @@ class TestATVB(
         }
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
-        mStimuliManager = StimuliManager(AudioManager(STIM_A, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+        mStimuliManager = StimuliManager(
+            AudioManager(STIM_A, -1, duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
             TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
             VisualManager(STIM_V, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-            delaysAligner, ctx)
+            delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
@@ -528,7 +529,12 @@ class TestATVB(
 
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
+                    mStimuliManager.deliverShiftedStimulus(
+                        STIM_ATV,
+                        corr_delays.a,
+                        corr_delays.t,
+                        corr_delays.v
+                    ){ onTrialEnd()}
                 }, WN_FIRSTSTIM_INTERVAL)
             }
 
@@ -557,7 +563,12 @@ class TestATVB(
             TYPE_AT_V   ->  delaysAligner.arrangeDelays(STIM_ATV, 0,0, trial.delay)
             else        ->  delaysAligner.arrangeDelays(STIM_ATV)
         }
-        mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
+        mStimuliManager.deliverShiftedStimulus(
+            STIM_ATV,
+            corr_delays.a,
+            corr_delays.t,
+            corr_delays.v
+        ){ onTrialEnd()}
     }
     // =============================================================================================================================
     // DEBUG

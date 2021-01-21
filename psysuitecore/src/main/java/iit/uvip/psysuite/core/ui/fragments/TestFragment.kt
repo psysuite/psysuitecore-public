@@ -80,7 +80,7 @@ class TestFragment : BaseFragment(
     private var isDeafUser:Boolean                  = false
 
     private var isPaused:Boolean                    = false
-    private var mHandler: Handler                   = Handler()
+    private var mHandler: Handler                   = Handler(Looper.getMainLooper())
 
     private var abortRecognition:Boolean            = false  // set true when I answer manually and speech rec is going to be restarted (e.g. rec busy or error)
     private lateinit var speechRecognitionManager: SpeechRecognitionManager
@@ -254,6 +254,7 @@ class TestFragment : BaseFragment(
 
     override fun onDestroy() {
         super.onDestroy()
+
         if(this::speechManager.isInitialized)
             speechManager.shutdown()
     }
@@ -345,10 +346,8 @@ class TestFragment : BaseFragment(
                 }
                 TestBasic.EVENT_TEST_ERROR -> onTestError(it.second as String)
 
-                TestBasic.EVENT_STIMULI_START -> {
-                }
-                TestBasic.EVENT_STIMULI_END -> {
-                }
+                TestBasic.EVENT_STIMULI_START -> {}
+                TestBasic.EVENT_STIMULI_END -> {}
             }
         }
         .addTo(disposable)
@@ -359,7 +358,7 @@ class TestFragment : BaseFragment(
 
         // dont' know whether an answer dialog was present or it was listening for vocal response or it was playbacking something. stop all!
         abortRecognition = true
-        Handler(Looper.getMainLooper()).post {
+        mHandler.post {
             speechRecognitionManager.stop()
             speechManager.stop()
         }
@@ -393,24 +392,32 @@ class TestFragment : BaseFragment(
         if(mTest.abortMode == TestBasic.TEST_ABORT_ALWAYS)  bt_abort.visibility = View.VISIBLE
     }
 
+    // ==========================================================================================================================================
+    // ==========================================================================================================================================
+    //  (READY TO) TERMINATE TEST or CONTINUE
+    // ==========================================================================================================================================
+    // ==========================================================================================================================================
+    // => greetings & mTest.unloadStimuli() & NAVIGATEBACK
     private fun onTestEnded(){
         val msg = getText(R.string.test_ended).toString()
+
+        mTest.unloadStimuli()
 
         if(isBlindUser) speechManager.speak(msg)
         else            showToast(msg, requireContext())
 
         navigateBack(TestBasic.TEST_COMPLETED, listOf(  mTest.getAbsoluteResultFilePath(),
-                                                        mSubjectParcel!!.getAbsoluteSubjectFilePath(),
-                                                        mTest.closeSummary()))
+            mSubjectParcel!!.getAbsoluteSubjectFilePath(),
+            mTest.closeSummary()))
     }
 
     // user wanted to interrupt test during a block (ask whether deleting results file and it)
+    // => greetings & mTest.abortTest (unloadStimuli) & NAVIGATEBACK
     private fun onAbortTest(){
 
         mHandler.removeCallbacksAndMessages(null)
 
-        if(isBlindUser)
-            speechManager.speak(requireContext().resources.getString(R.string.test_aborted_blind))
+        if(isBlindUser)     speechManager.speak(requireContext().resources.getString(R.string.test_aborted_blind))
 
         show2ChoisesDialog(requireActivity(),
             requireContext().resources.getString(R.string.warning),
@@ -419,7 +426,7 @@ class TestFragment : BaseFragment(
             requireContext().resources.getString(R.string.delete),       // cancel
             { /* okClb */
                 mTest.abortTest(false)
-                navigateBack(TestBasic.TEST_ABORTED, listOf(  mTest.getAbsoluteResultFilePath(),
+                navigateBack(TestBasic.TEST_ABORTED, listOf(mTest.getAbsoluteResultFilePath(),
                                                             mSubjectParcel!!.getAbsoluteSubjectFilePath(),
                                                             mTest.closeSummary()))
             },
@@ -429,11 +436,11 @@ class TestFragment : BaseFragment(
             })
     }
 
+    // TEST_EVENTS  => alert & NAVIGATEBACK
     private fun onTestError(msg: String){
         mHandler.removeCallbacksAndMessages(null)
 
-        if(isBlindUser)
-            speechManager.speak(resources.getString(R.string.critical_error))
+        if(isBlindUser)     speechManager.speak(resources.getString(R.string.critical_error))
 
         showAlert(requireActivity(), resources.getString(R.string.critical_error), msg)
         navigateBack(TestBasic.TEST_ABORTED_WITH_ERROR, listOf( mTest.getAbsoluteResultFilePath(),
@@ -441,7 +448,7 @@ class TestFragment : BaseFragment(
                                                                 mTest.closeSummary()))
     }
 
-    // called when user ended a planned block. can continue or stop (result file is renamed "*_blkX")
+    // called when user ended a planned block= > mTest.startNewBlock() OR onStoppedAfterBlock (result file is renamed "*_blkX")
     private fun onBlockEnded(){
 
         if(isBlindUser) {
@@ -458,7 +465,8 @@ class TestFragment : BaseFragment(
             { /* cancelClb*/    onStoppedAfterBlock() })
     }
 
-    // user wanted to interrupt test after an end block (send data). rename current res & subject files
+    // user wanted to interrupt test after an end block (send data)
+    // => mTest.stopTestAfterBlock (unloadStimuli + rename current res & subject files) & NAVIGATEBACK
     private fun onStoppedAfterBlock(){
         val newfilenames = mTest.stopTestAfterBlock()
         mHandler.removeCallbacksAndMessages(null)

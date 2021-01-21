@@ -35,7 +35,7 @@ open class SubjectSampleParcel(
     var stim_sources:Int = 0,       // according to modalities selection
 
     var audioDuration:Long = 0,     //
-    var audioVolume:Float = 100F,   //
+    var audioVolume:Int = 100,   //
     var audioResource:String = "",  // resource name (string)
 
     var visualDuration:Long     = 0,    //

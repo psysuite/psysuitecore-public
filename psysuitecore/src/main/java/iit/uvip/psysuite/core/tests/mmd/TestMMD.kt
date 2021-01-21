@@ -56,8 +56,10 @@ class TestMMD(ctx: Context,
 
         createResultFile(subject, TrialMMD.LOG_HEADER)
 
-        mStimuliManager = StimuliManager(AudioManager(StimuliManager.STIM_TYPE_A1, -1,  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx), null, null,
-            delaysAligner, ctx)
+        mStimuliManager = StimuliManager(
+            AudioManager(StimuliManager.STIM_TYPE_A2, "",  duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
+            null, null,
+            delaysAligner, ctx, mStimuliHandler)
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
 

@@ -164,7 +164,7 @@ open class SubjectBasicParcel(
                     subjectFileName = composeSubjectFileName(context)
                     if(subjectFileName.isEmpty())   ERROR_SUBJECT_INCOMPLETE
                     else {
-                        val res = saveText(context, subjectFileName, jsonAdapter.toJson(this))        // var jsontext = context!!.resources.openRawResource(R.raw.script_001).bufferedReader().use { it.readText() }
+                        val res = saveText(context, subjectFileName, jsonAdapter.toJson(this), forceOld = true)        // var jsontext = context!!.resources.openRawResource(R.raw.script_001).bufferedReader().use { it.readText() }
                         0
                     }
         }

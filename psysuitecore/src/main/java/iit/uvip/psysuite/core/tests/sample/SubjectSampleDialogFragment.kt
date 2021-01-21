@@ -271,7 +271,7 @@ open class SubjectSampleDialogFragment: SubjectBasicDialogFragment(), AdapterVie
             }
             (subject as SubjectSampleParcel).audioDuration   = etDurationAudio.text.toString().toLong()
             (subject as SubjectSampleParcel).audioResource   = spAudioResource.selectedItem as String
-            (subject as SubjectSampleParcel).audioVolume     = etAudioVolume.text.toString().toFloat()
+            (subject as SubjectSampleParcel).audioVolume     = etAudioVolume.text.toString().toInt()
         }
 
         if(swTactile.isChecked) {

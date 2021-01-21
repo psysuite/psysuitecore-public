@@ -222,10 +222,10 @@ class TestATB(ctx: Context,
         if (subject.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
         mStimuliManager = StimuliManager(
-                AudioManager(UNIMODAL_AUDIO_CODE, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+                AudioManager(UNIMODAL_AUDIO_CODE, -1, duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
                 TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
                 null,
-                delaysAligner, ctx)
+                delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
@@ -416,7 +416,12 @@ class TestATB(ctx: Context,
 
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    mStimuliManager.deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+                    mStimuliManager.deliverShiftedStimulus(
+                        BIMODAL_CODE,
+                        corr_delays.a,
+                        corr_delays.t,
+                        corr_delays.v
+                    ) // simult
                 }, shift)
                 mStimuliHandler.postDelayed({
                     deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced)

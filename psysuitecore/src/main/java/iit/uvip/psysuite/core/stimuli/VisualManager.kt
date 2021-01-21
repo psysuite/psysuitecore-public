@@ -4,10 +4,10 @@ import android.os.Handler
 import android.view.View
 import android.widget.ImageView
 
-class VisualManager(type:Int, private val imgV: ImageView, var drawResOn:Int=1, private val drawResOff:Int=0, override val duration:Long=-1L, handler: Handler)
-    : StimulusManager(type, 0, duration, handler){
+class VisualManager(override val type:Int, private val imgV: ImageView, var drawResOn:Int=1, private val drawResOff:Int=0, override val duration:Long=-1L, val handler: Handler)
+    : iStimulusManager{
 
-    val isValid:Boolean
+    override val isValid:Boolean
         get() = duration > 0
 
     init {
@@ -28,10 +28,9 @@ class VisualManager(type:Int, private val imgV: ImageView, var drawResOn:Int=1, 
         handler.postDelayed({ stop() }, d as Long)
     }
 
-    override fun stop(){
+    override fun stop(id: Int) {
         if(type == StimuliManager.STIM_TYPE_V1)  imgV.visibility = View.INVISIBLE
-        else                                imgV.setImageResource(drawResOff)
-    }
+        else                                imgV.setImageResource(drawResOff)    }
 
     override fun getHandler(): ImageView {
         return imgV

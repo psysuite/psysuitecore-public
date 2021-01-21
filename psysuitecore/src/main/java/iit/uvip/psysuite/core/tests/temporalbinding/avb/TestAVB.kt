@@ -204,10 +204,11 @@ class TestAVB(ctx: Context,
 
         if (subject.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
-        mStimuliManager = StimuliManager(AudioManager(STIM_A, -1, duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+        mStimuliManager = StimuliManager(
+            AudioManager(STIM_A, -1, duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
             null,
             VisualManager(STIM_V, mImageView, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-            delaysAligner, ctx)
+            delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }
@@ -370,7 +371,12 @@ class TestAVB(ctx: Context,
 
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    mStimuliManager.deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+                    mStimuliManager.deliverShiftedStimulus(
+                        BIMODAL_CODE,
+                        corr_delays.a,
+                        corr_delays.t,
+                        corr_delays.v
+                    ) // simult
                 }, shift)
                 mStimuliHandler.postDelayed({
                     deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced){ onTrialEnd() }
@@ -390,17 +396,32 @@ class TestAVB(ctx: Context,
         // first train
         mStimuliHandler.postDelayed({
             testEvent.accept(Pair(EVENT_STIMULI_START, null))
-            mStimuliManager.deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+            mStimuliManager.deliverShiftedStimulus(
+                BIMODAL_CODE,
+                corr_delays.a,
+                corr_delays.t,
+                corr_delays.v
+            ) // simult
         }, shift)
 
         mStimuliHandler.postDelayed({
             testEvent.accept(Pair(EVENT_STIMULI_START, null))
-            mStimuliManager.deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+            mStimuliManager.deliverShiftedStimulus(
+                BIMODAL_CODE,
+                corr_delays.a,
+                corr_delays.t,
+                corr_delays.v
+            ) // simult
         }, shift + curISI)
 
         mStimuliHandler.postDelayed({
             testEvent.accept(Pair(EVENT_STIMULI_START, null))
-            mStimuliManager.deliverShiftedStimulus(BIMODAL_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
+            mStimuliManager.deliverShiftedStimulus(
+                BIMODAL_CODE,
+                corr_delays.a,
+                corr_delays.t,
+                corr_delays.v
+            ) // simult
         }, shift + 2*curISI)
 
         // second train

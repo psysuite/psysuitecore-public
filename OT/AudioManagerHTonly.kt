@@ -9,7 +9,7 @@ it's a layer which call the VAD functions on a new thread
 sends the following messages to Plugin Activity:
 
 */
-class AudioManagerHT(
+class AudioManagerHTonly(
     var type: Int,
     var resource: Any,
     var amplitude: Int = -1,
@@ -20,7 +20,7 @@ class AudioManagerHT(
 
     private var mInternalHandler: Handler? = null // manage internal messages
 
-    private lateinit var mAudioManager: AudioManager
+    private lateinit var mAudioManager: AudioManagerOLD
 
     companion object {
 
@@ -35,7 +35,7 @@ class AudioManagerHT(
     fun init(){
 
         mInternalHandler = Handler(looper, this)        // if HT started, looper is blocking until is initialized
-        mAudioManager = AudioManager(type, resource, amplitude, duration, mInternalHandler!!, ctx)
+        mAudioManager = AudioManagerOLD(type, resource, amplitude, duration, mInternalHandler!!, ctx)
 
     }
     //================================================================================================================
