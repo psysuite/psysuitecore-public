@@ -34,9 +34,7 @@ class TestATVB(
 
     override var LOG_TAG: String = TestATVB::class.java.simpleName
 
-    private var tone2sec:String = "t200hz_2s"
-
-    private val STIM_A      = StimuliManager.STIM_TYPE_A1
+    private val STIM_A      = StimuliManager.STIM_TYPE_A3
     private val STIM_V      = StimuliManager.STIM_TYPE_V1
     private val STIM_T      = StimuliManager.STIM_TYPE_T1
     private val STIM_ATV    = (STIM_A or STIM_T or STIM_V)
@@ -115,28 +113,28 @@ class TestATVB(
 //        StimulusDelay( TYPE_T_V_A,200)
 //    )
 
-    // 18 different elements: 6 x 3 delays (100, 200, 300)
+    // 18 different elements: 6 x 3 delays (150, 225, 300)
     // a-t-v, a-v-t, t-a-v, t-v-a, v-a-t, v-t-a
     private val lStimuliBalancedShort: List<StimulusDelay> = listOf(
 
-        StimulusDelay( TYPE_V_A_T,100),
-        StimulusDelay( TYPE_T_A_V,100),
-        StimulusDelay( TYPE_V_A_T,200),
-        StimulusDelay( TYPE_T_A_V,200),
+        StimulusDelay( TYPE_V_A_T,150),
+        StimulusDelay( TYPE_T_A_V,150),
+        StimulusDelay( TYPE_A_T_V,150),
+        StimulusDelay( TYPE_V_T_A,150),
+        StimulusDelay( TYPE_A_V_T,150),
+        StimulusDelay( TYPE_T_V_A,150),
+
+        StimulusDelay( TYPE_V_A_T,225),
+        StimulusDelay( TYPE_T_A_V,225),
+        StimulusDelay( TYPE_A_T_V,225),
+        StimulusDelay( TYPE_V_T_A,225),
+        StimulusDelay( TYPE_A_V_T,225),
+        StimulusDelay( TYPE_T_V_A,225),
+
         StimulusDelay( TYPE_V_A_T,300),
         StimulusDelay( TYPE_T_A_V,300),
-
-        StimulusDelay( TYPE_A_T_V,100),
-        StimulusDelay( TYPE_V_T_A,100),
-        StimulusDelay( TYPE_A_T_V,200),
-        StimulusDelay( TYPE_V_T_A,200),
         StimulusDelay( TYPE_A_T_V,300),
         StimulusDelay( TYPE_V_T_A,300),
-
-        StimulusDelay( TYPE_A_V_T,100),
-        StimulusDelay( TYPE_T_V_A,100),
-        StimulusDelay( TYPE_A_V_T,200),
-        StimulusDelay( TYPE_T_V_A,200),
         StimulusDelay( TYPE_A_V_T,300),
         StimulusDelay( TYPE_T_V_A,300)
     )
@@ -285,16 +283,16 @@ class TestATVB(
         showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
 
         allQuestions        = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro), ctx.resources.getString(R.string.atvb_question_equal), ctx.resources.getString(R.string.atvb_question_whichsecond))
-        validAnswers        =   if(subject.type == TEST_ATVB_TIME_S_BAL2 || subject.type == TEST_ATVB_TIME_S_BAL)
-                                    mutableListOf(ctx.resources.getString(R.string.audio), ctx.resources.getString(R.string.tactile), ctx.resources.getString(R.string.visual))
-                                else
-                                    mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
-
-        initSummary()
-
         curISI                  = ISI           // 1000L
         currStimulusDuration    = STIM_DURATION // 50L
 
+        validAnswers        =   if(subject.type == TEST_ATVB_TIME_S_BAL2 || subject.type == TEST_ATVB_TIME_S_BAL)
+            mutableListOf(ctx.resources.getString(R.string.audio), ctx.resources.getString(R.string.tactile), ctx.resources.getString(R.string.visual))
+        else
+            mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
+
+
+//        subject.isDebug = true
         if(!subject.isDebug) {
             when (subject.type) {
                 TEST_ATVB_TIME_S_UNBAL,
@@ -316,6 +314,9 @@ class TestATVB(
             }
         }
         else    createTrialsDebug()
+
+
+        initSummary()
 
         mQuestion  = when (subject.type) {
             TEST_ATVB_TIME_S_BAL,
@@ -342,7 +343,8 @@ class TestATVB(
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         mStimuliManager = StimuliManager(
-            AudioManager(STIM_A, -1, duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
+//            AudioManager(STIM_A, -1, duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
+            AudioManager(STIM_A, "t1000hz_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
             TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
             VisualManager(STIM_V, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
             delaysAligner, ctx, mStimuliHandler)
@@ -384,18 +386,39 @@ class TestATVB(
     }
 
     private fun createTrialsDebug(){
+
+//        createResultFile(subject, TrialBindingsBalanced.LOG_HEADER)
+//        subject.type = TEST_ATVB_TIME_S_BAL
+
+        createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
+        subject.type = TEST_ATVB_TIME_S_UNBAL
+
         var cnt = -1
         mTrials = mutableListOf()
+//        for (i in 0 until 100000) {
+//
+//            val trials: MutableList<TrialBindings3latencies> = mutableListOf()
+//            for (j in 0 until 2) {
+//                trials.add(TrialBindingsBalanced(++cnt, TYPE_A_T_V, 150L, validAnswers))
+//                trials.add(TrialBindingsBalanced(++cnt, TYPE_V_A_T, 150L, validAnswers))
+//                trials.add(TrialBindingsBalanced(++cnt, TYPE_T_V_A, 150L, validAnswers))
+//
+//            }
+//            mTrials.addAll(trials)
+//        }
         for (i in 0 until 100000) {
 
             val trials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
             for (j in 0 until 2) {
                 trials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0, validAnswers[0]))
-                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, 100, validAnswers[0]))
-                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, 100, validAnswers[0]))
+//                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, 100, validAnswers[0]))
+//                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, 100, validAnswers[0]))
+//                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, 50, validAnswers[0]))
+//                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, 50, validAnswers[0]))
             }
             mTrials.addAll(trials)
         }
+        setTrialsID()
     }
 
     // [18 + 3] * 2 * NUM_REPETITIONS2(8) = 336
@@ -407,9 +430,9 @@ class TestATVB(
             for (j in 0 until 2) {
                 val trials: MutableList<TrialBindings3latencies> = mutableListOf()
 
-                trials.add(TrialBindings3latencies(++cnt, TYPE_ATV, 0L, 0L, 0L, ""))
-                trials.add(TrialBindings3latencies(++cnt, TYPE_ATV, 0L, 0L, 0L, ""))
-                trials.add(TrialBindings3latencies(++cnt, TYPE_ATV, 0L, 0L, 0L, ""))
+                trials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0L,  validAnswers))
+                trials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0L,  validAnswers))
+                trials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0L,  validAnswers))
 
                 // 18
                 lStimuliBalancedShort.map {
@@ -489,8 +512,8 @@ class TestATVB(
     override fun show(trial: TrialBasic, isRepeat: Boolean) {
 
         // TODO: to remove
-        if(subject.type == TEST_ATVB_TIME_S_BAL || subject.type == TEST_ATVB_TIME_S_BAL2)
-            testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))
+//        if(subject.type == TEST_ATVB_TIME_S_BAL || subject.type == TEST_ATVB_TIME_S_BAL2)
+//            testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))
 
         if (isRepeat) trial.repetitions++
 
@@ -529,12 +552,7 @@ class TestATVB(
 
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Pair(EVENT_STIMULI_START, null))
-                    mStimuliManager.deliverShiftedStimulus(
-                        STIM_ATV,
-                        corr_delays.a,
-                        corr_delays.t,
-                        corr_delays.v
-                    ){ onTrialEnd()}
+                    mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
                 }, WN_FIRSTSTIM_INTERVAL)
             }
 
@@ -563,12 +581,7 @@ class TestATVB(
             TYPE_AT_V   ->  delaysAligner.arrangeDelays(STIM_ATV, 0,0, trial.delay)
             else        ->  delaysAligner.arrangeDelays(STIM_ATV)
         }
-        mStimuliManager.deliverShiftedStimulus(
-            STIM_ATV,
-            corr_delays.a,
-            corr_delays.t,
-            corr_delays.v
-        ){ onTrialEnd()}
+        mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
     }
     // =============================================================================================================================
     // DEBUG

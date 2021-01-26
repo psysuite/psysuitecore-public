@@ -51,17 +51,13 @@ class AnswerDialogFragmentTFI: DialogFragment()
         super.onViewCreated(view, savedInstanceState)
 
         // Fetch arguments from bundle and set title
-        val title       = requireArguments().getString("title", "Enter Name")
-        val str_trial   = "trial " +  (requireArguments().getInt("trial_id", 0) + 1).toString() + " of " + requireArguments().getInt("tot_trials", 0)
-        val question    = requireArguments().getString("question", "Enter Name")
-        val debug_info  = requireArguments().getString("debug")
-        isDebug         = requireArguments().getBoolean("isDebug", false)
+        val title           = requireArguments().getString("title", "Enter Name")
+        txt_trials.text     = "trial " +  (requireArguments().getInt("trial_id", 0) + 1).toString() + " of " + requireArguments().getInt("tot_trials", 0)
+        txt_question.text   = requireArguments().getString("question", "Enter Name")
+        txt_debug.text      = requireArguments().getString("debugInfo")
+        isDebug             = requireArguments().getBoolean("isDebug", false)
 
         dialog?.setTitle(title)
-
-        txt_trials.text     = str_trial
-        txt_question.text   = question
-        txt_debug.text      = debug_info
 
         radioGroupAudio.check(radioGroupAudio.getChildAt(0).id)
         radioGroupTactile.check(radioGroupTactile.getChildAt(0).id)

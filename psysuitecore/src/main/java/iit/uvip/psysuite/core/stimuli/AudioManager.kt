@@ -268,6 +268,14 @@ class AudioManager(
         }
     }
 
+    override fun clear() {
+        when(type){
+            StimuliManager.STIM_TYPE_A1 -> mToneGen?.release()
+            StimuliManager.STIM_TYPE_A2 -> currMPAudio?.release()
+            StimuliManager.STIM_TYPE_A3 -> currAudioTrack?.release()
+        }
+    }
+
     @Throws(AudioResourceException::class, Exception::class)
     fun loadMPResource(resname: String, volume: Float = 1F):MediaPlayer{
         try{

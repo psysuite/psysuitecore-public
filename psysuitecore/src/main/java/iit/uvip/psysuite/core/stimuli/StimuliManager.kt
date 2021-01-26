@@ -3,7 +3,9 @@ package iit.uvip.psysuite.core.stimuli
 // used for logging
 import android.content.Context
 import android.os.Handler
+import android.util.Log
 import iit.uvip.psysuite.core.R
+import org.albaspazio.core.accessory.getOnsetDate
 import java.util.*
 
 
@@ -98,6 +100,7 @@ class StimuliManager(
             return t or (mVisualManager?.type ?: t)
         }
 
+    //region variables getters
     // get type separated by modalities-combinations
     val typeA:Int
         get() = mAudioManager?.type ?: -1
@@ -134,6 +137,7 @@ class StimuliManager(
     // TRUE if at least one manager is valid
     val isValid:Boolean
         get() = (mAudioManager?.isValid ?: false || mTactileManager?.isValid ?: false || mVisualManager?.isValid ?: false)
+    //endregion
 
     private fun checkResourcesLoading(){
 
@@ -149,7 +153,10 @@ class StimuliManager(
         mStimuliHandler.post(runTask)  // Start the initial runnable task by posting through the handler
     }
 
-    fun unloadStimuli(){}
+    fun unloadStimuli(){
+        mAudioManager?.clear()
+        mVisualManager?.clear()
+    }
 
     fun getValidAudioManager(manager: iStimulusManager?):iStimulusManager?{
 
@@ -208,8 +215,8 @@ class StimuliManager(
         return Triple(Collections.max(durs) as Long, Collections.min(durs) as Long, mean)
     }
 
-    // =============================================================================================================================
-    // STIMULUS DELIVERY
+
+    //region STIMULI DELIVERY
     // =============================================================================================================================
     // ---------------------------------------------------------------------------------------------
     // PAIRS  (deliverAlignedStimuliPair -> deliverShiftedStimuliPair -> 2 deliverShiftedStimulus)
@@ -244,7 +251,7 @@ class StimuliManager(
         val durlist         = mutableListOf<Long>()
 
         val onsetDate           = Date()
-//        Log.d(TAG, "${getOnsetDate()}: NEW STIMULUS, reciprocal delays A=$a, T=$t, V=$v")
+        Log.d(TAG, "${getOnsetDate()}: NEW STIMULUS, reciprocal delays A=$a, T=$t, V=$v")
 
         try{
             if(a > -1 && atype > -1) {
@@ -258,7 +265,7 @@ class StimuliManager(
                     deliverAStimulus()
 //                    val elapsedms2 = getTimeDifference(onsetDate)
 //                    Log.d(TAG, "${getOnsetDate()}: audio issued, type=${mAudioManager.type}, onset=$a, elapsedPre=$elapsedms1, elapsedPost=$elapsedms2")
-                }, t)
+                }, a)
 
             }
 
@@ -356,4 +363,5 @@ class StimuliManager(
             throw Exception(e.message)
         }
     }
+    //endregion
 }

@@ -15,6 +15,7 @@ interface iStimulusManager{
     fun deliver(dur:Any?=null, id:Int=0)
     fun stop(id:Int = -1)
     fun getHandler():Any?
+    fun clear()
 
     val isValid:Boolean
 }

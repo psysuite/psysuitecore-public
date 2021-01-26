@@ -23,15 +23,17 @@ object ProjectPreferences: SharedPreferenceWrapper() {
         "pref_main_email" to R.string.main_email)
 
     private lateinit var resources: Resources
+    private lateinit var defaultDelays: DelaysAligner
 
     //call it once
-    fun init(context:Context, pref_name:String="", mode:Int = Context.MODE_PRIVATE){
+    fun init(context:Context, defDel:DelaysAligner, pref_name:String="", mode:Int = Context.MODE_PRIVATE){
 
         if(isInitialized()) return      // prevent multiple init
 
-        resources   = context.resources
-        prefs = if(pref_name.isEmpty()) PreferenceManager.getDefaultSharedPreferences(context)
-                else                    context.getSharedPreferences(pref_name, mode)
+        defaultDelays   = defDel
+        resources       = context.resources
+        prefs           =   if(pref_name.isEmpty()) PreferenceManager.getDefaultSharedPreferences(context)
+                            else                    context.getSharedPreferences(pref_name, mode)
 
         setDefault()
     }
@@ -46,20 +48,36 @@ object ProjectPreferences: SharedPreferenceWrapper() {
                 else super.write(key, value)
     }
     //==============================================================================================
-    fun createDelaysObject():DelaysAligner{
-        return DelaysAligner(
+    fun getSystemDelays():DelaysAligner = DelaysAligner(
             (read("pref_delay_a1","") as String).toLong(),
             (read("pref_delay_a2","") as String).toLong(),
             (read("pref_delay_a3","") as String).toLong(),
             (read("pref_delay_t1","") as String).toLong(),
             (read("pref_delay_t2","") as String).toLong(),
             (read("pref_delay_v1","") as String).toLong(),
-            (read("pref_delay_v2","") as String).toLong(),
-        )
-    }
+            (read("pref_delay_v2","") as String).toLong())
 
-    // write preferences only if still unset
+    // write preferences from defaultonly if still unset
     private fun setDefault(){
+
+        keysHashMap.map {
+            if (!prefs.contains(it.key)) {
+                val value = when (it.key) {
+                    "pref_delay_a1" -> defaultDelays.a1.toString()
+                    "pref_delay_a2" -> defaultDelays.a2.toString()
+                    "pref_delay_a3" -> defaultDelays.a3.toString()
+                    "pref_delay_t1" -> defaultDelays.t1.toString()
+                    "pref_delay_t2" -> defaultDelays.t2.toString()
+                    "pref_delay_v1" -> defaultDelays.v1.toString()
+                    "pref_delay_v2" -> defaultDelays.v2.toString()
+                    else            -> resources.getString(R.string.main_email)
+                }
+                write(it.key, value)
+            }
+        }
+    }
+    // write preferences only if still unset
+    private fun setDefaultFromResources(){
         keysHashMap.map{
 
             if(!prefs.contains(it.key))

@@ -129,16 +129,13 @@ class TestBIS(
         getConditionsInfo(ctx).map {
             if (it.id == subject.type) mTestLabel = it.label
         }
-        if(mTestLabel.isEmpty()) showToast(
-            "Should not happen. given test code was not recognized",
-            ctx
-        )
+        if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
         createResultFile(subject, TrialBIS.LOG_HEADER)
 
         mNoise = AudioManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
 
         mStimuliManager = StimuliManager(
-                                         AudioManager(STIM_A, "t1000_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
+                                         AudioManager(STIM_A, "t1000hz_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
                                          TactileManager(vibrator!!, duration = STIMULUS_DURATION_TACTILE, handler = mStimuliHandler),
                                          VisualManager(STIM_V, mImageView!!, mDrawablesResource[1], mDrawablesResource[0], duration = STIMULUS_DURATION_VISUAL, handler = mStimuliHandler),
                                          delaysAligner, ctx, mStimuliHandler)

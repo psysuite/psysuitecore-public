@@ -12,7 +12,6 @@ class TactileManager(private val vibrator: VibrationManager, val amplitude:Int=-
     override val isValid:Boolean
         get() = duration > 0
 
-
     companion object{
 
         fun validatePattern(pattern:String):List<Int>?{
@@ -41,4 +40,6 @@ class TactileManager(private val vibrator: VibrationManager, val amplitude:Int=-
     override fun getHandler(): VibrationManager {
         return vibrator
     }
+
+    override fun clear() {}
 }

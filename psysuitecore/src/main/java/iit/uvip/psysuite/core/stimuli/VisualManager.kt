@@ -35,4 +35,8 @@ class VisualManager(override val type:Int, private val imgV: ImageView, var draw
     override fun getHandler(): ImageView {
         return imgV
     }
+
+    override fun clear() {
+        imgV.setImageDrawable(null)
+    }
 }

@@ -58,10 +58,10 @@ open class TwoAFCAnswerDialogFragment: DialogFragment()
 
         // Fetch arguments from bundle and set title
         val title           = requireArguments().getString("title", "Enter Name")
-        val str_trial       = "trial " +  (requireArguments().getInt("trial_id", 0) + 1).toString() + " di " + requireArguments().getInt("tot_trials", 0)
+        txt_trials.text     = "trial " +  (requireArguments().getInt("trial_id", 0) + 1).toString() + " di " + requireArguments().getInt("tot_trials", 0)
         mQuestion           = requireArguments().getString("question", "Enter Name")
         mAnswers            = requireArguments().getStringArrayList("answers") ?: arrayListOf<String>()
-        val debug_info      = requireArguments().getString("debug")
+        txt_debug.text      = requireArguments().getString("debugInfo")
         isDebug             = requireArguments().getBoolean("isDebug", false)
         isInstructions      = (targetRequestCode == TestFragment.TRG_REQ_CODE_INSTRUCTIONS)
 
@@ -73,9 +73,7 @@ open class TwoAFCAnswerDialogFragment: DialogFragment()
         imgvResult.visibility   = View.INVISIBLE
         bt_clear.visibility     = View.VISIBLE
 
-        txt_trials.text     = str_trial
         txt_question.text   = mQuestion
-        txt_debug.text      = debug_info
 
         if (mAnswers.isNotEmpty()) {
             rb_a_0.text = mAnswers[0]

@@ -32,19 +32,24 @@ class TestTFI(ctx: Context,
 
     private val N_RIP_X_COND_X_BLOCK:Int        = 4
     private val N_RIP_X_COND_X_BLOCK_TOD:Int    = 2
+    private val N_RIP_X_COND_X_BLOCK_BI:Int     = 5
 
     private val NUM_BLOCKS:Int                  = 4
+    private val NUM_BLOCKS_BI:Int               = 2
 
     private val WN_PRESTIM_INTERVAL     = 1000L
     private val WN_POSTTSTIM_INTERVAL   = 500L
-    private val STIM_DURATION           = 35L
+    private val STIM_DURATION           = 20L
+    private val STIM_DURATION_TACTILE   = 35L
 
     private var rip_x_cond_block        = N_RIP_X_COND_X_BLOCK
+    private var nblocks                 = NUM_BLOCKS
+
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle, R.drawable.ape)
 
     companion object {
 
-        @JvmStatic val soa_1:Long = 55L
+        @JvmStatic val soa_1:Long = 40L
         @JvmStatic val soa_2:Long = 85L
 
         @JvmStatic val STIM_A     = StimuliManager.STIM_TYPE_A3
@@ -90,25 +95,46 @@ class TestTFI(ctx: Context,
         mQuestion           = ctx.resources.getString(R.string.tfi_question)
         validAnswers        = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
 
-        currStimulusDuration    = STIM_DURATION // 35L
+        currStimulusDuration    = STIM_DURATION // 20L
 
         if (subject.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
-        subject.isDebug = true
-        if(!subject.isDebug)  createTrials()
-        else                  createTrialsDebug()
+        when(subject.type){
+            TEST_TFI -> {
+                rip_x_cond_block    = N_RIP_X_COND_X_BLOCK          // 4
+                nblocks             = NUM_BLOCKS                    // 4
+            }
+            TEST_TFI_TODDLERS -> {
+                rip_x_cond_block    = N_RIP_X_COND_X_BLOCK_TOD      // 2
+                nblocks             = NUM_BLOCKS                    // 4
+             }
+            TEST_TFI_BIMODAL -> {
+                rip_x_cond_block    = N_RIP_X_COND_X_BLOCK_BI       // 5
+                nblocks             = NUM_BLOCKS_BI                 // 2
+            }
+        }
+
+//        subject.isDebug = true
+        if(subject.isDebug)  createTrialsDebug()
+        else
+            when(subject.type){
+                TEST_TFI, TEST_TFI_TODDLERS -> createTrials()
+                TEST_TFI_BIMODAL            -> createTrialsBimodal()
+            }
         // mTrials list
         nTrials             = mTrials.size
         currTrial           = 0
 
-        rip_x_cond_block    = N_RIP_X_COND_X_BLOCK
         var onImage         = 1
-        if(subject.type == TEST_TFI_TODDLERS) {
-            rip_x_cond_block = N_RIP_X_COND_X_BLOCK_TOD
-            onImage          = 2
+        when(subject.type){
+            TEST_TFI            ->  mListBlocks = mutableListOf((nTrials * 0.25F).roundToInt(), (nTrials * 0.5F).roundToInt(), (nTrials * 0.75F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
+            TEST_TFI_TODDLERS   -> {
+                                    mListBlocks = mutableListOf((nTrials * 0.25F).roundToInt(), (nTrials * 0.5F).roundToInt(), (nTrials * 0.75F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
+                                    onImage     = 2
+            }
+            TEST_TFI_BIMODAL    ->  mListBlocks = mutableListOf(((nTrials * 0.5F).roundToInt()))    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
         }
 
-        mListBlocks     = mutableListOf((nTrials * 0.25F).roundToInt(), (nTrials * 0.5F).roundToInt(), (nTrials * 0.75F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
         mTestLabel      = ""
         getConditionsInfo(ctx).map {
             if (it.id == subject.type) mTestLabel = it.label
@@ -116,8 +142,8 @@ class TestTFI(ctx: Context,
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         mStimuliManager = StimuliManager(
-            AudioManager(STIM_A, "t1000hz_35ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-            TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
+            AudioManager(STIM_A, "t1000hz_20ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+            TactileManager(vibrator!!, duration = STIM_DURATION_TACTILE, handler = mStimuliHandler),
             VisualManager(STIM_V, mImageView!!, mDrawablesResource[onImage], mDrawablesResource[0], duration = currStimulusDuration, handler = mStimuliHandler),
             delaysAligner, ctx, mStimuliHandler)
 
@@ -207,6 +233,35 @@ class TestTFI(ctx: Context,
         // set trial id according to its order in the list
         mTrials.mapIndexed { index, trial -> trial.id = (index + 1) }
     }
+
+    // [4x2 cond + 2x1 cond] x 1 soa x 5 x 2 blocks = 50 x 2 blocks
+    private fun createTrialsBimodal(){
+
+        var cond_type = 0
+        for(b in 0 until nblocks){
+            val block_trials:MutableList<TrialTFI> = mutableListOf()
+            for(rb in 0 until rip_x_cond_block){
+
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,2", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,2", soa_1))
+
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,0", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,0", soa_1))
+            }
+            block_trials.shuffle()
+            mTrials.addAll(block_trials)
+        }
+
+        // set trial id according to its order in the list
+        mTrials.mapIndexed { index, trial -> trial.id = (index + 1) }
+    }
+
     private fun createTrialsDebug(){
 
         var cond_type = 0
@@ -217,6 +272,11 @@ class TestTFI(ctx: Context,
             for(rb in 0 until rip_x_cond_block){
                 block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_1))
                 block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,0", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,0", soa_1))
+
+//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_1))
+//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
 //                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_1))
 //                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,0", soa_1))
 //                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,2", soa_1))
@@ -254,7 +314,11 @@ class TestTFI(ctx: Context,
     }
 
     override fun initSummary() {
-        mSummary = TFISummary(ctx)
+        mSummary = when(subject.type)
+        {
+            TEST_TFI, TEST_TFI_TODDLERS ->  TFISummary(ctx)
+            else                        ->  TFIBISummary(ctx)
+        }
     }
 
     // =============================================================================================================================
