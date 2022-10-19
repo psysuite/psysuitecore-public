@@ -60,7 +60,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         } else subject = subj
 
         val ntm         = getCompanionObjectMethod(subject.classes[0], "getNextTrialModes")
-        mNextTrialModes = ntm.first?.call(ntm.second) as List<List<Int>>
+        mNextTrialModes = ntm.first?.call(ntm.second, requireContext()) as List<List<Int>>
 
         val ci          = getCompanionObjectMethod(subject.classes[0], "getConditionsInfo")
         mTaskCodeLabels = ci.first?.call(ci.second, requireContext()) as List<ConditionData>
@@ -85,8 +85,8 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
         swInteractive?.setOnCheckedChangeListener { _, b ->
             subject.nextTrailModality = when (b) {
-                true    -> TestBasic.TEST_NEXTTRIAL_BUTTON
-                false   -> TestBasic.TEST_NEXTTRIAL_AUTO
+                true -> TestBasic.TEST_NEXTTRIAL_BUTTON
+                false -> TestBasic.TEST_NEXTTRIAL_AUTO
             }
         }
     }
@@ -129,6 +129,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
         if (subj.gender != -1)  radioGroupGender.check(radioGroupGender.getChildAt(subj.gender).id)
         else                    radioGroupGender.clearCheck()
+
         //------------------------------------------------------
         // noise visibility
         swWhiteNoise.visibility     = View.VISIBLE

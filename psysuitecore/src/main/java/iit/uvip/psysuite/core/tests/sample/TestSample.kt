@@ -49,7 +49,7 @@ class TestSample(ctx: Context, activity: Activity, hostfragment: Fragment, subje
             )
         }
         
-        fun getNextTrialModes():List<List<Int>>{
+        fun getNextTrialModes(ctx:Context):List<List<Int>>{
             return listOf(listOf(TEST_NEXTTRIAL_BUTTON, TEST_NEXTTRIAL_AUTO))
         }
     }
@@ -61,12 +61,11 @@ class TestSample(ctx: Context, activity: Activity, hostfragment: Fragment, subje
     // =============================================================================================================================
     override fun initTest(){
 
-        when {
-            mImageView == null  -> throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
-            vibrator == null    -> throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
-        }
+        if(mImageView == null) throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
 
-        mImageView?.visibility  = View.INVISIBLE
+        // vibrator == null    -> throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
+
+        mImageView.visibility   = View.INVISIBLE
         curStimDuration         = 1000L
         currTrial               = 0
         validAnswers            = mutableListOf()

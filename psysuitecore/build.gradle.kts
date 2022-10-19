@@ -2,8 +2,6 @@ plugins {
     id(Plugins.androidLibrary)
     kotlin(Plugins.kotlinAndroid)
     kotlin(Plugins.kotlinExtensions)
-
-    id("name.remal.check-dependency-updates") version "1.5.0"
 }
 
 android {
@@ -12,8 +10,6 @@ android {
     defaultConfig {
         minSdkVersion(Configs.minSdkVersion)
         targetSdkVersion(Configs.targetSdkVersion)
-        versionCode = Configs.versionCode
-        versionName = Configs.versionName
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -24,12 +20,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8.toString()
+        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 }
 
@@ -41,18 +37,23 @@ androidExtensions {
 dependencies {
 
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    implementation("org.ejml:ejml-kotlin:0.41")
-    implementation(files( "jvm/koma-core-api-jvm-0.12.jar", "jvm/koma-core-ejml-0.12.jar"))
+    // implementation("org.ejml:ejml-kotlin:0.41")
+    // implementation(files( "jvm/koma-core-api-jvm-0.12.jar", "jvm/koma-core-ejml-0.12.jar"))
 
     implementation(Dependencies.Moshi.moshi)
     implementation(Dependencies.Moshi.moshiKt)
 
-    api("androidx.preference:preference-ktx:1.1.1")
+    api("androidx.preference:preference-ktx:1.2.0")
 
     implementation(project(":core"))
     implementation(project(":nativeaudio"))
 
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}")
+    implementation(Dependencies.AndroidX.ktxCore)
+    implementation(Dependencies.AndroidX.appCompat)
+
+    implementation(Dependencies.Kotlin.stdLib)
+
+
     implementation("androidx.legacy:legacy-support-v4:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.2.1")
 

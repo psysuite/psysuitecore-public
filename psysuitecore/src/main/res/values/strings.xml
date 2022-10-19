@@ -22,6 +22,7 @@
     <string name="block_ended">Questa parte del test è terminata\nVuoi continuare o interrompere per poi proseguire un\'altra volta?</string>
     <string name="block_ended_blind">Questa parte del test è terminata...Chiedi assistenza per continuare</string>
     <string name="test_ended">Il Test è terminato...grazie per aver partecipato</string>
+    <string name="test_want2abort">Sei sicuro di voler realmente interrompere il test?</string>
     <string name="test_aborted">Hai deciso di interrompere il test. Vuoi cancellare i risultati fin qui scritti\n o li vuoi mantenere?</string>
 
     <string name="test_aborted_blind">Hai deciso di interrompere il test. Chiedi assistenza per completare</string>
@@ -63,6 +64,10 @@
     <string name="population">popolazione</string>
 
     <string name="warning">Attenzione</string>
+    <string name="nblocks">Num. Blocchi</string>
+    <string name="durblock_sec">Durata Blocchi [sec]</string>
+    <string name="durblock_msec">Durata Blocchi [ms]</string>
+    <string name="firstcond">Cond. Iniziale</string>
 
     <string name="subject_present">Il nome scelto è già esistente. Vuoi continuare ad usare questo nome?</string>
     <string name="subject_block_present">Esiste una precedente sessione di test\nVuoi proseguirla o vuoi cancellare tutto e ricominciare da zero?</string>
@@ -117,7 +122,10 @@
     <string name="pref_delay_v2">29</string>
 
 
-    <string name="start_bindings">Temporal Bindings</string>
+    <string name="label_bindings">Temporal Bindings</string>
+    <string name="label_temporal_tests">Temporal Tests</string>
+    <string name="label_decision_tests">Decisions Tests</string>
+    <string name="label_illusion_tests">Illusions Tests</string>
 
     <!-- ATB -->
     <string name="start_atb">AT Binding (AT-B)</string>
@@ -274,6 +282,35 @@
     <string name="tfi_question">Indica il numero di stimoli che hai percepito per ciascuna delle 3 modalità</string>
 
     <string name="tfi_warning_null_answer">seleziona almeno uno stimolo maggiore di zero</string>
+
+    <!-- GROUND-FIGURE TEST -->
+    <string name="start_figure_ground_illusion">FIGURE GROUND ILLUSION (FGI)</string>
+    <string name="label_fgi">FIGURE GROUND ILLUSION (FGI)</string>
+    <string name="label_fgi2">BISTABLE IMAGES (BI)</string>
+
+    <string name="label_jar">VASO</string>
+    <string name="label_faces">FACCE</string>
+    <string name="label_youngwoman">GIOVANE</string>
+    <string name="label_elderlywoman">ANZIANA</string>
+    <string name="label_musician">MUSICISTA</string>
+    <string name="label_woman">DONNA</string>
+
+    <!-- RIVALRY GROUPING TEST -->
+    <string name="label_rivgrp">RIVALRY vs GROUPING\n(RIVGRP)</string>
+
+    <string name="label_house">CASA</string>
+    <string name="label_face">FACCIA</string>
+    <string name="label_car">MACCHINA</string>
+
+    <string name="warn_blocks">Il numero di blocchi deve essere maggiore di 1 e multiplo di 2</string>
+
+
+    <!-- BEADS TEST -->
+    <string name="label_beads">BEADS TEST (BEADS)</string>
+    <string name="label_jar1">Urna 1</string>
+    <string name="label_jar2">Urna 2</string>
+    <string name="label_new_bead">Nuova pallina</string>
+    <string name="label_choose_jar">Scegli Urna</string>
 
 
     <!-- SAMPLE TEST -->

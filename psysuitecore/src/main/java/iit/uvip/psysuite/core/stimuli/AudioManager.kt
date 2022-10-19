@@ -61,46 +61,36 @@ class AudioManager(
 
         const val TAG = "AMANHT"
         @Throws(AudioResourceException::class)
-        fun getAudioResource(
-            ctx: Context,
-            resname: String,
-            volume: Float = 1F,
-            deftype: String = "raw"
-        )
-        : MediaPlayer {
-            val mp = MediaPlayer.create(
-                ctx, ctx.resources.getIdentifier(
-                    resname,
-                    deftype,
-                    ctx.packageName
-                )
-            ) ?: throw AudioResourceException(resname)
+        fun getAudioResource(ctx: Context, resname: String, volume: Float = 1F, deftype: String = "raw") : MediaPlayer {
+            val mp = MediaPlayer.create(ctx, ctx.resources.getIdentifier(resname,deftype,ctx.packageName)) ?: throw AudioResourceException(resname)
             mp.setVolume(volume, volume)
             return mp
         }
 
-        // playback audioresource until its end
+        // playback audioresource until its end.  do not loop, execute one cycle
         @Throws(AudioResourceException::class, Exception::class)
-        fun playbackAllAudioResource(
-            ctx: Context,
-            resname: String,
-            volume: Float = 1F,
-            deftype: String = "raw",
-            onEnd: () -> Unit = {}
-        ){
+        fun playbackAllAudioResource(ctx: Context, resname: String, volume: Float = 1F, deftype: String = "raw", loop:Int = 1, onEnd: () -> Unit = {}){
             try{
                 val mediaPlayer = getAudioResource(ctx, resname, volume, deftype)
+                var currLoop = 1
                 mediaPlayer.start()
                 mediaPlayer.setOnCompletionListener{
-                    onEnd()
-                    it.release()
+
+                    if(currLoop >= loop) {
+                        onEnd()
+                        it.release()
+                    }
+                    else  {
+                        currLoop++
+                        mediaPlayer.start()
+                    }
                 }
             }
             catch (e: Exception){ throw AudioResourceException(resname) }
         }
 
         @Throws(AudioResourceException::class)
-        fun loadMediaPlayerFromAsset(ctx: Context, resname: String, volume: Float = 1F): MediaPlayer {
+        fun loadMediaPlayerFromAsset(ctx: Context, resname: String, volume: Float = 1F, loop:Boolean=false): MediaPlayer {
             return try {
                 val afd = ctx.resources.assets.openFd(resname)
                 val mp = MediaPlayer()
@@ -109,7 +99,7 @@ class AudioManager(
                 mp.setVolume(volume, volume)
                 mp.prepare()
 
-                mp.isLooping = false
+                mp.isLooping = loop
                 mp
             } catch (e: IOException) {
                 // TODO Auto-generated catch block
@@ -119,12 +109,7 @@ class AudioManager(
         }
 
         @Throws(AudioResourceException::class)
-        fun loadAudioTrackFromAsset(
-            ctx: Context,
-            resname: String,
-            sampleRate: Int,
-            volume: Float = 1F
-        ): AudioTrack {
+        fun loadAudioTrackFromAsset(ctx: Context, resname: String, sampleRate: Int, volume: Float = 1F): AudioTrack {
 
             // read file from assets as ByteArray
             val istr: InputStream = ctx.resources.assets.open(resname)
@@ -197,7 +182,10 @@ class AudioManager(
     }
 
     init{
+        load(resource)
+    }
 
+    override fun load(stim1: Any, stim2: Any?, clb: () -> Unit) {
         when(type){
             StimuliManager.STIM_TYPE_A1 -> {
                 if ((resource as Int) == -1) resource = ToneGenerator.TONE_CDMA_ALERT_INCALL_LITE
@@ -210,10 +198,7 @@ class AudioManager(
             }
             StimuliManager.STIM_TYPE_A2 -> {
                 if ((resource as String).isNotEmpty()) {
-                    loadMPResource(
-                        resource as String,
-                        amplitude
-                    )   // also set isResourcesLoaded/loadedResource...otherwise throw AudioResourceException
+                    loadMPResource(resource as String, amplitude)   // also set isResourcesLoaded/loadedResource...otherwise throw AudioResourceException
                     if (isValid) mMP?.dummyUse(amplitude)
                 } else isResourcesLoaded = true
             }
@@ -230,8 +215,7 @@ class AudioManager(
                     isResourcesLoaded = true
                 }
             }
-        }
-    }
+        }    }
 
     override fun deliver(dur: Any?, id: Int){       // id is the index, within the list given during inizialization, of the sound to be played
         val d = when(dur){
@@ -309,9 +293,9 @@ class AudioManager(
     }
 
     @Throws(AudioResourceException::class, Exception::class)
-    fun loadMPResource(resname: String, volume: Float = 1F):MediaPlayer{
+    fun loadMPResource(resname: String, volume: Float = 1F, loop:Boolean=false):MediaPlayer{
         try{
-            mMP         = loadMediaPlayerFromAsset(ctx, resname, volume)
+            mMP         = loadMediaPlayerFromAsset(ctx, resname, volume, loop)
             loadedResource      = resname
             isResourcesLoaded   = true
             return mMP as MediaPlayer

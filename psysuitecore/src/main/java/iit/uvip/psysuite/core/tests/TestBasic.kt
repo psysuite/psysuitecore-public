@@ -22,6 +22,7 @@ import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showAlert
 
 
+
 /*
 must contain all the possible codes
 
@@ -151,6 +152,23 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_AVB_TIME_SINGLESTIM_TOD = 183
         @JvmStatic val TEST_AVB_TIME_DOUBLESTIM_TOD = 184
 
+        @JvmStatic val TEST_FGI_1_UNSCRAMBLED       = 190
+        @JvmStatic val TEST_FGI_1_SCRAMBLED         = 191
+        @JvmStatic val TEST_FGI_2_UNSCRAMBLED       = 192
+        @JvmStatic val TEST_FGI_2_SCRAMBLED         = 193
+        @JvmStatic val TEST_FGI_3_UNSCRAMBLED       = 194
+        @JvmStatic val TEST_FGI_3_SCRAMBLED         = 195
+
+        @JvmStatic val TEST_RIVGRP_RIV_HF           = 200
+        @JvmStatic val TEST_RIVGRP_GRP_HF           = 201
+        @JvmStatic val TEST_RIVGRP_RIVGRP_HF        = 202
+        @JvmStatic val TEST_RIVGRP_RIV_HC           = 203
+        @JvmStatic val TEST_RIVGRP_GRP_HC           = 204
+        @JvmStatic val TEST_RIVGRP_RIVGRP_HC        = 205
+
+        @JvmStatic val TEST_BEADS_LOWUNCERT         = 210
+        @JvmStatic val TEST_BEADS_MIDUNCERT         = 211
+
 
         //-----------------------------------------------------------------------------------------
         @JvmStatic val TEST_ABORTED                     = 230
@@ -276,7 +294,7 @@ abstract class TestBasic(protected val ctx: Context,
     }
 
     // called by above nextTrial & by TestFragment after user decided to continue after block end
-    private fun doNextTrial():Int{
+    protected fun doNextTrial():Int{
         return  try {
                     mTrial = getNewTrial()  // it also updates currTrial
 
@@ -349,12 +367,11 @@ abstract class TestBasic(protected val ctx: Context,
         mNoise?.stop()
     }
 
-    private fun saveText(text: String, overwrite: Boolean = false, notifyDm: Boolean = false){
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            saveTextQ(ctx, mResultUri!!, text, overwrite = overwrite, notifyDm = notifyDm)
-        else
-            saveText(ctx, mResultFile, text, overwrite = overwrite, notifyDm = notifyDm)
+    protected fun saveText(text: String, overwrite: Boolean = false, notifyDm: Boolean = false):Any?{
+        return  if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
+                        saveTextQ(ctx, mResultUri!!, text, overwrite = overwrite, notifyDm = notifyDm)
+                else
+                        saveText(ctx, mResultFile, text, overwrite = overwrite, notifyDm = notifyDm)
     }
 
     fun adjustBlocks(blk:Int){

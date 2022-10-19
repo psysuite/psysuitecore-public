@@ -31,7 +31,7 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
                 swInteractive.visibility = View.VISIBLE
                 labInteractive.visibility = View.VISIBLE
                 if (subject.nextTrailModality == TestBasic.TEST_NEXTTRIAL_AUTO || subject.nextTrailModality == TestBasic.TEST_NEXTTRIAL_BUTTON) {
-                    swInteractive?.isChecked = false
+                    swInteractive?.isSelected = false
                     subject.nextTrailModality = TestBasic.TEST_NEXTTRIAL_AUTO
                 }
             }
@@ -50,8 +50,8 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
         subject.nextTrailModality = when(subject.type) {                // could choose whether pausing each trial
             TestBasic.TEST_AVB_TIME_INF,
             TestBasic.TEST_TVB_TIME_INF,
-            TestBasic.TEST_ATB_TIME_INF         ->  if(swInteractive.isChecked) TestBasic.TEST_NEXTTRIAL_BUTTON
-                                                    else                        TestBasic.TEST_NEXTTRIAL_AUTO
+            TestBasic.TEST_ATB_TIME_INF         ->  if(swInteractive.isSelected) TestBasic.TEST_NEXTTRIAL_BUTTON
+                                                    else                         TestBasic.TEST_NEXTTRIAL_AUTO
 
 
             else                                ->   subject.nextTrailModality

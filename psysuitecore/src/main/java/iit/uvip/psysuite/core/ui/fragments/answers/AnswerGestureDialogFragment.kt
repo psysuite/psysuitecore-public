@@ -76,7 +76,7 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
     //---------------------------------------------------------------------------------------------------------------------------------------
     private fun registerGestures(){
 
-        val detector = GestureDetectorCompat(context, MyGestureDetector(::onGestures, null))
+        val detector = GestureDetectorCompat(requireContext(), MyGestureDetector(::onGestures, null))
         layoutView.setOnTouchListener { _, motionEvent -> detector.onTouchEvent(motionEvent) }
     }
 

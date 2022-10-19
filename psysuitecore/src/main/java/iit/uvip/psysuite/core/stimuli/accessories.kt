@@ -12,6 +12,7 @@ interface iStimulusManager{
     val duration:Long
     val type:Int
 
+    fun load(stim1:Any, stim2:Any?=null, clb: () -> Unit = {})
     fun deliver(dur:Any?=null, id:Int=0)
     fun stop(id:Int = -1)
     fun getHandler():Any?

@@ -68,14 +68,20 @@ class TestTFI(ctx: Context,
                                                                     "psysuite.uvip@gmail.com",
                                                                     "alessia.tonelli@iit.it")
 
-        fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
-            ConditionData(TEST_BASIC_LABEL, TEST_TFI, TEST_BASIC_LABEL, Populations.sighted_hearing_populations),
-            ConditionData(TEST_BASIC_TODDLERS_LABEL, TEST_TFI_TODDLERS, "${TEST_BASIC_LABEL}TOD", Populations.sighted_hearing_populations),
-            ConditionData(TEST_BASIC_BIMODAL_LABEL, TEST_TFI_BIMODAL, "${TEST_BASIC_LABEL}BI", Populations.sighted_hearing_populations),
-            ConditionData(TEST_BASIC_AV_LABEL, TEST_TFI_AV, "${TEST_BASIC_LABEL}AV", Populations.sighted_hearing_populations)
-        )
+        fun getConditionsInfo(ctx: Context): List<ConditionData>{
 
-        fun getNextTrialModes():List<List<Int>> = listOf(listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER))
+            return if(VibrationManager.sysHasVibrator(ctx)){
+                        mutableListOf(  ConditionData(TEST_BASIC_LABEL, TEST_TFI, TEST_BASIC_LABEL, Populations.sighted_hearing_populations),
+                                        ConditionData(TEST_BASIC_TODDLERS_LABEL, TEST_TFI_TODDLERS, "${TEST_BASIC_LABEL}TOD", Populations.sighted_hearing_populations),
+                                        ConditionData(TEST_BASIC_BIMODAL_LABEL, TEST_TFI_BIMODAL, "${TEST_BASIC_LABEL}BI", Populations.sighted_hearing_populations),
+                                        ConditionData(TEST_BASIC_AV_LABEL, TEST_TFI_AV, "${TEST_BASIC_LABEL}AV", Populations.sighted_hearing_populations))
+                    }else{
+                        mutableListOf(  ConditionData(TEST_BASIC_BIMODAL_LABEL, TEST_TFI_BIMODAL, "${TEST_BASIC_LABEL}BI", Populations.sighted_hearing_populations),
+                                        ConditionData(TEST_BASIC_AV_LABEL, TEST_TFI_AV, "${TEST_BASIC_LABEL}AV", Populations.sighted_hearing_populations))
+                    }
+        }
+
+        fun getNextTrialModes(ctx:Context):List<List<Int>> = listOf(listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER))
 
         fun getEmailRecipients():Array<String> = recipients
     }
@@ -85,10 +91,11 @@ class TestTFI(ctx: Context,
     // =============================================================================================================================
     override fun initTest() {
 
-        when {
-            mImageView == null -> throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
-            vibrator == null -> throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
-        }
+        if(mImageView == null) throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
+
+        if(vibrator == null && (subject.type == TEST_TFI || subject.type == TEST_TFI_TODDLERS))
+            throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
+
 
         nextTrailModality   = subject.nextTrailModality
         abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
@@ -99,8 +106,6 @@ class TestTFI(ctx: Context,
 
         mQuestion           = ctx.resources.getString(R.string.tfi_question)
         validAnswers        = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
-
-
 
         if (subject.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
@@ -152,11 +157,18 @@ class TestTFI(ctx: Context,
         }
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
-        mStimuliManager = StimuliManager(
-            AudioManager(STIM_A, audioResources[currStimulusDuration] ?: "t1000hz_7ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-            TactileManager(vibrator!!, duration = STIM_DURATION_TACTILE, handler = mStimuliHandler),
-            VisualManager(STIM_V, mImageView!!, mDrawablesResource[onImage], duration = currStimulusDuration, handler = mStimuliHandler),
-            delaysAligner, ctx, mStimuliHandler)
+        mStimuliManager =   if(vibrator != null)
+                                StimuliManager(
+                                    AudioManager(STIM_A, audioResources[currStimulusDuration] ?: "t1000hz_7ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+                                    TactileManager(vibrator, duration = STIM_DURATION_TACTILE, handler = mStimuliHandler),
+                                    VisualManager(STIM_V, mImageView!!, mDrawablesResource[onImage], duration = currStimulusDuration, handler = mStimuliHandler),
+                                    delaysAligner, ctx, mStimuliHandler)
+                            else
+                                StimuliManager(
+                                    AudioManager(STIM_A, audioResources[currStimulusDuration] ?: "t1000hz_7ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+                                    null,
+                                    VisualManager(STIM_V, mImageView!!, mDrawablesResource[onImage], duration = currStimulusDuration, handler = mStimuliHandler),
+                                    delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }

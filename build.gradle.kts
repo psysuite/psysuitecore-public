@@ -1,9 +1,8 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
-
 buildscript {
     repositories {
+        gradlePluginPortal()
         google()
-        jcenter()
+        mavenCentral()
         maven {
             url = uri("https://dl.bintray.com/kyonifer/maven")
         }
@@ -19,9 +18,10 @@ buildscript {
 
 allprojects {
     repositories {
-        google()
-        jcenter()
+        gradlePluginPortal()
+        mavenCentral()
         maven { url = uri("https://jitpack.io") }
+        google()
     }
 }
 

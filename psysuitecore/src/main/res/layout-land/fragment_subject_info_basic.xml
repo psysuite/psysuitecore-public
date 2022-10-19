@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.fragments.answers.TwoAFCAnswerDialogFragment">
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline16"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="142dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline17"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="190dp" />
+
+    <ImageButton
+        android:id="@+id/bt_clear"
+        android:layout_width="117dp"
+        android:layout_height="49dp"
+        android:layout_marginStart="116dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline4"
+        app:srcCompat="@android:drawable/ic_menu_revert" />
+
+
+    <ImageButton
+        android:id="@+id/bt_confirm"
+        android:layout_width="108dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="136dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline4"
+        app:srcCompat="@drawable/green_tick" />
+
+    <Button
+        android:id="@+id/bt_cancel"
+        android:layout_width="317dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:text="Cancel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/labWhiteNoise"
+        android:layout_width="176dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="120dp"
+        android:text="@string/whitenoise"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline17" />
+
+    <Spinner
+        android:id="@+id/spCondition"
+        android:layout_width="352dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="4dp"
+        android:textAlignment="viewEnd"
+        app:layout_constraintStart_toEndOf="@+id/labCondition"
+        app:layout_constraintTop_toTopOf="@+id/guideline16" />
+
+    <Spinner
+        android:id="@+id/spPopulation"
+        android:layout_width="141dp"
+        android:layout_height="28dp"
+        android:layout_marginStart="8dp"
+        android:gravity="end"
+        android:textAlignment="textEnd"
+        app:layout_constraintStart_toEndOf="@+id/labPopulation"
+        app:layout_constraintTop_toTopOf="@+id/guideline14" />
+
+    <TextView
+        android:id="@+id/labInteractive"
+        android:layout_width="120dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/interactivity"
+        app:layout_constraintStart_toStartOf="@+id/guideline19"
+        app:layout_constraintTop_toTopOf="@+id/guideline17" />
+
+    <TextView
+        android:id="@+id/labAge"
+        android:layout_width="118dp"
+        android:layout_height="20dp"
+        android:layout_marginTop="40dp"
+        android:text="@string/age"
+        app:layout_constraintStart_toStartOf="@+id/guideline19"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/labName"
+        android:layout_width="119dp"
+        android:layout_height="21dp"
+        android:layout_marginStart="120dp"
+        android:layout_marginTop="40dp"
+        android:text="@string/name"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/labCondition"
+        android:layout_width="166dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="120dp"
+        android:text="@string/condition"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline16" />
+
+    <EditText
+        android:id="@+id/txtName"
+        android:layout_width="134dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="40dp"
+        android:digits="abcdefghijklmnopqrstuvwxyz_0123456789"
+        android:ems="10"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toEndOf="@+id/labName"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/labPopulation"
+        android:layout_width="115dp"
+        android:layout_height="25dp"
+        android:text="@string/population"
+        app:layout_constraintStart_toStartOf="@+id/guideline19"
+        app:layout_constraintTop_toTopOf="@+id/guideline14" />
+
+    <TextView
+        android:id="@+id/labGender"
+        android:layout_width="117dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="120dp"
+        android:text="@string/gender"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline14" />
+
+    <EditText
+        android:id="@+id/txtAge"
+        android:layout_width="124dp"
+        android:layout_height="36dp"
+        android:layout_marginTop="40dp"
+        android:ems="10"
+        android:inputType="none|number"
+        app:layout_constraintStart_toEndOf="@+id/labAge"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/radioGroupGender"
+        android:layout_width="106dp"
+        android:layout_height="36dp"
+        android:layout_marginStart="4dp"
+        android:orientation="horizontal"
+        app:layout_constraintStart_toEndOf="@+id/labGender"
+        app:layout_constraintTop_toTopOf="@+id/guideline14">
+
+        <RadioButton
+            android:id="@+id/rb_male"
+            android:layout_width="57dp"
+            android:layout_height="wrap_content"
+            android:text="@string/tid_rb_male_text" />
+
+        <RadioButton
+            android:id="@+id/rb_female"
+            android:layout_width="52dp"
+            android:layout_height="wrap_content"
+            android:text="@string/tid_rb_female_text" />
+    </RadioGroup>
+
+    <Switch
+        android:id="@+id/swInteractive"
+        android:layout_width="137dp"
+        android:layout_height="24dp"
+        app:layout_constraintStart_toEndOf="@+id/labInteractive"
+        app:layout_constraintTop_toTopOf="@+id/guideline17" />
+
+    <Switch
+        android:id="@+id/swWhiteNoise"
+        android:layout_width="61dp"
+        android:layout_height="30dp"
+        app:layout_constraintStart_toEndOf="@+id/labWhiteNoise"
+        app:layout_constraintTop_toTopOf="@+id/guideline17" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="301dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline14"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="87dp" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline19"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="391dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

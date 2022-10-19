@@ -67,7 +67,7 @@ class TestATVB(
 //            ConditionData(TEST_BASIC_LABEL + "_" + ctx.resources.getString(R.string.atvb_subtask_time_single_b2), TEST_ATVB_TIME_S_BAL2, "${TEST_BASIC_LABEL}${ctx.resources.getString(R.string.atvb_subtask_time_single_b2_tag)}", Populations.sighted_hearing_populations))
 
         // unbalanced stimuli temporarily disabled
-        fun getNextTrialModes():List<List<Int>> = listOf(
+        fun getNextTrialModes(ctx:Context):List<List<Int>> = listOf(
             listOf(TEST_NEXTTRIAL_ANSWER),
             listOf(TEST_NEXTTRIAL_ANSWER),
             listOf(TEST_NEXTTRIAL_ANSWER))

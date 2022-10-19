@@ -14,8 +14,11 @@ import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.tests.beads.TestBeads
 import iit.uvip.psysuite.core.tests.bis.TestBIS
+import iit.uvip.psysuite.core.tests.fgi.TestFGI
 import iit.uvip.psysuite.core.tests.mmd.TestMMD
+import iit.uvip.psysuite.core.tests.rivgrp.TestRIVGRP
 import iit.uvip.psysuite.core.tests.sample.SubjectSampleParcel
 import iit.uvip.psysuite.core.tests.sample.TestSample
 import iit.uvip.psysuite.core.tests.temporalbinding.atb.TestATB
@@ -27,6 +30,7 @@ import iit.uvip.psysuite.core.tests.tid.SubjectTIDParcel
 import iit.uvip.psysuite.core.tests.tid.TestTID
 import iit.uvip.psysuite.core.utility.TestResult
 import iit.uvip.psysuite.core.utility.getIds
+
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
@@ -118,6 +122,7 @@ class TestFragment : BaseFragment(
     // - (try) instanciate the correct TestClass
     // - call mTest.initTest() and wait for EVENT_TEST_SETUP_COMPLETED
     // - onTestSetupComplete() -> mTest.adjustBlocks, mTest.start()
+    @Deprecated("Deprecated in Java")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
 
         super.onActivityCreated(savedInstanceState)
@@ -127,11 +132,13 @@ class TestFragment : BaseFragment(
         bt_pause.visibility     = View.INVISIBLE
         txtDebugInfo.visibility = View.INVISIBLE
 
-        vibrator                    = VibrationManager(requireContext()).init()
-        speechRecognitionManager    = SpeechRecognitionManager(requireContext())
-        mSubjectParcel              = arguments?.getParcelable(TestBasic.TESTINFO_BUNDLE_LABEL) ?: return
-        speechManager               = SpeechManager(requireContext()){
+        mSubjectParcel          = arguments?.getParcelable(TestBasic.TESTINFO_BUNDLE_LABEL) ?: return
+        speechManager           = SpeechManager(requireContext()){
             try{
+
+                vibrator                    = VibrationManager(requireContext()).init()
+                speechRecognitionManager    = SpeechRecognitionManager(requireContext())
+
                 when(mSubjectParcel!!.type){
 
                     TestBasic.TEST_BISECTION_AUDIO,
@@ -155,35 +162,51 @@ class TestFragment : BaseFragment(
                     TestBasic.TEST_ATB_TIME_DOUBLESTIM,
                     TestBasic.TEST_ATB_TIME_SINGLESTIM_TOD,
                     TestBasic.TEST_ATB_TIME_DOUBLESTIM_TOD,
-                    TestBasic.TEST_ATB_TIME_INF             -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, speechManager)
+                    TestBasic.TEST_ATB_TIME_INF      -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, speechManager)
 
                     TestBasic.TEST_AVB_TIME_SINGLESTIM,
                     TestBasic.TEST_AVB_TIME_DOUBLESTIM,
                     TestBasic.TEST_AVB_TIME_SINGLESTIM_TOD,
                     TestBasic.TEST_AVB_TIME_DOUBLESTIM_TOD,
-                    TestBasic.TEST_AVB_TIME_INF             -> mTest = TestAVB(requireContext(), requireActivity(), this, mSubjectParcel!!, circleView, speechManager)
+                    TestBasic.TEST_AVB_TIME_INF      -> mTest = TestAVB(requireContext(), requireActivity(), this, mSubjectParcel!!, circleView, speechManager)
 
                     TestBasic.TEST_TVB_TIME_SINGLESTIM,
                     TestBasic.TEST_TVB_TIME_DOUBLESTIM,
                     TestBasic.TEST_TVB_TIME_SINGLESTIM_TOD,
                     TestBasic.TEST_TVB_TIME_DOUBLESTIM_TOD,
-                    TestBasic.TEST_TVB_TIME_INF             -> mTest = TestTVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
+                    TestBasic.TEST_TVB_TIME_INF      -> mTest = TestTVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
 
                     TestBasic.TEST_ATVB_TIME_S_UNBAL,
                     TestBasic.TEST_ATVB_TIME_S_BAL,
                     TestBasic.TEST_ATVB_TIME_S_BAL2,
                     TestBasic.TEST_ATVB_TIME_D_UNBAL,
-                    TestBasic.TEST_ATVB_TIME_D_BAL          -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
+                    TestBasic.TEST_ATVB_TIME_D_BAL   -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
 
                     TestBasic.TEST_SAMPLE_ALIGNED,
                     TestBasic.TEST_SAMPLE_SHIFTED,
-                    TestBasic.TEST_SAMPLE_PAIR -> mTest = TestSample(requireContext(), requireActivity(), this, mSubjectParcel as SubjectSampleParcel, vibrator, circleView, speechManager)
+                    TestBasic.TEST_SAMPLE_PAIR ->       mTest = TestSample(requireContext(), requireActivity(), this, mSubjectParcel as SubjectSampleParcel, vibrator, circleView, speechManager)
 
                     TestBasic.TEST_TFI,
                     TestBasic.TEST_TFI_BIMODAL,
                     TestBasic.TEST_TFI_AV,
-                    TestBasic.TEST_TFI_TODDLERS -> mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
+                    TestBasic.TEST_TFI_TODDLERS ->      mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager)
 
+                    TestBasic.TEST_FGI_1_UNSCRAMBLED,
+                    TestBasic.TEST_FGI_1_SCRAMBLED,
+                    TestBasic.TEST_FGI_2_UNSCRAMBLED,
+                    TestBasic.TEST_FGI_2_SCRAMBLED,
+                    TestBasic.TEST_FGI_3_UNSCRAMBLED,
+                    TestBasic.TEST_FGI_3_SCRAMBLED ->   mTest = TestFGI(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager, mMainView)
+
+                    TestBasic.TEST_RIVGRP_RIV_HF,
+                    TestBasic.TEST_RIVGRP_GRP_HF,
+                    TestBasic.TEST_RIVGRP_RIVGRP_HF,
+                    TestBasic.TEST_RIVGRP_RIV_HC,
+                    TestBasic.TEST_RIVGRP_GRP_HC,
+                    TestBasic.TEST_RIVGRP_RIVGRP_HC ->  mTest = TestRIVGRP(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager, mMainView)
+
+                    TestBasic.TEST_BEADS_LOWUNCERT,
+                    TestBasic.TEST_BEADS_MIDUNCERT ->   mTest = TestBeads(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, circleView, speechManager, mMainView)
                     else    -> {
                         Log.e("TestFragment", "Test non riconosciuto")
                         showAlert(requireActivity(), resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
@@ -272,7 +295,13 @@ class TestFragment : BaseFragment(
         }
 
         bt_abort.setOnClickListener{
-            onAbortTest()
+
+            show2ChoisesDialog(requireActivity(),
+                requireContext().resources.getString(R.string.warning),
+                requireContext().resources.getString(R.string.test_want2abort),
+                requireContext().resources.getString(R.string.yes),         // ok
+                requireContext().resources.getString(R.string.no),       // cancel
+                { onAbortTest() })
         }
 
         bt_pause.setOnClickListener{
@@ -487,8 +516,8 @@ class TestFragment : BaseFragment(
             if(it.isNotEmpty()) files_list.add(it)
         }
         // data class TestResult      (code:Int=-1, mailsubject:String, mailbody:String,                       res_files:ArrayList<String> = arrayListOf(),  testClass:String)
-        setNavigationResult(TestResult(result_code, mTest.mTestLabel, mSubjectParcel!!.composeSubjectFileName(requireContext()), files_list, mTest.javaClass.name),
-                            TestBasic.TEST_BUNDLE_RESULT_LABEL)
+        setNavigationResult(TestResult(result_code, mTest.mTestLabel, mSubjectParcel!!.composeSubjectFileName(requireContext()),
+                            files_list, mTest.javaClass.name), TestBasic.TEST_BUNDLE_RESULT_LABEL)
         Navigation.findNavController(requireView()).popBackStack()
     }
 
@@ -571,7 +600,7 @@ class TestFragment : BaseFragment(
         }
     }
 
-    // answer !
+    // answer given !
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         // Make sure fragment codes match up
         when(requestCode) {

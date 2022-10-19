@@ -12,6 +12,7 @@ import iit.uvip.psysuite.core.stimuli.StimuliManager.Companion.STIM_TYPE_T1
 import iit.uvip.psysuite.core.stimuli.StimuliManager.Companion.STIM_TYPE_V1
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.tests.tfi.TestTFI
 import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.QuestObject
 import org.albaspazio.core.accessory.VibrationManager
@@ -97,29 +98,46 @@ class TestTID(ctx: Context,
             val sts_sh  = ctx.resources.getString(R.string.tid_rb_short_text_short)
             val stl_sh  = ctx.resources.getString(R.string.tid_rb_long_text_short)
 
-            return mutableListOf(
-                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts"                 , TEST_TID_SHORT_AUDIO          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$sts_sh", Populations.hearing_populations),
-                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$sts"               , TEST_TID_SHORT_TACTILE        , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE}$sts_sh", Populations.all_populations),
-                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$sts"                , TEST_TID_SHORT_VISUAL         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$sts_sh", Populations.sighted_populations),
-                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}_$sts"  , TEST_TID_SHORT_AUDIO_TRAIN    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}$sts_sh", Populations.hearing_populations),
-                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_${TRAIN_LABEL}_$sts", TEST_TID_SHORT_TACTILE_TRAIN  , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE}_${TRAIN_LABEL}$sts_sh", Populations.all_populations),
-                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}_$sts" , TEST_TID_SHORT_VISUAL_TRAIN   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}$sts_sh", Populations.sighted_populations),
-                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl"                 , TEST_TID_LONG_AUDIO           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$stl_sh", Populations.hearing_populations),
-                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$stl"               , TEST_TID_LONG_TACTILE         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE}$stl_sh", Populations.all_populations),
-                ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$stl"                , TEST_TID_LONG_VISUAL          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$stl_sh", Populations.sighted_populations)
-            )
+            return if(VibrationManager.sysHasVibrator(ctx))
+                        mutableListOf(
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts"                 , TEST_TID_SHORT_AUDIO          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$sts_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$sts"               , TEST_TID_SHORT_TACTILE        , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE}$sts_sh", Populations.all_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$sts"                , TEST_TID_SHORT_VISUAL         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$sts_sh", Populations.sighted_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}_$sts"  , TEST_TID_SHORT_AUDIO_TRAIN    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}$sts_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_${TRAIN_LABEL}_$sts", TEST_TID_SHORT_TACTILE_TRAIN  , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE}_${TRAIN_LABEL}$sts_sh", Populations.all_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}_$sts" , TEST_TID_SHORT_VISUAL_TRAIN   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}$sts_sh", Populations.sighted_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl"                 , TEST_TID_LONG_AUDIO           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$stl_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$stl"               , TEST_TID_LONG_TACTILE         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE}$stl_sh", Populations.all_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$stl"                , TEST_TID_LONG_VISUAL          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$stl_sh", Populations.sighted_populations))
+                    else
+                mutableListOf(
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts"                 , TEST_TID_SHORT_AUDIO          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$sts_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$sts"                , TEST_TID_SHORT_VISUAL         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$sts_sh", Populations.sighted_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}_$sts"  , TEST_TID_SHORT_AUDIO_TRAIN    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}$sts_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}_$sts" , TEST_TID_SHORT_VISUAL_TRAIN   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}$sts_sh", Populations.sighted_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl"                 , TEST_TID_LONG_AUDIO           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$stl_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$stl"                , TEST_TID_LONG_VISUAL          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$stl_sh", Populations.sighted_populations))
         }
 
-        fun getNextTrialModes():List<List<Int>> = listOf(  listOf(TEST_NEXTTRIAL_ANSWER),
-                            listOf(TEST_NEXTTRIAL_ANSWER),
-                            listOf(TEST_NEXTTRIAL_ANSWER),
-                            listOf(TEST_NEXTTRIAL_ANSWER),
-                            listOf(TEST_NEXTTRIAL_ANSWER),
-                            listOf(TEST_NEXTTRIAL_ANSWER),
-                            listOf(TEST_NEXTTRIAL_ANSWER),
-                            listOf(TEST_NEXTTRIAL_ANSWER),
-                            listOf(TEST_NEXTTRIAL_ANSWER)) //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
-
+        fun getNextTrialModes(ctx:Context):List<List<Int>>{
+            return  if(VibrationManager.sysHasVibrator(ctx))
+                        listOf( listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER))
+                    else
+                        listOf( listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER),
+                                listOf(TEST_NEXTTRIAL_ANSWER))
+        }
 
         fun getEmailRecipients():Array<String> = recipients
     }
@@ -191,11 +209,18 @@ class TestTID(ctx: Context,
 
         mNoise = AudioManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
 
-        mStimuliManager = StimuliManager(
-            AudioManager(AUDIO_TYPE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
-            TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
-            VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-            delaysAligner, ctx, mStimuliHandler)
+        mStimuliManager =   if(vibrator != null)
+            StimuliManager(
+                AudioManager(AUDIO_TYPE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+                TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
+                VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
+                delaysAligner, ctx, mStimuliHandler)
+        else
+            StimuliManager(
+                AudioManager(AUDIO_TYPE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+                null,
+                VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
+                delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Pair(EVENT_TEST_SETUP_COMPLETED, null))
     }

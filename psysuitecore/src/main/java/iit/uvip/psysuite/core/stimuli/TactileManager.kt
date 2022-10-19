@@ -1,6 +1,7 @@
 package iit.uvip.psysuite.core.stimuli
 
 import android.os.Handler
+import android.util.Log
 import org.albaspazio.core.accessory.VibrationManager
 
 class TactileManager(private val vibrator: VibrationManager, val amplitude:Int=-1,
@@ -26,6 +27,10 @@ class TactileManager(private val vibrator: VibrationManager, val amplitude:Int=-
             }
             return timings
         }
+    }
+
+    override fun load(stim1: Any, stim2: Any?, clb: () -> Unit) {
+        Log.w("TactileManager", "Method load not available")
     }
 
     override fun deliver(dur: Any?, id: Int){
