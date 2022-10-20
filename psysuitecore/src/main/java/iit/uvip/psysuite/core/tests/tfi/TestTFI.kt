@@ -62,21 +62,20 @@ class TestTFI(ctx: Context,
 
         @JvmStatic val TEST_BASIC_LABEL                 = "TFI"
         @JvmStatic val TEST_BASIC_TODDLERS_LABEL        = "TFI toddlers"
-        @JvmStatic val TEST_BASIC_BIMODAL_LABEL         = "TFI BIMODAL"
-        @JvmStatic val TEST_BASIC_AV_LABEL              = "TFI AV"
+        @JvmStatic val TEST_BASIC_SHORT_LABEL           = "TFI SHORT"
+        @JvmStatic val TEST_BASIC_AV_LABEL              = "DFI AV"
         @JvmStatic val recipients:Array<String>         = arrayOf(  "uvip.apptester@gmail.com",
-                                                                    "psysuite.uvip@gmail.com",
-                                                                    "alessia.tonelli@iit.it")
+                                                                    "psysuite.uvip@gmail.com")
 
         fun getConditionsInfo(ctx: Context): List<ConditionData>{
 
             return if(VibrationManager.sysHasVibrator(ctx)){
                         mutableListOf(  ConditionData(TEST_BASIC_LABEL, TEST_TFI, TEST_BASIC_LABEL, Populations.sighted_hearing_populations),
                                         ConditionData(TEST_BASIC_TODDLERS_LABEL, TEST_TFI_TODDLERS, "${TEST_BASIC_LABEL}TOD", Populations.sighted_hearing_populations),
-                                        ConditionData(TEST_BASIC_BIMODAL_LABEL, TEST_TFI_BIMODAL, "${TEST_BASIC_LABEL}BI", Populations.sighted_hearing_populations),
+                                        ConditionData(TEST_BASIC_SHORT_LABEL, TEST_TFI_BIMODAL, "${TEST_BASIC_LABEL}BI", Populations.sighted_hearing_populations),
                                         ConditionData(TEST_BASIC_AV_LABEL, TEST_TFI_AV, "${TEST_BASIC_LABEL}AV", Populations.sighted_hearing_populations))
                     }else{
-                        mutableListOf(  ConditionData(TEST_BASIC_BIMODAL_LABEL, TEST_TFI_BIMODAL, "${TEST_BASIC_LABEL}BI", Populations.sighted_hearing_populations),
+                        mutableListOf(  ConditionData(TEST_BASIC_SHORT_LABEL, TEST_TFI_BIMODAL, "${TEST_BASIC_LABEL}BI", Populations.sighted_hearing_populations),
                                         ConditionData(TEST_BASIC_AV_LABEL, TEST_TFI_AV, "${TEST_BASIC_LABEL}AV", Populations.sighted_hearing_populations))
                     }
         }
