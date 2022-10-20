@@ -12,9 +12,7 @@ import iit.uvip.psysuite.core.stimuli.StimuliManager.Companion.STIM_TYPE_T1
 import iit.uvip.psysuite.core.stimuli.StimuliManager.Companion.STIM_TYPE_V1
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.tests.TrialBasic
-import iit.uvip.psysuite.core.tests.tfi.TestTFI
 import iit.uvip.psysuite.core.utility.ConditionData
-import iit.uvip.psysuite.core.utility.QuestObject
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
@@ -38,7 +36,6 @@ class TestTID(ctx: Context,
 {
     override var LOG_TAG:String = TestTID::class.java.simpleName
 
-    private lateinit var mQuest:QuestObject
     private var isUsingQuest:Boolean    = false
 
     private var currISI:Long            = 0L
@@ -184,16 +181,17 @@ class TestTID(ctx: Context,
             }
         }
 
-        mQuest      = QuestObject()
+//        mQuest      = QuestObject()
         currTrial   = 0
 
         if(!subject.isDebug){
             // set question & create mTrials list
-            if(isUsingQuest){
-                createQuestTrials(currStimulusDuration)
-                setTrialNonRefDelta(0, mQuest.getFirstValue())
-            }
-            else    createConstantTrials(currStimulusDuration)
+//            if(isUsingQuest){
+//                createQuestTrials(currStimulusDuration)
+//                setTrialNonRefDelta(0, mQuest.getFirstValue())
+//            }
+//            else
+            createConstantTrials(currStimulusDuration)
         }
         else                        createTrialsDebug()
 
@@ -340,13 +338,14 @@ class TestTID(ctx: Context,
     // in case of quest-based task, define new trial's nonref-delta & success
     override fun getNewTrial(): TrialBasic {
 
-        return  if(isUsingQuest) {
-            val newdelta: Float = mQuest.getNewValue(mTrial.success)
-            currTrial++
-            setTrialNonRefDelta(currTrial, newdelta)
-            mTrials[currTrial]
-        }
-        else super.getNewTrial()
+//        return  if(isUsingQuest) {
+//            val newdelta: Float = mQuest.getNewValue(mTrial.success)
+//            currTrial++
+//            setTrialNonRefDelta(currTrial, newdelta)
+//            mTrials[currTrial]
+//        }
+//        else
+        return super.getNewTrial()
     }
 
     // set next trial NON-ref delta and success value
