@@ -74,7 +74,8 @@ class TestFragment : BaseFragment(
     hideAndroidControls = true
 ){
 
-    private lateinit var binding: FragmentTestBinding
+    private var _binding: FragmentTestBinding? = null
+    private val binding get() = _binding!!
 
     private lateinit var mTest: TestBasic
     private var mSubjectParcel:SubjectBasicParcel?  = null
@@ -130,11 +131,15 @@ class TestFragment : BaseFragment(
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentTestBinding.inflate(inflater, container, false)
+        _binding = FragmentTestBinding.inflate(inflater, container, false)
         mMainView = binding.root
         return mMainView
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
     // main access point. it does:
     // - (try) instanciate the correct TestClass
     // - call mTest.initTest() and wait for EVENT_TEST_SETUP_COMPLETED
@@ -648,7 +653,7 @@ class TestFragment : BaseFragment(
     // start recognizing and process response (repeat same trial or show next one)
     private fun listenForVocalAnswer(valid_results: List<String> = listOf()) {
         abortRecognition        = false
-        binding.btAbort?.visibility    = View.VISIBLE
+        binding.btAbort.visibility    = View.VISIBLE
         onsetDate               = Date()
         speechRecognitionManager.getSpeechInput()
             .observeOn(AndroidSchedulers.mainThread())

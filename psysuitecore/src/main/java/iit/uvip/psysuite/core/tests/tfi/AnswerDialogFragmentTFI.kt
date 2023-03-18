@@ -24,7 +24,8 @@ class AnswerDialogFragmentTFI: DialogFragment()
     val LOG_TAG = AnswerDialogFragmentTFI::class.java.simpleName
     
     private lateinit var binding:FragmentAnswerTfiBinding
-    
+    private lateinit var mView:View
+
     private var isDebug:Boolean = false
 
     lateinit var onsetDate:Date
@@ -45,12 +46,13 @@ class AnswerDialogFragmentTFI: DialogFragment()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = FragmentAnswerTfiBinding.inflate(LayoutInflater.from(context))
-        return binding.root
+        mView = inflater.inflate(R.layout.fragment_answer_tfi, container, false)
+        return mView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding = FragmentAnswerTfiBinding.bind(mView)
 
         // Fetch arguments from bundle and set title
         val title           = requireArguments().getString("title", "Enter Name")

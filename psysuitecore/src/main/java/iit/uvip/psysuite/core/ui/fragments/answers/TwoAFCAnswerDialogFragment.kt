@@ -8,15 +8,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
+import androidx.viewbinding.ViewBinding
+
+import java.lang.Math.random
+import java.util.*
+
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.databinding.Fragment2afcAnswerBinding
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.ui.fragments.TestFragment
+
 import org.albaspazio.core.accessory.getTimeDifference
 import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
-import java.lang.Math.random
-import java.util.*
 
 
 open class TwoAFCAnswerDialogFragment: DialogFragment()
@@ -24,6 +28,7 @@ open class TwoAFCAnswerDialogFragment: DialogFragment()
     open val LOG_TAG = TwoAFCAnswerDialogFragment::class.java.simpleName
 
     private lateinit var binding: Fragment2afcAnswerBinding
+    protected lateinit var mView:View
 
     protected var isDebug:Boolean           = false
     protected var isInstructions:Boolean    = false
@@ -43,20 +48,20 @@ open class TwoAFCAnswerDialogFragment: DialogFragment()
             val frag = TwoAFCAnswerDialogFragment()
             val args = Bundle()
             args.putString("title", title)
-            frag.setArguments(args)
+            frag.arguments = args
             frag.tts = speechManager
-
             return frag
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = Fragment2afcAnswerBinding.inflate(LayoutInflater.from(context))
-        return binding.root
+        mView = inflater.inflate(R.layout.fragment_2afc_answer, container, false)
+        return mView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding = Fragment2afcAnswerBinding.bind(mView)
 
         // Fetch arguments from bundle and set title
         val title           = requireArguments().getString("title", "Enter Name")
@@ -102,17 +107,9 @@ open class TwoAFCAnswerDialogFragment: DialogFragment()
 
         super.onResume()
 
-        binding.btConfirm.setOnClickListener{
-            confirm()
-        }
-
-        binding.btClear.setOnClickListener{
-            sendResult(-1, 0, TestBasic.EVENT_TRIAL_REPEAT)
-        }
-
-        binding.btAbortTest.setOnClickListener{
-            abort()
-        }
+        binding.btConfirm.setOnClickListener{   confirm()        }
+        binding.btClear.setOnClickListener{     sendResult(-1, 0, TestBasic.EVENT_TRIAL_REPEAT) }
+        binding.btAbortTest.setOnClickListener{ abort() }
     }
 
     protected open fun confirm(){

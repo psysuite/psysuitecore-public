@@ -31,7 +31,7 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
             val frag = AnswerGestureDialogFragment()
             val args = Bundle()
             args.putString("title", title)
-            frag.setArguments(args)
+            frag.arguments = args
             frag.tts = speechManager
 
             return frag
@@ -39,13 +39,13 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        binding = Fragment2afcAnswerBinding.inflate(LayoutInflater.from(context))
-        layoutView = binding.root
-        return layoutView
+        mView = inflater.inflate(R.layout.fragment_2afc_answer, container, false)
+        return mView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        binding = Fragment2afcAnswerBinding.bind(mView)
 
         showResult      = false
 
@@ -62,6 +62,7 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
 
     override fun onResume() {
         super.onResume()
+        binding = Fragment2afcAnswerBinding.bind(mView)
 
         registerGestures()
 

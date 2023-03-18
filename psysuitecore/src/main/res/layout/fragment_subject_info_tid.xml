@@ -218,40 +218,26 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/radioGroupGender" />
 
+    <TextView
+        android:id="@+id/labInteractive"
+        android:layout_width="120dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="128dp"
+        android:text="@string/interactivity"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/labWhiteNoise"
+        tools:visibility="gone" />
 
-    <!--    <TextView-->
-    <!--            android:id="@+id/labGroupFirstModality"-->
-    <!--            android:layout_width="120dp"-->
-    <!--            android:layout_height="24dp"-->
-    <!--            android:layout_marginStart="28dp"-->
-    <!--            android:layout_marginTop="44dp"-->
-    <!--            android:text="@string/tid_group_first_modality_text"-->
-    <!--            app:layout_constraintStart_toStartOf="parent"-->
-    <!--            app:layout_constraintTop_toBottomOf="@+id/labCondition" />-->
-
-    <!--    <RadioGroup-->
-    <!--        android:id="@+id/radioGroupFirstModality"-->
-    <!--        android:layout_width="173dp"-->
-    <!--        android:layout_height="54dp"-->
-    <!--        android:layout_marginTop="28dp"-->
-    <!--        android:layout_marginEnd="4dp"-->
-    <!--        android:orientation="horizontal"-->
-    <!--        app:layout_constraintEnd_toEndOf="parent"-->
-    <!--        app:layout_constraintTop_toBottomOf="@+id/spCondition">-->
-
-    <!--        <RadioButton-->
-    <!--            android:id="@+id/rb_first_audio"-->
-    <!--            android:layout_width="82dp"-->
-    <!--            android:layout_height="49dp"-->
-    <!--            android:text="@string/tid_rb_audio_text" />-->
-
-    <!--        <RadioButton-->
-    <!--            android:id="@+id/rb_first_vibro"-->
-    <!--            android:layout_width="85dp"-->
-    <!--            android:layout_height="49dp"-->
-    <!--            android:text="@string/tid_rb_vibro_text" />-->
-    <!--    </RadioGroup>-->
-
-
+    <Switch
+        android:id="@+id/swInteractive"
+        android:layout_width="140dp"
+        android:layout_height="30dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/swWhiteNoise"
+        tools:visibility="gone"  />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

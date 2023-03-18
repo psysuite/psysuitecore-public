@@ -29,61 +29,6 @@
         app:layout_constraintGuide_begin="321dp" />
 
 
-    <Button
-        android:id="@+id/bt_cancel"
-        style="@style/Base.Widget.AppCompat.Button.Colored"
-        android:layout_width="122dp"
-        android:layout_height="52dp"
-        android:layout_marginTop="212dp"
-        android:text="@string/cancel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.511"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline4" />
-
-    <ImageButton
-        android:id="@+id/bt_confirm"
-        android:layout_width="108dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="212dp"
-        android:layout_marginEnd="300dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline4"
-        app:srcCompat="@drawable/green_tick" />
-
-    <Spinner
-        android:id="@+id/spCondition"
-        android:layout_width="352dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="144dp"
-        android:textAlignment="viewEnd"
-        app:layout_constraintStart_toEndOf="@+id/labCondition"
-        app:layout_constraintTop_toTopOf="@+id/guideline16" />
-
-    <EditText
-        android:id="@+id/txtNBlocks"
-        android:layout_width="60dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="144dp"
-        android:digits="abcdefghijklmnopqrstuvwxyz_0123456789"
-        android:ems="10"
-        android:inputType="textPersonName"
-        app:layout_constraintStart_toEndOf="@+id/labNBlocks"
-        app:layout_constraintTop_toTopOf="@+id/guideline23"
-        tools:visibility="invisible" />
-
-    <TextView
-        android:id="@+id/labPopulation"
-        android:layout_width="115dp"
-        android:layout_height="25dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="156dp"
-        android:text="@string/population"
-        app:layout_constraintStart_toStartOf="@+id/guideline19"
-        app:layout_constraintTop_toTopOf="@+id/guideline14" />
-
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline19"
         android:layout_width="wrap_content"
@@ -91,23 +36,45 @@
         android:orientation="vertical"
         app:layout_constraintGuide_begin="624dp" />
 
-    <EditText
-        android:id="@+id/txtAge"
-        android:layout_width="124dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="184dp"
-        android:ems="10"
-        android:inputType="none|number"
-        app:layout_constraintStart_toEndOf="@+id/labAge"
-        app:layout_constraintTop_toTopOf="parent" />
+    <TextView
+        android:id="@+id/labNBlocks"
+        android:layout_width="100dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="232dp"
+        android:layout_marginTop="148dp"
+        android:text="@string/nblocks"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline23"
+        tools:visibility="invisible" />
+
+    <Button
+        android:id="@+id/bt_cancel"
+        style="@style/Base.Widget.AppCompat.Button.Colored"
+        android:layout_width="122dp"
+        android:layout_height="52dp"
+        android:layout_marginTop="216dp"
+        android:text="@string/cancel"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.404"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline4" />
+
+    <TextView
+        android:id="@+id/labDurBlock"
+        android:layout_width="126dp"
+        android:layout_height="26dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="148dp"
+        android:text="@string/durblock_sec"
+        app:layout_constraintStart_toEndOf="@+id/txtNBlocks"
+        app:layout_constraintTop_toTopOf="@+id/guideline23" />
 
     <Switch
         android:id="@+id/swWhiteNoise"
         android:layout_width="61dp"
         android:layout_height="48dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="144dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="148dp"
         app:layout_constraintStart_toEndOf="@+id/labWhiteNoise"
         app:layout_constraintTop_toTopOf="@+id/guideline17" />
 
@@ -115,123 +82,186 @@
         android:id="@+id/labAge"
         android:layout_width="120dp"
         android:layout_height="24dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="184dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="188dp"
         android:text="@string/age"
         app:layout_constraintStart_toStartOf="@+id/guideline19"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/labDurBlock"
-        android:layout_width="126dp"
-        android:layout_height="26dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="144dp"
-        android:text="@string/durblock_sec"
-        app:layout_constraintStart_toEndOf="@+id/txtNBlocks"
-        app:layout_constraintTop_toTopOf="@+id/guideline23" />
-
-    <TextView
-        android:id="@+id/labInteractive"
-        android:layout_width="120dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="72dp"
-        android:layout_marginTop="148dp"
-        android:text="@string/interactivity"
-        app:layout_constraintStart_toStartOf="@+id/guideline19"
-        app:layout_constraintTop_toTopOf="@+id/guideline17" />
-
-    <TextView
         android:id="@+id/labName"
         android:layout_width="119dp"
         android:layout_height="24dp"
-        android:layout_marginStart="332dp"
-        android:layout_marginTop="184dp"
+        android:layout_marginStart="236dp"
+        android:layout_marginTop="188dp"
         android:text="@string/name"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <Spinner
+        android:id="@+id/spCondition"
+        android:layout_width="352dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="148dp"
+        android:textAlignment="viewEnd"
+        app:layout_constraintStart_toEndOf="@+id/labCondition"
+        app:layout_constraintTop_toTopOf="@+id/guideline16" />
+
+    <EditText
+        android:id="@+id/txtAge"
+        android:layout_width="124dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="188dp"
+        android:ems="10"
+        android:inputType="none|number"
+        app:layout_constraintStart_toEndOf="@+id/labAge"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/labPopulation"
+        android:layout_width="115dp"
+        android:layout_height="25dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="160dp"
+        android:text="@string/population"
+        app:layout_constraintStart_toStartOf="@+id/guideline19"
+        app:layout_constraintTop_toTopOf="@+id/guideline14" />
 
     <ImageButton
         android:id="@+id/bt_clear"
         android:layout_width="117dp"
         android:layout_height="49dp"
-        android:layout_marginStart="300dp"
-        android:layout_marginTop="212dp"
+        android:layout_marginStart="204dp"
+        android:layout_marginTop="216dp"
         android:background="@android:color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline4"
         app:srcCompat="@android:drawable/ic_menu_revert" />
 
-    <TextView
-        android:id="@+id/labFirstCond"
-        android:layout_width="100dp"
-        android:layout_height="26dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="144dp"
-        android:text="@string/firstcond"
-        app:layout_constraintStart_toEndOf="@+id/txtDurBlocks"
-        app:layout_constraintTop_toTopOf="@+id/guideline23" />
-
-    <TextView
-        android:id="@+id/labWhiteNoise"
-        android:layout_width="176dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="332dp"
-        android:layout_marginTop="144dp"
-        android:text="@string/whitenoise"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline17" />
-
-    <TextView
-        android:id="@+id/labGender"
-        android:layout_width="117dp"
-        android:layout_height="24dp"
-        android:layout_marginStart="332dp"
-        android:layout_marginTop="144dp"
-        android:text="@string/gender"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline14" />
-
-    <TextView
-        android:id="@+id/labNBlocks"
-        android:layout_width="100dp"
-        android:layout_height="22dp"
-        android:layout_marginStart="328dp"
-        android:layout_marginTop="144dp"
-        android:text="@string/nblocks"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline23"
-        tools:visibility="invisible" />
-
-    <Spinner
-        android:id="@+id/spPopulation"
-        android:layout_width="141dp"
+    <Switch
+        android:id="@+id/swFirstCond"
+        android:layout_width="120dp"
         android:layout_height="48dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="156dp"
-        android:gravity="end"
-        android:textAlignment="textEnd"
-        app:layout_constraintStart_toEndOf="@+id/labPopulation"
-        app:layout_constraintTop_toTopOf="@+id/guideline14" />
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="148dp"
+        android:text="GIGI"
+        app:layout_constraintStart_toEndOf="@+id/labFirstCond"
+        app:layout_constraintTop_toTopOf="@+id/guideline23" />
 
     <EditText
         android:id="@+id/txtName"
         android:layout_width="134dp"
         android:layout_height="48dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="184dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="188dp"
         android:digits="abcdefghijklmnopqrstuvwxyz_0123456789"
         android:ems="10"
         android:inputType="textPersonName"
         app:layout_constraintStart_toEndOf="@+id/labName"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/labInteractive"
+        android:layout_width="120dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="152dp"
+        android:text="@string/interactivity"
+        app:layout_constraintStart_toStartOf="@+id/guideline19"
+        app:layout_constraintTop_toTopOf="@+id/guideline17" />
+
+    <TextView
+        android:id="@+id/labWhiteNoise"
+        android:layout_width="176dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="236dp"
+        android:layout_marginTop="148dp"
+        android:text="@string/whitenoise"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline17" />
+
+    <ImageButton
+        android:id="@+id/bt_confirm"
+        android:layout_width="108dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="216dp"
+        android:layout_marginEnd="396dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline4"
+        app:srcCompat="@drawable/green_tick" />
+
+    <TextView
+        android:id="@+id/labGender"
+        android:layout_width="117dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="236dp"
+        android:layout_marginTop="148dp"
+        android:text="@string/gender"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline14" />
+
+    <Switch
+        android:id="@+id/swInteractive"
+        android:layout_width="82dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="148dp"
+        app:layout_constraintStart_toEndOf="@+id/labInteractive"
+        app:layout_constraintTop_toTopOf="@+id/guideline17" />
+
+    <TextView
+        android:id="@+id/labCondition"
+        android:layout_width="166dp"
+        android:layout_height="22dp"
+        android:layout_marginStart="236dp"
+        android:layout_marginTop="148dp"
+        android:text="@string/condition"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline16" />
+
+    <EditText
+        android:id="@+id/txtDurBlocks"
+        android:layout_width="80dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="148dp"
+        android:digits="abcdefghijklmnopqrstuvwxyz_0123456789"
+        android:ems="10"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toEndOf="@+id/labDurBlock"
+        app:layout_constraintTop_toTopOf="@+id/guideline23" />
+
+    <TextView
+        android:id="@+id/labFirstCond"
+        android:layout_width="100dp"
+        android:layout_height="26dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="148dp"
+        android:text="@string/firstcond"
+        app:layout_constraintStart_toEndOf="@+id/txtDurBlocks"
+        app:layout_constraintTop_toTopOf="@+id/guideline23" />
+
+    <EditText
+        android:id="@+id/txtNBlocks"
+        android:layout_width="60dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="148dp"
+        android:digits="abcdefghijklmnopqrstuvwxyz_0123456789"
+        android:ems="10"
+        android:inputType="textPersonName"
+        app:layout_constraintStart_toEndOf="@+id/labNBlocks"
+        app:layout_constraintTop_toTopOf="@+id/guideline23"
+        tools:visibility="invisible" />
+
     <RadioGroup
         android:id="@+id/radioGroupGender"
         android:layout_width="106dp"
         android:layout_height="48dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="144dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="148dp"
         android:orientation="horizontal"
         app:layout_constraintStart_toEndOf="@+id/labGender"
         app:layout_constraintTop_toTopOf="@+id/guideline14">
@@ -249,45 +279,16 @@
             android:text="@string/tid_rb_female_text" />
     </RadioGroup>
 
-    <Switch
-        android:id="@+id/swFirstCond"
-        android:layout_width="120dp"
+    <Spinner
+        android:id="@+id/spPopulation"
+        android:layout_width="141dp"
         android:layout_height="48dp"
-        android:layout_marginTop="144dp"
-        android:text="GIGI"
-        app:layout_constraintStart_toEndOf="@+id/labFirstCond"
-        app:layout_constraintTop_toTopOf="@+id/guideline23" />
-
-    <EditText
-        android:id="@+id/txtDurBlocks"
-        android:layout_width="80dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="144dp"
-        android:digits="abcdefghijklmnopqrstuvwxyz_0123456789"
-        android:ems="10"
-        android:inputType="textPersonName"
-        app:layout_constraintStart_toEndOf="@+id/labDurBlock"
-        app:layout_constraintTop_toTopOf="@+id/guideline23" />
-
-    <TextView
-        android:id="@+id/labCondition"
-        android:layout_width="166dp"
-        android:layout_height="22dp"
-        android:layout_marginStart="332dp"
-        android:layout_marginTop="144dp"
-        android:text="@string/condition"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline16" />
-
-    <Switch
-        android:id="@+id/swInteractive"
-        android:layout_width="82dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="144dp"
-        app:layout_constraintStart_toEndOf="@+id/labInteractive"
-        app:layout_constraintTop_toTopOf="@+id/guideline17" />
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="160dp"
+        android:gravity="end"
+        android:textAlignment="textEnd"
+        app:layout_constraintStart_toEndOf="@+id/labPopulation"
+        app:layout_constraintTop_toTopOf="@+id/guideline14" />
 
 
     <androidx.constraintlayout.widget.Guideline

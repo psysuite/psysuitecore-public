@@ -97,7 +97,7 @@
     <string name="whitenoise">aggiungi rumore bianco</string>
 
     <string name="session">sessione</string>
-    <string name="main_email">psysuite.uvip@gmail.com</string>
+    <string name= "main_email">psysuite.uvip@gmail.com</string>
 
     <string name="empty_subject_parcel">SOGGETTO E\' VUOTO</string>
     <string name="critical_error">ERRORE IRRECUPERABILE</string>

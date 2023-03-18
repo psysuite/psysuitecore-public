@@ -30,18 +30,17 @@
     <Button
         android:id="@+id/bt_abort_test"
         style="@style/Base.Widget.AppCompat.Button.Colored"
-        android:layout_width="342dp"
+        android:layout_width="250dp"
         android:layout_height="56dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="176dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="16dp"
-        android:background="@android:color/transparent"
         android:text="@string/abort_test"
         android:textSize="18sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.547"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="0.49"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline13" />
 
     <RadioGroup
         android:id="@+id/radioGroupAudio"

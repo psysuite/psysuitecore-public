@@ -43,9 +43,9 @@ class TestSample(ctx: Context, activity: Activity, hostfragment: Fragment, subje
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> {
             return mutableListOf(
-                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.aligned)}" , TEST_SAMPLE_ALIGNED, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.aligned)}", Populations.sighted_hearing_populations),
-                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.shifted)}" , TEST_SAMPLE_SHIFTED, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.shifted)}", Populations.sighted_hearing_populations),
-                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.pair)}"    , TEST_SAMPLE_PAIR   , "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.pair)}", Populations.sighted_hearing_populations)
+                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.aligned)}"  , TEST_SAMPLE_ALIGNED, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.aligned)}", Populations.sighted_hearing_populations),
+                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.shifted)}"    , TEST_SAMPLE_SHIFTED, "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.shifted)}", Populations.sighted_hearing_populations),
+                ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.pair)}"     , TEST_SAMPLE_PAIR   , "${TEST_BASIC_LABEL}_${ctx.resources.getString(R.string.pair)}", Populations.sighted_hearing_populations)
             )
         }
         

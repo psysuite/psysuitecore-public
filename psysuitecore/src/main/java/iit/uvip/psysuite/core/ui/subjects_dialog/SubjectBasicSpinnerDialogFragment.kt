@@ -15,55 +15,48 @@ import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 open class SubjectBasicSpinnerDialogFragment : SubjectBasicDialogFragment()
 {
     override val LOG_TAG:String                 = SubjectBasicSpinnerDialogFragment::class.java.simpleName
-//    override lateinit var binding:FragmentSubjectInfoBasicSpinnerBinding
+    private lateinit var binding: FragmentSubjectInfoBasicSpinnerBinding
 
     private var nSpinnerElements: Int = 0
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        super.onCreateView(inflater, container, savedInstanceState)
-
-        binding = FragmentSubjectInfoBasicSpinnerBinding.inflate(LayoutInflater.from(context))
-        return binding.root
+        mView = inflater.inflate(R.layout.fragment_subject_info_basic_spinner, container, false)
+        return mView
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-
-//        binding = FragmentSubjectInfoBasicSpinnerBinding.inflate(LayoutInflater.from(context))
+        binding = FragmentSubjectInfoBasicSpinnerBinding.bind(mView)
+        super.onViewCreated(view, savedInstanceState)
     }
 
-    override fun initData(subj: SubjectBasicParcel) {
-
-        super.initData(subj)
+    override fun initData() {
+        super.initData()
 
         ArrayAdapter.createFromResource(requireContext(), (subject as SubjectBasicListParcel).spinner_data_resource, android.R.layout.simple_spinner_item)
         .also { adapter ->
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            (binding as FragmentSubjectInfoBasicSpinnerBinding).spinner.adapter = adapter
+            binding.spinner.adapter = adapter
             nSpinnerElements = adapter.count
         }
-        (binding as FragmentSubjectInfoBasicSpinnerBinding).spinner.setSelection((subj as SubjectBasicListParcel).spinner_sel, false)
-
-        (binding as FragmentSubjectInfoBasicSpinnerBinding).labSpinner.text = (subject as SubjectBasicListParcel).spinner_label
+        binding.spinner.setSelection((subject as SubjectBasicListParcel).spinner_sel, false)
+        binding.labSpinner.text = (subject as SubjectBasicListParcel).spinner_label
     }
 
     override fun clear(){
         super.clear()
-        (binding as FragmentSubjectInfoBasicSpinnerBinding).spinner.setSelection(-1)
+        binding.spinner.setSelection(-1)
     }
 
     override fun checkData():List<String>{
-
         val errors = super.checkData() as MutableList<String>
-        if ((binding as FragmentSubjectInfoBasicSpinnerBinding).spinner.selectedItemPosition == -1) errors.add(" - " + resources.getString(R.string.select_spinner, (binding as FragmentSubjectInfoBasicSpinnerBinding).labSpinner.text) )
+        if (binding.spinner.selectedItemPosition == -1) errors.add(" - " + resources.getString(R.string.select_spinner, (binding as FragmentSubjectInfoBasicSpinnerBinding).labSpinner.text) )
         return errors
     }
 
     override fun updateSubject(): SubjectBasicListParcel{
-
         subject = super.updateSubject() as SubjectBasicListParcel
 
-        (subject as SubjectBasicListParcel).spinner_sel = (binding as FragmentSubjectInfoBasicSpinnerBinding).spinner.selectedItemPosition
+        (subject as SubjectBasicListParcel).spinner_sel = binding.spinner.selectedItemPosition
         return subject as SubjectBasicListParcel
     }
 }
