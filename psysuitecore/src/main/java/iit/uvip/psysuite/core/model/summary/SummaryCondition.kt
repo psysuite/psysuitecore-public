@@ -1,6 +1,6 @@
 package iit.uvip.psysuite.core.model.summary
 
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 
 abstract class SummaryCondition(val label:String="", val sub_label:String = ""){
 

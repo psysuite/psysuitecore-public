@@ -8,9 +8,9 @@ import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.AudioManager
 import iit.uvip.psysuite.core.stimuli.StimuliManager
-import iit.uvip.psysuite.core.tests.FixedTrialsManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
+import iit.uvip.psysuite.core.trials.FixedTrialsManager
 import iit.uvip.psysuite.core.utility.ConditionData
 import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast

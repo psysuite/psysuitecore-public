@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.fragment.app.DialogFragment
-import androidx.viewbinding.ViewBinding
 
 import java.lang.Math.random
 import java.util.*
@@ -33,15 +32,17 @@ open class TwoAFCAnswerDialogFragment: DialogFragment()
     protected var isDebug:Boolean           = false
     protected var isInstructions:Boolean    = false
 
-    protected var showResult:Boolean = false
-    private var correctAnswer:Int = 0
-    protected var mQuestion:String              = ""
-    protected var mAnswers:ArrayList<String>    = arrayListOf()
+    protected var canRepeat:Int             = TestBasic.TEST_SWITCH_DISABLED
 
-    protected var onsetDate:Date                = Date()
-    private val mHandler:Handler                = Handler()
+    protected var showResult:Int            = TestBasic.TEST_SWITCH_DISABLED
+    protected var correctAnswerId:Int         = 0
+    protected var mQuestion:String          = ""
+    protected var mAnswers:ArrayList<String> = arrayListOf()
 
-    protected var tts: SpeechManager?                     = null
+    protected var onsetDate:Date            = Date()
+    private val mHandler:Handler            = Handler()
+
+    protected var tts: SpeechManager?       = null
 
     companion object {
         fun newInstance(title: String, speechManager: SpeechManager): TwoAFCAnswerDialogFragment {
@@ -64,21 +65,24 @@ open class TwoAFCAnswerDialogFragment: DialogFragment()
         binding = Fragment2afcAnswerBinding.bind(mView)
 
         // Fetch arguments from bundle and set title
-        val title           = requireArguments().getString("title", "Enter Name")
-        binding.txtTrials.text     = "trial ${(requireArguments().getInt("trial_id", 0) + 1)} di ${requireArguments().getInt("tot_trials", 0)}"
-        mQuestion           = requireArguments().getString("question", "Enter Name")
-        mAnswers            = requireArguments().getStringArrayList("answers") ?: arrayListOf<String>()
-        binding.txtDebug.text      = requireArguments().getString("debugInfo")
-        isDebug             = requireArguments().getBoolean("isDebug", false)
-        isInstructions      = (targetRequestCode == TestFragment.TRG_REQ_CODE_INSTRUCTIONS)
+        with(requireArguments()){
+            binding.txtTrials.text  = "trial ${(getInt("trial_id", 0) + 1)} di ${getInt("tot_trials", 0)}"
+            mQuestion               = getString("question", "Enter Name")
+            mAnswers                = getStringArrayList("answers") ?: arrayListOf<String>()
+            binding.txtDebug.text   = getString("debugInfo")
+            isDebug                 = getBoolean("isDebug", false)
+            isInstructions          = (targetRequestCode == TestFragment.TRG_REQ_CODE_INSTRUCTIONS)
 
-        showResult          = requireArguments().getBoolean("show_result", false)
-        if(showResult && mAnswers.size > 0)
-            correctAnswer   = requireArguments().getInt("correct_answer", 0)
+            canRepeat               = getInt("can_repeat_trial", TestBasic.TEST_SWITCH_DISABLED)
 
-        dialog?.setTitle(title)
+            showResult              = getInt("show_result", TestBasic.TEST_SWITCH_DISABLED)
+            if(showResult == TestBasic.TEST_SWITCH_ENABLED && mAnswers.size > 0)
+                correctAnswerId     = getInt("correct_answer", 0)
+
+            val title               = getString("title", "Enter Name")
+            dialog?.setTitle(title)
+        }
         binding.imgvResult.visibility   = View.INVISIBLE
-        binding.btClear.visibility     = View.VISIBLE
 
         binding.txtQuestion.text       = mQuestion
 
@@ -107,8 +111,16 @@ open class TwoAFCAnswerDialogFragment: DialogFragment()
 
         super.onResume()
 
-        binding.btConfirm.setOnClickListener{   confirm()        }
-        binding.btClear.setOnClickListener{     sendResult(-1, 0, TestBasic.EVENT_TRIAL_REPEAT) }
+        if(canRepeat == TestBasic.TEST_SWITCH_ENABLED){
+            binding.btClear.visibility     = View.VISIBLE
+            binding.btClear.setOnClickListener{     sendResult(-1, 0, TestBasic.EVENT_TRIAL_REPEAT) }
+        }
+        else{
+            binding.btClear.visibility     = View.INVISIBLE
+            binding.btClear.setOnClickListener(null)
+        }
+
+        binding.btConfirm.setOnClickListener{   confirm()}
         binding.btAbortTest.setOnClickListener{ abort() }
     }
 
@@ -126,10 +138,11 @@ open class TwoAFCAnswerDialogFragment: DialogFragment()
     }
 
     private fun checkResult(curr_answer:Int){
+
         val elapsedms = getTimeDifference(onsetDate)
-        if(showResult) {
-            if (curr_answer == correctAnswer)   binding.imgvResult.setImageResource(R.drawable.success_icon)
-            else                                binding.imgvResult.setImageResource(R.drawable.failure_icon)
+        if(showResult == TestBasic.TEST_SWITCH_ENABLED) {
+            if (curr_answer == correctAnswerId)     binding.imgvResult.setImageResource(R.drawable.success_icon)
+            else                                    binding.imgvResult.setImageResource(R.drawable.failure_icon)
 
             binding.btClear.visibility = View.INVISIBLE
             binding.btConfirm.visibility = View.INVISIBLE

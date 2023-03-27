@@ -1,4 +1,4 @@
-package iit.uvip.psysuite.core.tests
+package iit.uvip.psysuite.core.trials
 
 abstract class TrialBasic(var id:Int=-1, val type:Int, protected val label:String="", var correct_answer:Int=0, var variable_param:Any? = null) {
 

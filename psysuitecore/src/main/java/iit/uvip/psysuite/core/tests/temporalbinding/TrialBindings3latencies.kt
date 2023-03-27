@@ -1,6 +1,6 @@
 package iit.uvip.psysuite.core.tests.temporalbinding
 
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 
 
 //                     trial_id    0-8      "none"

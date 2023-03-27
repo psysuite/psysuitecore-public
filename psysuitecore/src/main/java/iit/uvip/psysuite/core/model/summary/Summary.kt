@@ -3,7 +3,7 @@ package iit.uvip.psysuite.core.model.summary
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 import org.albaspazio.core.filesystem.getAbsoluteFilePath
 import org.albaspazio.core.filesystem.saveText
 

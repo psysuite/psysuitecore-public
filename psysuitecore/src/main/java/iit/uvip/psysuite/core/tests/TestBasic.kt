@@ -16,6 +16,7 @@ import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import iit.uvip.psysuite.core.model.summary.Summary
 import iit.uvip.psysuite.core.stimuli.DelaysAligner
 import iit.uvip.psysuite.core.stimuli.StimuliManager
+import iit.uvip.psysuite.core.trials.TrialBasic
 
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.accessory.logLastTwo
@@ -39,6 +40,143 @@ abstract class TestBasic(protected val ctx: Context,
                          protected val speechManager: SpeechManager? = null
                          ) {
     open var LOG_TAG:String = TestBasic::class.java.simpleName
+
+    // ===============================================================================================================
+    // PUBLIC
+    // ===============================================================================================================
+    val nTrials:Int     get() = mTrialsManager.nTrials
+    val currTrial:Int   get() = mTrialsManager.currTrial
+
+    val testEvent:PublishRelay<Pair<Int,Any?>> = PublishRelay.create()
+    var showTrialsID:Int        = 0     // define when display trial id(0: never, 1: only @ trial end, 2: always)
+    var abortMode:Int           = 0     // define abort modality (0:in answer dialog @ trial end, 1:button @ trial end, 2:always)
+
+    var mTestLabel: String                      = ""
+    var mQuestion:String                        = ""
+    var validAnswers: MutableList<String>       = mutableListOf()
+
+    // ---------------------------------------------------------------
+    abstract fun initTest()
+
+    fun start():Boolean{
+        return  try {
+            if(!mStimuliManager.isValid || !this::mTrialsManager.isInitialized){
+                onCriticalError(ctx.resources.getString(R.string.test_failure), true)
+                return false
+            }
+
+            if(subject.isDebug) testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))    // send debug info
+
+            show(mTrialsManager.mTrial)
+            true
+        }
+        catch(e:Exception){
+            e.logLastTwo(LOG_TAG)
+            onCriticalError(e.toString())
+            false
+        }
+    }
+
+    // writes summary and return absolute filepath or empty string
+    fun closeSummary(filename:String = ""):String{
+        return  if(filename.isEmpty())  mSummary?.close(subject.composeSummaryFileName(ctx)) ?: ""
+        else                    mSummary?.close(filename) ?: ""
+    }
+
+    fun repeatTrial(){
+        show(mTrial, true)
+    }
+
+    // prev trial has ended. set user response (if present)
+    // and check whether entire task/block has ended or call next trial
+    open fun onEndTrial(prev_result: Int = -1, elapsed: Int = -1, extra_text:String = ""): Int {
+
+        if (prev_result != -1 || extra_text != ""){
+            mTrialsManager.setResponse(prev_result, elapsed, extra_text)
+            mSummary?.add(mTrial)
+        }
+        // if !last trial && !block end => doNextTrial
+        return when {
+            currTrial == (nTrials - 1) -> {
+                saveText(mTrial.Log(), notifyDm = true)
+                EVENT_TEST_END            // END !
+            }
+            mListBlocks.contains(currTrial) -> {
+                saveText(mTrial.Log(), notifyDm = false)
+                EVENT_BLOCK_END
+            }
+            else -> {
+                saveText(mTrial.Log(), notifyDm = false)
+                doNextTrial()
+            }
+        }
+    }
+
+    // called by TestFragment::onBlockEnded()
+    fun startNewBlock(){
+        mCurrBlock++
+        doNextTrial()
+    }
+
+    fun abortTest(deleteOrShow:Boolean, dir:String= Environment.DIRECTORY_DOWNLOADS){
+
+        unloadStimuli()
+
+        if(deleteOrShow){
+            deleteFile(mResultFile)
+            deleteFile(subject.subjectFileName)
+        }
+        else    notifyFile(mResultFile, ctx, dir)
+    }
+
+    fun stopTestAfterBlock(dir:String= Environment.DIRECTORY_DOWNLOADS):Triple<String,String,String>{
+
+        unloadStimuli()
+
+        val newresname = subject.composeResultFileName(ctx, mCurrBlock)
+        renameFile(mResultFile, newresname)
+
+        val newsubjname = subject.composeSubjectFileName(ctx, mCurrBlock)
+        renameFile(subject.subjectFileName, newsubjname)
+
+        val newsummaryname = subject.composeSummaryFileName(ctx, mCurrBlock)
+
+        notifyFile(newresname, ctx, dir)
+
+        return Triple(newresname, newsubjname, newsummaryname)
+    }
+
+    fun unloadStimuli(){
+        mStimuliManager.unloadStimuli()
+        mStimuliHandler.removeCallbacksAndMessages(null)
+        mNoise?.stop()
+    }
+
+    fun adjustBlocks(blk:Int){
+
+        if((nBlocks == 1 && blk > 0) || (blk >= nBlocks)){
+            // incongruent condition
+            showAlert(activity, ctx.resources.getString(R.string.error), "")
+            return
+        }
+        if(blk == -1){
+            mTrialsManager.currTrial   = 0
+            mCurrBlock  = 0
+        }
+        else {  // if it found lab_type_blk2.txt => blk=3)
+            mCurrBlock = blk
+
+            // following trial of the previous block
+            mTrialsManager.currTrial = mListBlocks[mCurrBlock-1] + 1
+        }
+    }
+
+    fun getAbsoluteResultFilePath(): String = getAbsoluteFilePath(mResultFile).second      // is "" if file was not present
+
+    open fun getTrialCorrectAnswer():Int{
+        return  if(!this::mTrialsManager.isInitialized) 0
+                else                                    mTrial.correct_answer
+    }
 
     companion object {
 
@@ -65,7 +203,7 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_SHOWTRIALS_TRIALEND         = 1         //  SHOWTRIALS_TRIALEND
         @JvmStatic val TEST_SHOWTRIALS_ALWAYS           = 2         //  SHOWTRIALS_ALWAYS
 
-//        @JvmStatic val TEST_ABORT_ANSWER                = 0         //  never show abort button (it is displayed in the answer dialog)
+        //        @JvmStatic val TEST_ABORT_ANSWER                = 0         //  never show abort button (it is displayed in the answer dialog)
         @JvmStatic val TEST_ABORT_TRIALEND              = 1         //  show abort button at each trial end (when answer dialog does not appear)
         @JvmStatic val TEST_ABORT_ALWAYS                = 2         //  keep abort button always active
 
@@ -76,13 +214,15 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_NEXTTRIAL_VOICE_ANSWER      = 3         //  wait for VOICE ANSWER dialog through speech recognition
         @JvmStatic val TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER = 4       //  wait for either ANSWER dialog or VOICE ANSWER through speech recognition
 
-        @JvmStatic val TEST_WNOISE_DISABLED             = 0         //  disabled, cannot enable it
-        @JvmStatic val TEST_WNOISE_CHOOSE_OFF           = 1         //  can choose, disabled by default
-        @JvmStatic val TEST_WNOISE_CHOOSE_ON            = 2         //  can choose, enabled by default
-        @JvmStatic val TEST_WNOISE_ENABLED              = 4         //  enabled, cannot disable it
+        @JvmStatic val TEST_SWITCH_DISABLED             = 0         //  disabled, cannot enable it
+        @JvmStatic val TEST_SWITCH_CHOOSE_OFF           = 1         //  can choose, disabled by default
+        @JvmStatic val TEST_SWITCH_CHOOSE_ON            = 2         //  can choose, enabled by default
+        @JvmStatic val TEST_SWITCH_ENABLED              = 3         //  enabled, cannot disable it
 
         @JvmStatic val TEST_TRMAN_FIXED                 = 0         //  trials are predetermined at test start
-        @JvmStatic val TEST_TRMAN_QUEST                 = 1         //  trials are calculated trial-by-trial according to a Quest algorithm
+        @JvmStatic val TEST_TRMAN_CHOOSE_FIXED          = 1         //  can choose, predetermined by default
+        @JvmStatic val TEST_TRMAN_CHOOSE_QUEST          = 2         //  can choose, Quest by default
+        @JvmStatic val TEST_TRMAN_QUEST                 = 3         //  trials are calculated trial-by-trial according to a Quest algorithm
 
         //-----------------------------------------------------------------------------------------
         //
@@ -176,27 +316,23 @@ abstract class TestBasic(protected val ctx: Context,
 
 
         //-----------------------------------------------------------------------------------------
-        @JvmStatic val TEST_ABORTED                     = 230
-        @JvmStatic val TEST_COMPLETED                   = 231
-        @JvmStatic val BLOCK_COMPLETED                  = 232
-        @JvmStatic val TEST_ABORTED_WITH_ERROR          = 233
-
-
-//        fun unimodaltypes2maintype(a:Int, t:Int, v:Int):Int = a or t or v
+        @JvmStatic val TEST_ABORTED                     = 1000
+        @JvmStatic val TEST_COMPLETED                   = 1001
+        @JvmStatic val BLOCK_COMPLETED                  = 1002
+        @JvmStatic val TEST_ABORTED_WITH_ERROR          = 1003
     }
 
-    val testEvent:PublishRelay<Pair<Int,Any?>> = PublishRelay.create()
+    // ===============================================================================================================
+    // PROTECTED/PRIVATE
+    // ===============================================================================================================
 
-    var showTrialsID:Int        = 0     // define when display trial id(0: never, 1: only @ trial end, 2: always)
-    var abortMode:Int           = 0     // define abort modality (0:in answer dialog @ trial end, 1:button @ trial end, 2:always)
-    var nextTrailModality:Int   = 0     // define how trials are displayed. 0: automatically, 1: after a next button, 2: after answer
+    // proxy for methods to be implemented in each subclass
+    protected abstract fun show(trial: TrialBasic, isRepeat:Boolean=false)
+    protected abstract fun onTrialEnd()
+    protected abstract fun initSummary()                // init summary content (mSummary),
 
-    var mTestLabel: String                      = ""
-    var mQuestion:String                        = ""
-    var validAnswers: MutableList<String>       = mutableListOf()
-    val showResult:Boolean                      = this.subject.showResult
-    val delaysAligner: DelaysAligner            = this.subject.stimuliDelays
-
+    protected var nextTrailModality:Int         = 0     // define how trials are displayed. 0: automatically, 1: after a next button, 2: after answer
+    protected val delaysAligner: DelaysAligner  = subject.stimuliDelays
 
     // they are just proxy for properties (implemented / edited / accessed) in each subclass
     protected lateinit var mTrialsManager:TrialsManager
@@ -204,41 +340,24 @@ abstract class TestBasic(protected val ctx: Context,
     protected val mTrial: TrialBasic
         get() = mTrialsManager.mTrial
 
-    val currTrial:Int
-        get() = mTrialsManager.currTrial
-
-    val nTrials:Int
-        get() = mTrialsManager.nTrials
-
-    val mTrials:List<TrialBasic>
-        get() = mTrialsManager.mTrials
-
     // BLOCKS -------------------------------------------------------------------
     protected var mListBlocks:MutableList<Int>  = mutableListOf()
         set(value) {
             field   = value
             nBlocks = value.size + 1
         }
-    private var nBlocks:Int     = 0
-    private var mCurrBlock: Int = 0
 
     protected var mNoise: MediaPlayer? = null
-
     protected open var mDrawablesResource:MutableList<Int>  = mutableListOf()   // list of drawables' resources id to be edited in subclasses
 
+    private var nBlocks:Int     = 0
+    private var mCurrBlock: Int = 0
     private var mResultFile: String                         = ""
     private var mResultUri: Uri?                            = null
 
     // SUMMARY -------------------------------------------------------------------
     protected var mSummary: Summary?                        = null
-    abstract fun initSummary()              // init summary content (mSummary),
 //    fun closeSummary(blk:Int = -1):String = mSummary?.close(subject.composeSummaryFileName(ctx, blk)) ?: "" // writes summary and return filename or empty string
-
-    // writes summary and return absolute filepath or empty string
-    fun closeSummary(filename:String = ""):String{
-        return  if(filename.isEmpty())  mSummary?.close(subject.composeSummaryFileName(ctx)) ?: ""
-                else                    mSummary?.close(filename) ?: ""
-    }
 
     // STIMULI -------------------------------------------------------------------
 
@@ -249,67 +368,10 @@ abstract class TestBasic(protected val ctx: Context,
     protected var mStimuliHandler: Handler = Handler()         // IDE suggested: Handler(Looper.myLooper()!!)
 
     protected var currStimulusDuration:Long     = 100L          // default value to be used when stimulus duration in not given
-//    protected var currVibrationAmplitude:Int    = -1            // default amplitude to be used when  not given
-//    protected var currVolume:Float              = 1F            // default audio volume to be used when  not given
     protected var currAudioResourceName:String  = "t200hz_2s"   // default amplitude to be used when  not given
 
     protected var ITI:Long                      = 0             // default ITI
 
-    // proxy for methods to be implemented in each subclass
-    abstract fun initTest()
-    abstract fun onTrialEnd()
-    abstract fun show(trial: TrialBasic, isRepeat:Boolean=false)
-
-
-    // ===============================================================================================================
-    fun start():Boolean{
-        return  try {
-//                    if(!mStimuliManager.isValid || !this::mTrial.isInitialized){onCriticalError(ctx.resources.getString(R.string.test_failure), true)
-//                        return false}
-
-                    if(subject.isDebug) testEvent.accept(Pair(EVENT_SHOW_DEBUGINFO, getDebugInfo()))    // send debug info
-
-                    show(mTrialsManager.mTrial)
-                    true
-                }
-                catch(e:Exception){
-                    e.logLastTwo(LOG_TAG)
-                    onCriticalError(e.toString())
-                    false
-                }
-    }
-
-    fun repeatTrial(){
-        show(mTrial, true)
-    }
-
-    // ===============================================================================================================
-    // TRIAL MANAGEMENT
-    // ===============================================================================================================
-    // prev trial has ended. set user response (if present)
-    // and check whether entire task/block has ended or call next trial
-    open fun onEndTrial(prev_result: Int = -1, elapsed: Int = -1, extra_text:String = ""): Int {
-
-        if (prev_result != -1 || extra_text != ""){
-            mTrialsManager.setResponse(prev_result, elapsed, extra_text)
-            mSummary?.add(mTrial)
-        }
-        // if !last trial && !block end => doNextTrial
-        return when {
-            currTrial == (nTrials - 1) -> {
-                saveText(mTrial.Log(), notifyDm = true)
-                EVENT_TEST_END            // END !
-            }
-            mListBlocks.contains(currTrial) -> {
-                saveText(mTrial.Log(), notifyDm = false)
-                EVENT_BLOCK_END
-            }
-            else -> {
-                saveText(mTrial.Log(), notifyDm = false)
-                doNextTrial()
-            }
-        }
-    }
 
     // called by above nextTrial & by TestFragment after user decided to continue after block end
     // set/calculate new trial and shows it
@@ -329,40 +391,6 @@ abstract class TestBasic(protected val ctx: Context,
                 }
     }
 
-    // called by TestFragment::onBlockEnded()
-    fun startNewBlock(){
-        mCurrBlock++
-        doNextTrial()
-    }
-
-    fun abortTest(deleteOrShow:Boolean, dir:String= Environment.DIRECTORY_DOWNLOADS){
-
-        unloadStimuli()
-
-        if(deleteOrShow){
-                deleteFile(mResultFile)
-                deleteFile(subject.subjectFileName)
-        }
-        else    notifyFile(mResultFile, ctx, dir)
-    }
-
-    fun stopTestAfterBlock(dir:String= Environment.DIRECTORY_DOWNLOADS):Triple<String,String,String>{
-
-        unloadStimuli()
-
-        val newresname = subject.composeResultFileName(ctx, mCurrBlock)
-        renameFile(mResultFile, newresname)
-
-        val newsubjname = subject.composeSubjectFileName(ctx, mCurrBlock)
-        renameFile(subject.subjectFileName, newsubjname)
-
-        val newsummaryname = subject.composeSummaryFileName(ctx, mCurrBlock)
-
-        notifyFile(newresname, ctx, dir)
-
-        return Triple(newresname, newsubjname, newsummaryname)
-    }
-
     // -> abortTest & send(event_test_error)
     private fun onCriticalError(msg:String, delete:Boolean=false){
         abortTest(delete)
@@ -372,37 +400,11 @@ abstract class TestBasic(protected val ctx: Context,
     // ===============================================================================================================
     // ACCESSORY
     // ===============================================================================================================
-
-    fun unloadStimuli(){
-        mStimuliManager.unloadStimuli()
-        mStimuliHandler.removeCallbacksAndMessages(null)
-        mNoise?.stop()
-    }
-
     protected fun saveText(text: String, overwrite: Boolean = false, notifyDm: Boolean = false):Any?{
         return  if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
                         saveTextQ(ctx, mResultUri!!, text, overwrite = overwrite, notifyDm = notifyDm)
                 else
                         saveText(ctx, mResultFile, text, overwrite = overwrite, notifyDm = notifyDm)
-    }
-
-    fun adjustBlocks(blk:Int){
-
-        if((nBlocks == 1 && blk > 0) || (blk >= nBlocks)){
-            // incongruent condition
-            showAlert(activity, ctx.resources.getString(R.string.error), "")
-            return
-        }
-        if(blk == -1){
-            mTrialsManager.currTrial   = 0
-            mCurrBlock  = 0
-        }
-        else {  // if it found lab_type_blk2.txt => blk=3)
-            mCurrBlock = blk
-
-            // following trial of the previous block
-            mTrialsManager.currTrial = mListBlocks[mCurrBlock-1] + 1
-        }
     }
 
     // is always created without block information, which is added when interrupting after a block
@@ -415,14 +417,6 @@ abstract class TestBasic(protected val ctx: Context,
             saveText(ctx, mResultFile, header)
     }
 
-    fun getAbsoluteResultFilePath(): String = getAbsoluteFilePath(mResultFile).second      // is "" if file was not present
+    private fun getDebugInfo():String = mTrial.debugInfo()
 
-    protected fun getDebugInfo():String = mTrial.debugInfo()
-
-    fun getTrialCorrectAnswer():Int{
-        return  if(!this::mTrialsManager.isInitialized) 0
-        else                                            mTrial.correct_answer
-    }
-
-    protected fun getTestTitle():String = "${ctx.resources.getString(R.string.app_name)} - ${ctx.resources.getString(R.string.lab_test_res)}: $mTestLabel"
 }

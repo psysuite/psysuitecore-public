@@ -1,21 +1,17 @@
-package iit.uvip.psysuite.core.model.parcel
+package iit.uvip.psysuite.core.tests.temporalbinding.atb
 
 import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.DelaysAligner
 import iit.uvip.psysuite.core.tests.TestBasic
-
+import kotlinx.parcelize.Parcelize
 import org.albaspazio.core.accessory.Device
 
+// session
+@Parcelize
+class SubjectATBParcel(
 
-/*
-This class manage simple subjects that participate in tests with only one condition.
-in subclasses, user must resolve the condition code according to internal variables
- */
-
-// base class for all tests
-abstract class SubjectBasicListParcel(
-
-    override var classes: List<String> = listOf(),
+    override var classes: List<String> = listOf("iit.uvip.psysuite.core.tests.temporalbinding.atb.TestATB"),
     override var label: String = "",
     override var age: Int = -1,
     override var gender: Int = -1,
@@ -28,15 +24,11 @@ abstract class SubjectBasicListParcel(
     override var vercode: Int = -1,
     override var stimuliDelays: DelaysAligner = DelaysAligner(),
 
-    override var nextTrailModality: Int = TestBasic.TEST_NEXTTRIAL_NOCHOOSE,
+    override var nextTrailModality: Int = TestBasic.TEST_NEXTTRIAL_ANSWER,
     override var whitenoise: Int = TestBasic.TEST_SWITCH_CHOOSE_ON,
-    override var trman_type: Int = TestBasic.TEST_TRMAN_FIXED,
-    override var showResult: Int = TestBasic.TEST_SWITCH_DISABLED,
-    override var canRepeat:Int = TestBasic.TEST_SWITCH_DISABLED,
-
-    open var spinner_sel: Int = -1,
-    open var spinner_label: String = "",
-    open var spinner_data_resource: Int = -1
+    override var trman_type: Int = TestBasic.TEST_TRMAN_CHOOSE_FIXED,
+    override var showResult: Int = TestBasic.TEST_SWITCH_CHOOSE_OFF,
+    override var canRepeat:Int = TestBasic.TEST_SWITCH_CHOOSE_OFF
 ) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat)
 
 

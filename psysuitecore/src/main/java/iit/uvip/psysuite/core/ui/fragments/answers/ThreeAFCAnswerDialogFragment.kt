@@ -27,7 +27,7 @@ class ThreeAFCAnswerDialogFragment: TwoAFCAnswerDialogFragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         mView = inflater.inflate(R.layout.fragment_3afc_answer, container, false)
         return mView
     }

@@ -8,9 +8,10 @@ import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.*
-import iit.uvip.psysuite.core.tests.FixedTrialsManager
+import iit.uvip.psysuite.core.trials.FixedTrialsManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
+import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.ISI
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.STIM_DURATION
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_ATV
@@ -36,6 +37,8 @@ import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.CorrectedStimuliDelay
 import iit.uvip.psysuite.core.utility.Stimulus3delay
 import iit.uvip.psysuite.core.utility.StimulusDelay
+import iit.uvip.psysuite.quest.QuestParams
+import iit.uvip.psysuite.quest.QuestWrapper
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
@@ -242,6 +245,9 @@ class TestATVB(
     private var allQuestions:MutableList<String> = mutableListOf()
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle)
 
+    private val nQuestTrials = 30
+    private val questParams = QuestParams()
+    private val questWrapper: QuestWrapper = QuestWrapper("roelofs.RoelofsQuest", "RoelofsQuest", questParams, listOf(800))
 
     // =============================================================================================================================
     // INIT
@@ -302,7 +308,7 @@ class TestATVB(
             else                    -> allQuestions[0]
         }
 
-        if (subject.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
+        if (subject.whitenoise > TEST_SWITCH_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
         mListBlocks     = mutableListOf((nTrials * 0.25F).roundToInt(), (nTrials * 0.5F).roundToInt(), (nTrials * 0.75F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
 //        mListBlocks     = mutableListOf(0,2)    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
@@ -351,6 +357,15 @@ class TestATVB(
 
             rtrials.shuffle()
             trials.addAll(rtrials)
+        }
+        return trials
+    }
+
+    private fun createTrialsQuest():List<TrialBasic>{
+        var cnt = -1
+        val trials: MutableList<TrialBasic> = mutableListOf()
+        for (i in 0 until nQuestTrials) {
+            trials.add(TrialBindingsUnBalanced(++cnt, BindingsConstants.TYPE_AT, 0, 0))
         }
         return trials
     }
@@ -422,13 +437,11 @@ class TestATVB(
         mNoise?.prepare()
 
         when (nextTrailModality) {
+            TEST_NEXTTRIAL_BUTTON       ->  testEvent.accept(Pair(EVENT_SHOW_NEXT_BUTTON, null))
+            TEST_NEXTTRIAL_AUTO         ->  // create a ITI=2sec pause by waiting for 1sec and invoking a 1sec wait in TestFragment
+                                            mStimuliHandler.postDelayed({   testEvent.accept(Pair(EVENT_SHOW_ABORT, 1000L))     }, currStimulusDuration)
 
-            TEST_NEXTTRIAL_VOICE_ANSWER         ->  testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
-            TEST_NEXTTRIAL_ANSWER               ->  testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
-            TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER  -> {
-                                                    testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
-                                                    testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
-            }
+            TEST_NEXTTRIAL_ANSWER       ->  testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
         }
     }
 

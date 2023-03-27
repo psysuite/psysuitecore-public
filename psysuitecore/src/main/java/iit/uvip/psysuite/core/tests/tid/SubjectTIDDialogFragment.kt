@@ -7,10 +7,8 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.databinding.FragmentSubjectInfoBasicBinding
-import iit.uvip.psysuite.core.databinding.FragmentSubjectInfoBasicSpinnerBinding
 import iit.uvip.psysuite.core.databinding.FragmentSubjectInfoTidBinding
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.ui.subjects_dialog.SubjectLongitudinalDialogFragment
 import iit.uvip.psysuite.core.utility.ConditionData
 
@@ -115,11 +113,11 @@ class SubjectTIDDialogFragment : SubjectLongitudinalDialogFragment(), AdapterVie
         (subject as SubjectTIDParcel).session   = binding.spinner.selectedItemPosition - 1
 
         subject.type = if(binding.spinner.selectedItemPosition in 2..6){
-                                subject.showResult = true
+                                subject.showResult = TestBasic.TEST_SWITCH_ENABLED
                                 mTaskCodeLabels[binding.spGroup.selectedItemPosition].id
                        }
                        else{
-                                subject.showResult = false
+                                subject.showResult = TestBasic.TEST_SWITCH_DISABLED
                                 mTaskCodeLabels[binding.spCondition.selectedItemPosition].id
                         }
 

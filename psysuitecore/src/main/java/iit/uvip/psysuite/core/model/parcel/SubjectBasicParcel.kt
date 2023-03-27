@@ -2,15 +2,17 @@ package iit.uvip.psysuite.core.model.parcel
 
 import android.content.Context
 import android.os.Parcelable
+import kotlinx.parcelize.IgnoredOnParcel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+
 import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.stimuli.DelaysAligner
 import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_NEXTTRIAL_NOCHOOSE
 import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.getLabelLog
-import kotlinx.android.parcel.IgnoredOnParcel
-import kotlinx.android.parcel.Parcelize
+
 import org.albaspazio.core.accessory.Device
 import org.albaspazio.core.accessory.getCompanionObjectMethod
 import org.albaspazio.core.accessory.getDateString
@@ -18,35 +20,36 @@ import org.albaspazio.core.accessory.getFullDateString
 import org.albaspazio.core.filesystem.*
 
 /*
+base class for all Subjects information
 This class manage simple subjects that participate in tests with only one condition.
-in subclasses, user must resolve the condition code according to internal variables
+
+ created one parcel for each test,
+ initializing all the options presently
+ particularly: classes, nextTrailModality, showFeedback, canRepeat, showResult, whitenoise
 */
 
-// base class for all Subjects information
-// nextTrailModality = -1 => do not show switch button in the gui
-
-@Parcelize
-open class SubjectBasicParcel(
-    open var type: Int = -1,
+abstract class SubjectBasicParcel(
+    open var classes: List<String> = listOf(),
     open var label: String = "",
     open var age: Int = -1,
     open var gender: Int = -1,
-    open var nextTrailModality: Int = -1,
-    open var canRecordAudio: Boolean = false,
-    open var classes: List<String> = listOf(),
-    open var device: Device? = null,
-    open var block: Int = -1,
-    open var stimuliDelays: DelaysAligner = DelaysAligner(),
-    open var whitenoise: Int = TestBasic.TEST_WNOISE_CHOOSE_ON,
-    open var trman_type: Int = TestBasic.TEST_TRMAN_FIXED,
-    open var vercode: Int = -1,
-    open var showResult: Boolean = false,
     open var population: Int = Populations.POPULATION_TD,
-    open var isDebug: Boolean = false
+    open var type: Int = -1,
+
+    open var block: Int = -1,
+    open var isDebug: Boolean = false,
+    open var device: Device? = null,
+    open var vercode: Int = -1,
+    open var stimuliDelays: DelaysAligner = DelaysAligner(),
+
+    open var nextTrailModality: Int = TEST_NEXTTRIAL_NOCHOOSE,
+    open var whitenoise: Int    = TestBasic.TEST_SWITCH_CHOOSE_ON,
+    open var trman_type: Int    = TestBasic.TEST_TRMAN_FIXED,
+    open var showResult: Int    = TestBasic.TEST_SWITCH_DISABLED,
+    open var canRepeat:Int      = TestBasic.TEST_SWITCH_CHOOSE_OFF
 ) : Parcelable {
 
-    @IgnoredOnParcel
-    var subjectFileName:String = ""
+    @IgnoredOnParcel var subjectFileName:String = ""
 
     companion object  {
         @JvmStatic val CURR_SUBJ_FILE:String = "curr_subject"

@@ -4,7 +4,7 @@ import android.content.Context
 import iit.uvip.psysuite.core.model.summary.Summary
 import iit.uvip.psysuite.core.model.summary.SummaryCondition
 import iit.uvip.psysuite.core.model.summary.SummaryRow
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.balshSD
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsSummaryCondition
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsSummaryRow

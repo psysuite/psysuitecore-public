@@ -15,7 +15,7 @@ import iit.uvip.psysuite.core.stimuli.AudioManager
 import iit.uvip.psysuite.core.stimuli.StimuliManager
 import iit.uvip.psysuite.core.stimuli.VisualManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 import iit.uvip.psysuite.core.tests.tfi.TestTFI
 import iit.uvip.psysuite.core.utility.ConditionData
 import org.albaspazio.core.accessory.VibrationManager
@@ -32,7 +32,7 @@ import io.reactivex.disposables.Disposable
 import org.albaspazio.core.accessory.toDp
 import java.util.concurrent.TimeUnit
 import android.widget.TextView
-import iit.uvip.psysuite.core.tests.FixedTrialsManager
+import iit.uvip.psysuite.core.trials.FixedTrialsManager
 
 
 // show -> onTrialEnd -> EVENT_GIVE_ANSWER

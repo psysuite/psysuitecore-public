@@ -23,7 +23,6 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
 
     private var selectedAnswer:String  = ""
     private var selectedAnswerId:Int   = -1
-    private lateinit var layoutView:View
     private var isAborting:Boolean = false  // when user DT this flag is set to true, only after another DT, it aborts the test
 
     companion object {
@@ -33,21 +32,18 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
             args.putString("title", title)
             frag.arguments = args
             frag.tts = speechManager
-
             return frag
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        mView = inflater.inflate(R.layout.fragment_2afc_answer, container, false)
-        return mView
-    }
+//    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+//        mView = inflater.inflate(R.layout.fragment_2afc_answer, container, false)
+//        return mView
+//    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = Fragment2afcAnswerBinding.bind(mView)
-
-        showResult      = false
 
         if(isInstructions)
             tts?.speak(listOf(  resources.getString(R.string.exp_intro_blind1),
@@ -62,7 +58,6 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
 
     override fun onResume() {
         super.onResume()
-        binding = Fragment2afcAnswerBinding.bind(mView)
 
         registerGestures()
 
@@ -83,7 +78,7 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
     private fun registerGestures(){
 
         val detector = GestureDetectorCompat(requireContext(), MyGestureDetector(::onGestures, null))
-        layoutView.setOnTouchListener { _, motionEvent -> detector.onTouchEvent(motionEvent) }
+        mView.setOnTouchListener { _, motionEvent -> detector.onTouchEvent(motionEvent) }
     }
 
     private fun onGestures(gesture_label: String){
@@ -114,10 +109,18 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
     override fun confirm() {
         if(selectedAnswer.isNotEmpty()){
 
+            val msgs = mutableListOf<String>()
+
+            if(showResult == TestBasic.TEST_SWITCH_ENABLED) {
+                val msg =   if (correctAnswerId == selectedAnswerId)    resources.getString(R.string.correct_answer)
+                            else                                        resources.getString(R.string.wrong_answer)
+                msgs.add(msg)
+            }
             val msg =   if(isInstructions)  resources.getString(R.string.exp_letsstart_blind)
                         else                resources.getString(R.string.new_trial)
+            msgs.add(msg)
 
-            tts?.speak(msg){
+            tts?.speak(msgs, delay = 1000L){
                 requireActivity().runOnUiThread {
                     val elapsedms = getTimeDifference(onsetDate)
                     sendResult(selectedAnswerId, elapsedms, TestBasic.EVENT_ANSWER_GIVEN)

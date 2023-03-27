@@ -1,10 +1,10 @@
 package iit.uvip.psysuite.core.tests.temporalbinding
 
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 
 
 //                     trial_id    0-8      "none"
-class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, val delay:Long=0L, correct_answer:Int=-1):
+class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, var delay:Long=0L, correct_answer:Int=-1):
     TrialBasic(id, type, "", correct_answer) {
 
     companion object {
@@ -24,5 +24,9 @@ class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, val delay:Long=0L, correct_
 
     override fun debugInfo():String{
         return "${super.debugInfo()}, delay=$delay"
+    }
+
+    override fun updateTrial(newvalue:Float){
+        delay = newvalue.toLong()
     }
 }

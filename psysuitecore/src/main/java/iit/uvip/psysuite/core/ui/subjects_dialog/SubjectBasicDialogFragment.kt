@@ -58,14 +58,10 @@ open class SubjectBasicDialogFragment: DialogFragment(){
     protected open fun initData() {
         val subj: SubjectBasicParcel? = arguments?.getParcelable(EVENT_SUBJECT)
         if (subj == null) {
-            showAlert(
-                requireActivity(), resources.getString(R.string.critical_error),
-                "${resources.getString(R.string.empty_subject_parcel)}\n${resources.getString(R.string.restart_app_suggestion)}"
-            )
+            showAlert(requireActivity(), resources.getString(R.string.critical_error),"${resources.getString(R.string.empty_subject_parcel)}\n${resources.getString(R.string.restart_app_suggestion)}")
             dismiss()
             return
         } else subject = subj
-
 
         val ntm         = getCompanionObjectMethod(subject.classes[0], "getNextTrialModes")
         mNextTrialModes = ntm.first?.call(ntm.second, requireContext()) as List<List<Int>>
@@ -73,31 +69,11 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         val ci          = getCompanionObjectMethod(subject.classes[0], "getConditionsInfo")
         mTaskCodeLabels = ci.first?.call(ci.second, requireContext()) as List<ConditionData>
 
-        // SUB TASKS & POPULATION
+        //------------------------------------------------------
+        // SET SPINNERS (SUB TASKS, TRIAL MANAGERS & POPULATION)
+        //------------------------------------------------------
         setConditions(mTaskCodeLabels)
         setPopulation(selCondition)
-        //------------------------------------------------------
-        // NEXT TRIAL MODALITY
-        //------------------------------------------------------
-        // swInteractive is visible only in TEST_NEXTTRIAL_BUTTON & TEST_NEXTTRIAL_AUTO
-
-        subject.nextTrailModality = mNextTrialModes[selCondition][0]
-
-        when (subject.nextTrailModality) {
-
-            TestBasic.TEST_NEXTTRIAL_BUTTON -> {
-                showInteractive(true)
-                binding.swInteractive.isChecked = true
-            }
-            TestBasic.TEST_NEXTTRIAL_AUTO -> {
-                showInteractive(true)
-                binding.swInteractive.isChecked = false
-            }
-            TestBasic.TEST_NEXTTRIAL_NOCHOOSE,
-            TestBasic.TEST_NEXTTRIAL_VOICE_ANSWER,
-            TestBasic.TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER,
-            TestBasic.TEST_NEXTTRIAL_ANSWER -> showInteractive(false)
-        }
 
         //------------------------------------------------------
         // SUBJECT DEMOGRAPHIC
@@ -111,21 +87,95 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         else                    binding.radioGroupGender.clearCheck()
 
         //------------------------------------------------------
-        // noise visibility
-        binding.swWhiteNoise.visibility     = View.VISIBLE
-        binding.labWhiteNoise.visibility    = View.VISIBLE
-        when(subj.whitenoise){
-            TestBasic.TEST_WNOISE_DISABLED,
-            TestBasic.TEST_WNOISE_ENABLED -> {
-                binding.swWhiteNoise.visibility     = View.INVISIBLE
-                binding.labWhiteNoise.visibility    = View.INVISIBLE
+        // trials manager
+        //------------------------------------------------------
+        with(binding.spTrialManager!!){
+
+            if(subj.trman_type == TestBasic.TEST_TRMAN_QUEST || subj.trman_type == TestBasic.TEST_TRMAN_FIXED)
+                visibility                          = View.INVISIBLE
+            else{
+                // is TEST_TRMAN_CHOOSE_FIXED or TEST_TRMAN_CHOOSE_QUEST
+                visibility                          = View.VISIBLE
+                val trial_managers                  = resources.getStringArray(R.array.trial_manager_types)
+                val adapter                         = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, trial_managers)
+                binding.spTrialManager!!.adapter    = adapter
+                if(subj.trman_type == TestBasic.TEST_TRMAN_CHOOSE_FIXED)
+                        setSelection(0)
+                else    setSelection(1)
             }
         }
-        // noise start value
-        binding.swWhiteNoise.isChecked      = true
-        when(subj.whitenoise){
-            TestBasic.TEST_WNOISE_DISABLED,
-            TestBasic.TEST_WNOISE_CHOOSE_OFF    ->  binding.swWhiteNoise.isChecked      = false
+        //------------------------------------------------------
+        // NEXT TRIAL MODALITY
+        //------------------------------------------------------
+        // swInteractive is visible only in TEST_NEXTTRIAL_BUTTON & TEST_NEXTTRIAL_AUTO
+        // when there isn't an answer to give
+        subject.nextTrailModality = mNextTrialModes[selCondition][0]
+
+        when (subject.nextTrailModality) {
+
+            TestBasic.TEST_NEXTTRIAL_BUTTON -> {
+                binding.swInteractive.visibility   = View.VISIBLE
+                binding.swInteractive.isChecked = true
+            }
+            TestBasic.TEST_NEXTTRIAL_AUTO -> {
+                binding.swInteractive.visibility   = View.GONE
+                binding.swInteractive.isChecked = false
+            }
+            TestBasic.TEST_NEXTTRIAL_NOCHOOSE,
+            TestBasic.TEST_NEXTTRIAL_VOICE_ANSWER,
+            TestBasic.TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER,
+            TestBasic.TEST_NEXTTRIAL_ANSWER -> binding.swInteractive.visibility   = View.GONE
+        }
+        //------------------------------------------------------
+        // noise visibility
+        //------------------------------------------------------
+        with(binding.swWhiteNoise){
+
+            visibility = when(subj.whitenoise){
+                TestBasic.TEST_SWITCH_DISABLED,
+                TestBasic.TEST_SWITCH_ENABLED -> View.INVISIBLE
+                else                          -> View.VISIBLE
+            }
+
+            isChecked = when(subj.whitenoise){
+                TestBasic.TEST_SWITCH_DISABLED,
+                TestBasic.TEST_SWITCH_CHOOSE_OFF -> false
+                else                             -> true
+            }
+        }
+        //------------------------------------------------------
+        // can repeat trial
+        //------------------------------------------------------
+        with(binding.swRepeatTrial!!){
+
+            visibility = when(subj.canRepeat){
+                TestBasic.TEST_SWITCH_DISABLED,
+                TestBasic.TEST_SWITCH_ENABLED -> View.INVISIBLE
+                else                          -> View.VISIBLE
+            }
+
+            isChecked = when(subj.canRepeat){
+                TestBasic.TEST_SWITCH_DISABLED,
+                TestBasic.TEST_SWITCH_CHOOSE_OFF -> false
+                else                             -> true
+            }
+        }
+        //------------------------------------------------------
+        // show result
+        //------------------------------------------------------
+        with(binding.swShowResult!!){
+
+            visibility = when(subj.showResult){
+                TestBasic.TEST_SWITCH_DISABLED,
+                TestBasic.TEST_SWITCH_ENABLED -> View.INVISIBLE
+                else                          -> View.VISIBLE
+            }
+
+            isChecked = when(subj.showResult){
+                TestBasic.TEST_SWITCH_DISABLED,
+                TestBasic.TEST_SWITCH_CHOOSE_OFF -> false
+                else                             -> true
+            }
         }
 
         binding.txtName.requestFocus()      // subclasses may not have this UI elements (e.g. SampleDialog)
@@ -252,11 +302,11 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         val errors = mutableListOf<String>()
 
         if(SubjectBasicParcel.validate(binding.txtName.text.toString(), binding.txtAge.text.toString()).isNotBlank())
-                                                                errors.add(" - " + resources.getString(R.string.select_subject_info))
+                                                                    errors.add(" - " + resources.getString(R.string.select_subject_info))
 
-        if(binding.radioGroupGender.checkedRadioButtonId == -1)        errors.add(" - " + resources.getString(R.string.select_gender))
-        if(binding.spCondition.selectedItemPosition == -1)             errors.add(" - " + resources.getString(R.string.select_condition))
-        if(binding.spPopulation.selectedItemPosition == -1)            errors.add(" - " + resources.getString(R.string.select_population))
+        if(binding.radioGroupGender.checkedRadioButtonId == -1)     errors.add(" - " + resources.getString(R.string.select_gender))
+        if(binding.spCondition.selectedItemPosition == -1)          errors.add(" - " + resources.getString(R.string.select_condition))
+        if(binding.spPopulation.selectedItemPosition == -1)         errors.add(" - " + resources.getString(R.string.select_population))
 
         return errors
     }
@@ -278,16 +328,26 @@ open class SubjectBasicDialogFragment: DialogFragment(){
             subject.nextTrailModality != TestBasic.TEST_NEXTTRIAL_ANSWER &&
             subject.nextTrailModality != TestBasic.TEST_NEXTTRIAL_VOICE_ANSWER
         ) {
-
             subject.nextTrailModality = when (binding.swInteractive.isChecked) {
-                true -> TestBasic.TEST_NEXTTRIAL_BUTTON
-                false -> TestBasic.TEST_NEXTTRIAL_AUTO
+                true ->     TestBasic.TEST_NEXTTRIAL_BUTTON
+                false ->    TestBasic.TEST_NEXTTRIAL_AUTO
             }
         }
+        if(binding.swWhiteNoise.visibility == View.VISIBLE)
+            subject.whitenoise =    if(binding.swWhiteNoise.isChecked)      TestBasic.TEST_SWITCH_ENABLED
+                                    else                                    TestBasic.TEST_SWITCH_DISABLED
 
-        subject.whitenoise =    if(binding.swWhiteNoise.isChecked)  TestBasic.TEST_WNOISE_CHOOSE_ON
-                                else                        TestBasic.TEST_WNOISE_CHOOSE_OFF
+        if(binding.swRepeatTrial!!.visibility == View.VISIBLE)
+            subject.canRepeat  =    if(binding.swRepeatTrial!!.isChecked)   TestBasic.TEST_SWITCH_ENABLED
+                                    else                                    TestBasic.TEST_SWITCH_DISABLED
 
+        if(binding.spTrialManager!!.visibility == View.VISIBLE)
+            subject.trman_type =    if(binding.spTrialManager!!.selectedItemPosition == 0)  TestBasic.TEST_TRMAN_FIXED
+                                    else                                                    TestBasic.TEST_TRMAN_QUEST
+
+        if(binding.swShowResult!!.visibility == View.VISIBLE)
+            subject.showResult =    if(binding.swShowResult!!.isChecked)    TestBasic.TEST_SWITCH_ENABLED
+                                    else                                    TestBasic.TEST_SWITCH_DISABLED
         return subject
     }
 
@@ -298,56 +358,43 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         val nextblock = subj.existSubjectFile(requireContext())
         when(nextblock){
             -1 -> { // file is unique
-                        subject = subj
-                        sendResult(subject)
+                subject = subj
+                sendResult(subject)
             }
             0  -> { // exist only one same subjects file. overwrite it and continue with presently filled subject or don't do anything
                 show2ChoisesDialog(requireActivity(), resources.getString(R.string.warning), resources.getString(R.string.subject_present), resources.getString(R.string.yes), resources.getString(R.string.no),
-                    {   // ok press, update subject, then continue
-                        subject = subj
-                        sendResult(subject)
-                    },
-                    {   // cancel press. stop. let user change data
-                        binding.txtName.requestFocus()
-                    })
+                {   // ok press, update subject, then continue
+                    subject = subj
+                    sendResult(subject)
+                },
+                {   // cancel press. stop. let user change data
+                    binding.txtName.requestFocus()
+                })
             }
             else -> {  // exist at least n-block files.
                         // 1-based last block file  (if it finds lab_type_blk2.txt => return 3)
                 show2ChoisesDialog(requireActivity(), resources.getString(R.string.warning), resources.getString(R.string.subject_block_present), resources.getString(R.string.continue_txt), resources.getString(R.string.restart),
-                    { // ok press, continue next block
-                        subject         = subj
-                        subject.block   = nextblock     // this is the only case where block is != -1
-                        sendResult(subject)
-                    },
-                    { // cancel press. DELETE all previous files !!! and continue with presently filled subject
-                        deleteFilesStartingWith(subject.getFilesPrefix(requireContext()))
-                        subject = subj
-                        sendResult(subject)
-                    })
+                { // ok press, continue next block
+                    subject         = subj
+                    subject.block   = nextblock     // this is the only case where block is != -1
+                    sendResult(subject)
+                },
+                { // cancel press. DELETE all previous files !!! and continue with presently filled subject
+                    deleteFilesStartingWith(subject.getFilesPrefix(requireContext()))
+                    subject = subj
+                    sendResult(subject)
+                })
             }
         }
     }
 
     private fun sendResult(subj: SubjectBasicParcel?) {
-        if (targetFragment == null) {
-            return
-        }
+        if (targetFragment == null)     return
+
         val intent = Intent()
         intent.putExtra(EVENT_SUBJECT, subj)
         targetFragment!!.onActivityResult(targetRequestCode, Activity.RESULT_OK, intent)
         dismiss()
     }
-
     //------------------------------------------------------------------------------------
-    // ACCESSORY
-    //------------------------------------------------------------------------------------
-    private fun showInteractive(show: Boolean) {
-        if (show) {
-            binding.swInteractive.visibility   = View.VISIBLE
-            binding.labInteractive.visibility  = View.VISIBLE
-        } else {
-            binding.swInteractive.visibility   = View.GONE
-            binding.labInteractive.visibility  = View.GONE
-        }
-    }
 }

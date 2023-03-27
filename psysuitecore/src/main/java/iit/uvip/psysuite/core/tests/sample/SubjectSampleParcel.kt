@@ -4,7 +4,7 @@ import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.DelaysAligner
 import iit.uvip.psysuite.core.tests.TestBasic
-import kotlinx.android.parcel.Parcelize
+import kotlinx.parcelize.Parcelize
 import org.albaspazio.core.accessory.Device
 
 
@@ -16,22 +16,26 @@ in subclasses, user must resolve the condition code according to internal variab
 // base class for all tests
 @Parcelize
 open class SubjectSampleParcel(
-    override var type: Int              = -1,
-    override var label: String          = "",
-    override var age: Int               = -1,
-    override var gender: Int            = -1,
-    override var nextTrailModality: Int = -1,
-    override var canRecordAudio:Boolean = false,
-    override var classes:List<String> = listOf(),
-    override var device: Device?        = null,
-    override var block:Int = -1,
-    override var stimuliDelays: DelaysAligner = DelaysAligner(),
-    override var whitenoise: Int = TestBasic.TEST_WNOISE_CHOOSE_ON,
-    override var trman_type: Int = TestBasic.TEST_TRMAN_FIXED,
-    override var vercode: Int = -1,
-    override var showResult: Boolean = false,
+
+    override var classes: List<String> = listOf("iit.uvip.psysuite.core.tests.sample.TestSample"),
+    override var label: String = "",
+    override var age: Int = -1,
+    override var gender: Int = -1,
     override var population: Int = Populations.POPULATION_TD,
+    override var type: Int = -1,
+
+    override var block: Int = -1,
     override var isDebug: Boolean = false,
+    override var device: Device? = null,
+    override var vercode: Int = -1,
+    override var stimuliDelays: DelaysAligner = DelaysAligner(),
+
+    override var nextTrailModality: Int = TestBasic.TEST_NEXTTRIAL_NOCHOOSE,
+    override var whitenoise: Int = TestBasic.TEST_SWITCH_CHOOSE_ON,
+    override var trman_type: Int = TestBasic.TEST_TRMAN_FIXED,
+    override var showResult: Int = TestBasic.TEST_SWITCH_DISABLED,
+    override var canRepeat:Int = TestBasic.TEST_SWITCH_DISABLED,
+
 
     var stim_sources:Int = 0,       // according to modalities selection
 
@@ -52,7 +56,7 @@ open class SubjectSampleParcel(
     var repetitions:Int = 1,
     var iti:Long = 1000
 
-) : SubjectBasicParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, trman_type, vercode, showResult, population, isDebug)
+) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat)
 
 
 

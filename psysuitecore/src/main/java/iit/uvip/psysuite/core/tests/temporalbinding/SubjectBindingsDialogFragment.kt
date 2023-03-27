@@ -39,16 +39,12 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
             TestBasic.TEST_ATB_TIME_INF,
             TestBasic.TEST_AVB_TIME_INF -> {
                 binding.swInteractive.visibility = View.VISIBLE
-                binding.labInteractive.visibility = View.VISIBLE
                 if (subject.nextTrailModality == TestBasic.TEST_NEXTTRIAL_AUTO || subject.nextTrailModality == TestBasic.TEST_NEXTTRIAL_BUTTON) {
-                    binding.swInteractive?.isSelected = false
+                    binding.swInteractive.isSelected = false
                     subject.nextTrailModality = TestBasic.TEST_NEXTTRIAL_AUTO
                 }
             }
-            else -> {
-                binding.swInteractive.visibility = View.GONE
-                binding.labInteractive.visibility = View.GONE
-            }
+            else -> binding.swInteractive.visibility = View.GONE
         }
     }
     override fun onNothingSelected(parent: AdapterView<*>?) {}
@@ -60,7 +56,7 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
             TestBasic.TEST_AVB_TIME_INF,
             TestBasic.TEST_TVB_TIME_INF,
             TestBasic.TEST_ATB_TIME_INF         ->  if(binding.swInteractive.isSelected)   TestBasic.TEST_NEXTTRIAL_BUTTON
-                                                    else                                                                        TestBasic.TEST_NEXTTRIAL_AUTO
+                                                    else                                   TestBasic.TEST_NEXTTRIAL_AUTO
 
 
             else                                ->   subject.nextTrailModality
@@ -69,7 +65,7 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
 
         if(subject.type == TestBasic.TEST_ATVB_TIME_S_BAL || subject.type == TestBasic.TEST_ATVB_TIME_S_BAL2)
             subject.classes         = listOf("iit.uvip.psysuite.core.tests.temporalbinding.atvb.TestATVB",
-                                            "iit.uvip.psysuite.core.ui.fragments.answers.ThreeAFCAnswerDialogFragment")
+                                             "iit.uvip.psysuite.core.ui.fragments.answers.ThreeAFCAnswerDialogFragment")
 
         return subject
     }

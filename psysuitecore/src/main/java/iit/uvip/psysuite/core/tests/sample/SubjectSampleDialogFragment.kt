@@ -376,8 +376,8 @@ open class SubjectSampleDialogFragment: DialogFragment(), AdapterView.OnItemSele
         if(subject.repetitions > 1)
             subject .iti = binding.etITI.text.toString().toLong()
 
-        subject.whitenoise =    if(binding.swWhiteNoise.isChecked)  TestBasic.TEST_WNOISE_CHOOSE_ON
-                                else                                TestBasic.TEST_WNOISE_CHOOSE_OFF
+        subject.whitenoise =    if(binding.swWhiteNoise.isChecked)  TestBasic.TEST_SWITCH_CHOOSE_ON
+                                else                                TestBasic.TEST_SWITCH_CHOOSE_OFF
 
         return subject
     }

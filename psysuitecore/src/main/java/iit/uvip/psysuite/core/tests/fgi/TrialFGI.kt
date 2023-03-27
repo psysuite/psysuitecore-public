@@ -1,6 +1,6 @@
 package iit.uvip.psysuite.core.tests.fgi
 
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 
 //                trial_id    0/1      fig_res
 class TrialFGI(id: Int = -1, type: Int, label: String, var audio_name:String) :

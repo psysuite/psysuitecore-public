@@ -9,9 +9,9 @@ import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.*
-import iit.uvip.psysuite.core.tests.FixedTrialsManager
+import iit.uvip.psysuite.core.trials.FixedTrialsManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 import iit.uvip.psysuite.core.utility.ConditionData
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.speech.SpeechManager
@@ -104,9 +104,11 @@ class TestTFI(ctx: Context,
         initSummary()
 
         mQuestion           = ctx.resources.getString(R.string.tfi_question)
-        validAnswers        = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
+        validAnswers        = mutableListOf("0,0,1", "0,0,2", "1,0,0", "2,0,0", "0,1,0", "0,2,0", "2,0,1", "1,0,2", "1,2,0",
+                                            "2,1,0", "0,1,2", "0,2,1", "1,0,1", "2,0,2", "1,1,0", "2,2,0", "0,2,2", "0,1,1",
+                                            "1,2,1", "2,1,2", "2,1,1", "1,2,2", "1,1,2", "2,2,1", "1,1,1", "2,2,2")
 
-        if (subject.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
+        if (subject.whitenoise > TEST_SWITCH_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
         when(subject.type){
             TEST_TFI            -> {
@@ -186,69 +188,69 @@ class TestTFI(ctx: Context,
             val block_trials:MutableList<TrialTFI> = mutableListOf()
             for(rb in 0 until rip_x_cond_block){
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,2", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,0,0", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,0", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,1,0", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,0", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 0, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 1, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 2, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 3, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 4, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 5, soa_1, validAnswers))
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,0,2", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,2,0", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,1,0", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,1,2", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 6, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 7, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 8, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 9, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 10, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 11, soa_1, validAnswers))
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,0,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,1,0", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,0", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,2", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,1,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 12, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 13, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 14, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 15, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 16, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 17, soa_1, validAnswers))
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,2,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,1,2", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,1,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,2,2", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,1,2", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,1", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 18, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 19, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 20, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 21, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 22, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 23, soa_1, validAnswers))
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,1,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,2", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 24, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 25, soa_1, validAnswers))
 
                 cond_type = 0
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,1", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,2", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,0,0", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,0", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,1,0", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,0", soa_2))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 0, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 1, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 2, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 3, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 4, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 5, soa_2, validAnswers))
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,0,2", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,2,0", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,1,0", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,1,2", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_2))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 6, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 7, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 8, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 9, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 10, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 11, soa_2, validAnswers))
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,0,1", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,1,0", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,0", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,2", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,1,1", soa_2))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 12, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 13, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 14, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 15, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 16, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 17, soa_2, validAnswers))
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,2,1", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,1,2", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,1,1", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,2,2", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,1,2", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,1", soa_2))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 18, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 19, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 20, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 21, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 22, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 23, soa_2, validAnswers))
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,1,1", soa_2))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,2", soa_2))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 24, soa_2, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 25, soa_2, validAnswers))
             }
             block_trials.shuffle()
             trials.addAll(block_trials)
@@ -265,16 +267,16 @@ class TestTFI(ctx: Context,
             val block_trials:MutableList<TrialTFI> = mutableListOf()
             for(rb in 0 until rip_x_cond_block){
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,2", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,0", soa_1))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,0", soa_1))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 6, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 6, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 11,soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 11,soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 0, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 1, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 11,soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 11,soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 5, soa_1, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 3, soa_1, validAnswers))
             }
             block_trials.shuffle()
             trials.addAll(block_trials)
@@ -291,13 +293,13 @@ class TestTFI(ctx: Context,
             val block_trials:MutableList<TrialTFI> = mutableListOf()
             for(rb in 0 until rip_x_cond_block){
 
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,0,2", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,1", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,2", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,0,0", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,0", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_0))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 6, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 7, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 0, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 1, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 2, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 3, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 13, soa_0, validAnswers))
             }
             block_trials.shuffle()
             trials.addAll(block_trials)
@@ -314,19 +316,19 @@ class TestTFI(ctx: Context,
             val block_trials:MutableList<TrialTFI> = mutableListOf()
 
             for(rb in 0 until rip_x_cond_block){
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "1,0,2", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,0", soa_0))
-                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,0,2", soa_0))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 6, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 7, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 13, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 3, soa_0, validAnswers))
+                block_trials.add(TrialTFI(-1, cond_type++, "tfi", 1, soa_0, validAnswers))
 
-//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_1))
-//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1))
-//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_1))
-//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,0", soa_1))
-//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,2", soa_1))
-//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,0", soa_1))
-//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_1))
+//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,1", soa_1, validAnswers))
+//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,1", soa_1, validAnswers))
+//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_1, validAnswers))
+//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,0", soa_1, validAnswers))
+//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "0,2,2", soa_1, validAnswers))
+//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,2,0", soa_1, validAnswers))
+//                block_trials.add(TrialTFI(-1, cond_type++, "tfi", "2,0,2", soa_1, validAnswers))
             }
             trials.addAll(block_trials)
         }

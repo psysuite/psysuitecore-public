@@ -11,9 +11,8 @@ import iit.uvip.psysuite.core.stimuli.StimuliManager
 import iit.uvip.psysuite.core.stimuli.StimuliManager.Companion.STIM_TYPE_T1
 import iit.uvip.psysuite.core.stimuli.TactileManager
 import iit.uvip.psysuite.core.stimuli.VibratorNotDefinedException
-import iit.uvip.psysuite.core.tests.FixedTrialsManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.ISI
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.ISI_INF
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.STIM_DURATION
@@ -28,13 +27,19 @@ import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.unbalSD
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsInfants
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
+import iit.uvip.psysuite.core.trials.FixedTrialsManager
+import iit.uvip.psysuite.core.trials.QuestTrialsManager
 import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.CorrectedStimuliDelay
 import iit.uvip.psysuite.core.utility.StimulusATBInfants
 import iit.uvip.psysuite.core.utility.StimulusDelay
+import iit.uvip.psysuite.quest.QuestParams
+import iit.uvip.psysuite.quest.QuestWrapper
+
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
+
 import kotlin.math.roundToInt
 
 
@@ -90,7 +95,7 @@ class TestATB(ctx: Context,
     private val lStimuli: List<StimulusATBInfants> = listOf(
         StimulusATBInfants(BIMODAL_CODE,0),
         StimulusATBInfants(UNIMODAL_AUDIO_CODE, 1),
-        StimulusATBInfants(StimuliManager.STIM_TYPE_T1, 2),
+        StimulusATBInfants(STIM_TYPE_T1, 2),
         StimulusATBInfants(STIM_TYPE_TIME_A_T800,  3),
         StimulusATBInfants(STIM_TYPE_TIME_A800_T,  4)
     )
@@ -134,6 +139,10 @@ class TestATB(ctx: Context,
     private val EVENT_SECOND_TRAIN      = 1201
 
     private val amplitude = 100
+
+    private val nQuestTrials = 30
+    private val questParams = QuestParams()
+    private val questWrapper: QuestWrapper = QuestWrapper("roelofs.RoelofsQuest", "RoelofsQuest", questParams, listOf(800))
 
     private var vibration_trains_timings: MutableList<LongArray>    = mutableListOf()
     private var vibration_trains_amplitudes: MutableList<IntArray>  = mutableListOf()
@@ -179,34 +188,41 @@ class TestATB(ctx: Context,
                 currStimulusDuration    = STIM_DURATION_INF // 1000L
             }
         }
+        subject.trman_type = TEST_TRMAN_QUEST
+        mTrialsManager =    if(subject.trman_type == TEST_TRMAN_FIXED){
+                                val trials = if(!subject.isDebug) {
+                                    // create trials/summary
+                                    when (subject.type) {
+                                        TEST_ATB_TIME_DOUBLESTIM_TOD,
+                                        TEST_ATB_TIME_DOUBLESTIM ->{
+                                            createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
+                                            initSummary()
+                                            createTrialsTimeDouble()
+                                        }
+                                        TEST_ATB_TIME_SINGLESTIM_TOD,
+                                        TEST_ATB_TIME_SINGLESTIM       -> {
+                                            createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
+                                            initSummary()
+                                            createTrialsTimeSingle()
+                                        }
+                                        else   -> {
+                                            initTimeArrays()
+                                            createResultFile(subject, TrialBindingsInfants.LOG_HEADER)
+                                            createTrialsTimeInfants()
+                                        }
+                                    }
+                                }
+                                else{
+                                    createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
+                                    createTrialsDebug()
+                                }
+                                FixedTrialsManager(trials as MutableList<TrialBasic>)
+                            }
+                            else{
+                                val trials = createTrialsQuest()
+                                QuestTrialsManager(trials as MutableList<TrialBasic>, questWrapper)
+                            }
 
-        val trials = if(!subject.isDebug) {
-                        // create trials/summary
-                        when (subject.type) {
-                            TEST_ATB_TIME_DOUBLESTIM_TOD,
-                            TEST_ATB_TIME_DOUBLESTIM ->{
-                                createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
-                                initSummary()
-                                createTrialsTimeDouble()
-                            }
-                            TEST_ATB_TIME_SINGLESTIM_TOD,
-                            TEST_ATB_TIME_SINGLESTIM       -> {
-                                createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
-                                initSummary()
-                                createTrialsTimeSingle()
-                            }
-                            else   -> {
-                                initTimeArrays()
-                                createResultFile(subject, TrialBindingsInfants.LOG_HEADER)
-                                createTrialsTimeInfants()
-                            }
-                        }
-                    }
-                    else{
-                        createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
-                        createTrialsDebug()
-                    }
-        mTrialsManager = FixedTrialsManager(trials as MutableList<TrialBasic>)
 
         mListBlocks = mutableListOf((nTrials *0.2F).roundToInt(), (nTrials * 0.4F).roundToInt(), (nTrials * 0.6F).roundToInt(), (nTrials * 0.8F).roundToInt())    // define 5 blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
 
@@ -216,7 +232,7 @@ class TestATB(ctx: Context,
         }
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
-        if (subject.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
+        if (subject.whitenoise > TEST_SWITCH_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
         mStimuliManager = StimuliManager(
                 AudioManager(UNIMODAL_AUDIO_CODE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
@@ -317,6 +333,15 @@ class TestATB(ctx: Context,
         return trials
     }
 
+    private fun createTrialsQuest():List<TrialBasic>{
+        var cnt = -1
+        val trials: MutableList<TrialBasic> = mutableListOf()
+        for (i in 0 until nQuestTrials) {
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_AT, 0, 0))
+        }
+        return trials
+    }
+
     private fun createTrialsDebug():List<TrialBasic>{
         var cnt = -1
         val trials: MutableList<TrialBasic> = mutableListOf()
@@ -351,13 +376,12 @@ class TestATB(ctx: Context,
                     testEvent.accept(Pair(EVENT_SHOW_ABORT, 1000L))
                 }, currStimulusDuration)
             }
-
-            TEST_NEXTTRIAL_VOICE_ANSWER ->  testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
-            TEST_NEXTTRIAL_ANSWER       ->  testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
-            TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER -> {
-                testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
-                testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
-            }
+            TEST_NEXTTRIAL_VOICE_ANSWER         ->  testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
+            TEST_NEXTTRIAL_ANSWER               ->  testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
+            TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER  -> {
+                                                    testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
+                                                    testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
+                                                   }
         }
     }
 

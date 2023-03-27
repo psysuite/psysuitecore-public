@@ -11,9 +11,9 @@ import iit.uvip.psysuite.core.stimuli.AudioManager
 import iit.uvip.psysuite.core.stimuli.ImageViewDefinedException
 import iit.uvip.psysuite.core.stimuli.StimuliManager
 import iit.uvip.psysuite.core.stimuli.VisualManager
-import iit.uvip.psysuite.core.tests.FixedTrialsManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
+import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.ISI
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.ISI_INF
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.STIM_DURATION
@@ -26,11 +26,16 @@ import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_V_A
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.WN_FIRSTSTIM_INTERVAL
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.unbalSD
+import iit.uvip.psysuite.core.tests.temporalbinding.BindingsQuestParams
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsInfants
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
+import iit.uvip.psysuite.core.trials.FixedTrialsManager
+import iit.uvip.psysuite.core.trials.QuestTrialsManager
 import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.CorrectedStimuliDelay
 import iit.uvip.psysuite.core.utility.StimulusDelay
+import iit.uvip.psysuite.quest.QuestParams
+import iit.uvip.psysuite.quest.QuestWrapper
 import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
 import kotlin.math.roundToInt
@@ -122,13 +127,17 @@ class TestAVB(ctx: Context,
 
     private val amplitude = 100
 
+    private val nQuestTrials = 30
+    private val questParams = QuestParams()
+    private val taskQuestParams = BindingsQuestParams(10000F, 0F)
+    private val questWrapper: QuestWrapper = QuestWrapper("roelofs.QuestWrapper", "QuestWrapper", questParams, taskQuestParams)
 
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
     override fun initTest() {
 
-        if(mImageView == null) throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
+        if (mImageView == null) throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
 
         nextTrailModality   = subject.nextTrailModality
         abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
@@ -165,33 +174,45 @@ class TestAVB(ctx: Context,
             }
         }
 
-        val trials = if(!subject.isDebug) {
-                        // create trials/summary
-                        when (subject.type) {
-                            TEST_AVB_TIME_DOUBLESTIM_TOD,
-                            TEST_AVB_TIME_DOUBLESTIM ->{
-                                createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
-                                initSummary()
-                                createTrialsTimeDouble()
-                            }
-                            TEST_AVB_TIME_SINGLESTIM_TOD,
-                            TEST_AVB_TIME_SINGLESTIM       -> {
-                                createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
-                                initSummary()
-                                createTrialsTimeSingle()
-                            }
-                            TEST_AVB_TIME_INF   -> {
-                                createResultFile(subject, TrialBindingsInfants.LOG_HEADER)
-                                createTrialsTimeInfants()
-                            }
-                            else -> throw Exception("ERROR IN AVB")
-                        }
-                    }
-                    else{
-                        createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
-                        createTrialsDebug()
-                    }
-        mTrialsManager = FixedTrialsManager(trials as MutableList<TrialBasic>)
+        // create res file & summary
+        when (subject.type) {
+            TEST_AVB_TIME_DOUBLESTIM_TOD,
+            TEST_AVB_TIME_DOUBLESTIM -> {
+                createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
+                initSummary()
+            }
+            TEST_AVB_TIME_SINGLESTIM_TOD,
+            TEST_AVB_TIME_SINGLESTIM -> {
+                createResultFile(subject, TrialBindingsUnBalanced.LOG_HEADER)
+                initSummary()
+            }
+            TEST_AVB_TIME_INF ->
+                createResultFile(subject, TrialBindingsInfants.LOG_HEADER)
+
+            else -> throw Exception("ERROR IN AVB")
+        }
+
+//        subject.trman_type = TEST_TRMAN_QUEST
+        mTrialsManager =
+            if (subject.trman_type == TEST_TRMAN_FIXED) {
+                val trials = if(!subject.isDebug)
+                                when (subject.type) {
+                                    TEST_AVB_TIME_DOUBLESTIM_TOD,
+                                    TEST_AVB_TIME_DOUBLESTIM -> createTrialsTimeDouble()
+
+                                    TEST_AVB_TIME_SINGLESTIM_TOD,
+                                    TEST_AVB_TIME_SINGLESTIM -> createTrialsTimeSingle()
+
+                                    TEST_AVB_TIME_INF ->        createTrialsTimeInfants()
+
+                                    else -> throw Exception("ERROR IN AVB")
+                                }
+                                else                            createTrialsDebug()
+                FixedTrialsManager(trials as MutableList<TrialBasic>)
+            } else {
+                val trials = createTrialsQuest()
+                QuestTrialsManager(trials as MutableList<TrialBasic>, questWrapper)
+            }
 
         mListBlocks = mutableListOf((nTrials *0.2F).roundToInt(), (nTrials * 0.4F).roundToInt(), (nTrials * 0.6F).roundToInt(), (nTrials * 0.8F).roundToInt())    // define 5 blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
 
@@ -201,7 +222,7 @@ class TestAVB(ctx: Context,
         }
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
-        if (subject.whitenoise > TEST_WNOISE_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
+        if (subject.whitenoise > TEST_SWITCH_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
 
         mStimuliManager = StimuliManager(
             AudioManager(STIM_A, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
@@ -282,6 +303,15 @@ class TestAVB(ctx: Context,
         return trials
     }
 
+    private fun createTrialsQuest():List<TrialBasic>{
+        var cnt = -1
+        val trials: MutableList<TrialBasic> = mutableListOf()
+        for (i in 0 until nQuestTrials) {
+            trials.add(TrialBindingsUnBalanced(++cnt, BindingsConstants.TYPE_AT, 0, 0))
+        }
+        return trials
+    }
+
     private fun createTrialsDebug():List<TrialBasic>{
         var cnt = -1
         val trials:MutableList<TrialBasic> = mutableListOf()
@@ -313,19 +343,10 @@ class TestAVB(ctx: Context,
 
         when (nextTrailModality) {
             TEST_NEXTTRIAL_BUTTON       ->  testEvent.accept(Pair(EVENT_SHOW_NEXT_BUTTON, null))
-            TEST_NEXTTRIAL_AUTO         ->  {
-                // create a ITI=2sec pause by waiting for 1sec and invoking a 1sec wait in TestFragment
-                mStimuliHandler.postDelayed({
-                    testEvent.accept(Pair(EVENT_SHOW_ABORT, 1000L))
-                }, currStimulusDuration)
-            }
+            TEST_NEXTTRIAL_AUTO         ->  // create a ITI=2sec pause by waiting for 1sec and invoking a 1sec wait in TestFragment
+                mStimuliHandler.postDelayed({   testEvent.accept(Pair(EVENT_SHOW_ABORT, 1000L))     }, currStimulusDuration)
 
-            TEST_NEXTTRIAL_VOICE_ANSWER ->  testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
             TEST_NEXTTRIAL_ANSWER       ->  testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
-            TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER -> {
-                testEvent.accept(Pair(EVENT_GIVE_VOCAL_ANSWER, null))
-                testEvent.accept(Pair(EVENT_GIVE_ANSWER, null))
-            }
         }
     }
 

@@ -12,9 +12,10 @@ import iit.uvip.psysuite.core.stimuli.*
 import iit.uvip.psysuite.core.stimuli.StimuliManager.Companion.STIM_TYPE_A4
 import iit.uvip.psysuite.core.stimuli.StimuliManager.Companion.STIM_TYPE_T1
 import iit.uvip.psysuite.core.stimuli.StimuliManager.Companion.STIM_TYPE_V1
-import iit.uvip.psysuite.core.tests.FixedTrialsManager
+import iit.uvip.psysuite.core.trials.FixedTrialsManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
+import iit.uvip.psysuite.core.trials.QuestTrialsManager
 import iit.uvip.psysuite.core.utility.ConditionData
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.speech.SpeechManager
@@ -39,7 +40,9 @@ class TestTID(ctx: Context,
 {
     override var LOG_TAG:String = TestTID::class.java.simpleName
 
-    private var isUsingQuest:Boolean    = false
+    private val nQuestTrials = 30
+    private val questParams = QuestParams()
+    private val questWrapper: QuestWrapper = QuestWrapper("roelofs.RoelofsQuest", "RoelofsQuest", questParams, listOf("1900","1080","40","170"))
 
     private var currISI:Long            = 0L
     private var currREP_X_BLOCK:Int     = 0
@@ -147,8 +150,6 @@ class TestTID(ctx: Context,
     private val shortTrainLatencies:List<Long>  = listOf(75, 350)
     private val longLatencies:List<Long>        = listOf(1000, 1280, 1570, 1850, 2140, 2420, 2710, 3000)
 
-    private val questParams: QuestParams = QuestParams()
-    private val questWrapper: QuestWrapper = QuestWrapper("roelofs.RoelofsQuest", "RoelofsQuest", "1900","1080","40","170")
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
@@ -197,7 +198,7 @@ class TestTID(ctx: Context,
                                     FixedTrialsManager(trials as MutableList<TrialBasic>)
                                 } else {
                                     val trials = createQuestTrials(currStimulusDuration)
-                                    QuestManager(trials as MutableList<TrialBasic>, questWrapper, questParams)
+                                    QuestTrialsManager(trials as MutableList<TrialBasic>, questWrapper)
                                 }
                             }
                             else FixedTrialsManager(createTrialsDebug() as MutableList<TrialBasic>)

@@ -4,7 +4,7 @@ import android.content.Context
 import iit.uvip.psysuite.core.model.summary.Summary
 import iit.uvip.psysuite.core.model.summary.SummaryCondition
 import iit.uvip.psysuite.core.model.summary.SummaryRow
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 
 class TFIBISummary(ctx: Context) : Summary(ctx){
 
@@ -35,7 +35,7 @@ class TFIBISummary(ctx: Context) : Summary(ctx){
 
         override fun add(trial: TrialBasic) {
 
-            when((trial as TrialTFI).str_corr_answer){
+            when((trial as TrialTFI).valid_answers[trial.correct_answer]){
                 "2,0,1"    -> rows[0].add(trial)
                 "0,2,1"    -> rows[1].add(trial)
                 "0,0,1"    -> rows[2].add(trial)

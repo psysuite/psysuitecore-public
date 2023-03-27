@@ -2,7 +2,7 @@ package iit.uvip.psysuite.core.tests.temporalbinding
 
 import iit.uvip.psysuite.core.model.summary.SummaryCondition
 import iit.uvip.psysuite.core.model.summary.SummaryRow
-import iit.uvip.psysuite.core.tests.TrialBasic
+import iit.uvip.psysuite.core.trials.TrialBasic
 import kotlin.math.roundToInt
 
 

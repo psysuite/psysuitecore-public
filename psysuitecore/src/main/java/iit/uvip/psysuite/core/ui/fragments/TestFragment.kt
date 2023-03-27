@@ -12,6 +12,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.Navigation
+
+import java.util.*
+import kotlin.reflect.KFunction
+
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.rxkotlin.addTo
+import io.reactivex.rxkotlin.subscribeBy
+
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.databinding.FragmentTestBinding
 import iit.uvip.psysuite.core.model.Populations
@@ -33,12 +41,8 @@ import iit.uvip.psysuite.core.tests.tid.SubjectTIDParcel
 import iit.uvip.psysuite.core.tests.tid.TestTID
 import iit.uvip.psysuite.core.utility.TestResult
 import iit.uvip.psysuite.core.utility.getIds
-
 import iit.uvip.psysuite.python.SPython
 
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.rxkotlin.addTo
-import io.reactivex.rxkotlin.subscribeBy
 import org.albaspazio.core.accessory.*
 import org.albaspazio.core.filesystem.getAbsoluteFilePath
 import org.albaspazio.core.fragments.BaseFragment
@@ -48,21 +52,18 @@ import org.albaspazio.core.speech.SpeechRecognitionManager
 import org.albaspazio.core.ui.show2ChoisesDialog
 import org.albaspazio.core.ui.showAlert
 import org.albaspazio.core.ui.showToast
-import java.util.*
-import kotlin.reflect.KFunction
-
 
 /*
-Three operative modalities:
+Three operative modalities (mSubjectParcel.nextTrailModality):
 
-- trial have an answer dialog, where user can also abort
-- trial have no answer dialog, at the end of the trial, the following trial is displayed
-- trial have no answer dialog, at the end of the trial, test stops and wait for user press.
+- trial have an answer dialog, where user can also abort                                    // TEST_NEXTTRIAL_ANSWER, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER
+- trial have no answer dialog, at the end of the trial, the following trial is displayed    // TEST_NEXTTRIAL_NOCHOOSE
+- trial have no answer dialog, at the end of the trial, test stops and wait for user press. // TEST_NEXTTRIAL_BUTTON
 
 normal trial-by-trial flow is:
 
 here        : mTest.start()
-within Test : show -> onTrialEnd -> EVENT_GIVE_ANSWER/EVENT_SHOW_NEXT
+within Test : show -> onTrialEnd -> EVENT_GIVE_ANSWER/EVENT_SHOW_NEXT_BUTTON/EVENT_SHOW_ABORT
 here        : mTest.testEvent.subscribe -> answerdialog/speechrec   -> onAnswer  |-> onNewTrial -> mTest.nextTrial ->  test end | block end | show next trial
                                         -> next button  _________________________|
 within Test : mTrial.setResponse -> saveText -> doNextTrial() -> trialsmanager.getNewTrial -> show
@@ -78,7 +79,7 @@ class TestFragment : BaseFragment(
     private val binding get() = _binding!!
 
     private lateinit var mTest: TestBasic
-    private var mSubjectParcel:SubjectBasicParcel?  = null
+    private lateinit var mSubjectParcel:SubjectBasicParcel
 
     override val LOG_TAG                     = TestFragment::class.java.simpleName
     private val ANSWER_DIALOG_TAG                   = "ANSWER_DIALOG_TAG"
@@ -107,7 +108,6 @@ class TestFragment : BaseFragment(
 
     private lateinit var answerDialogRef:Pair<KFunction<*>?, Any?>
 
-    lateinit private var py:SPython
     // ==========================================================================================================================
     // ==========================================================================================================================
     companion object {
@@ -130,7 +130,7 @@ class TestFragment : BaseFragment(
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTestBinding.inflate(inflater, container, false)
         mMainView = binding.root
         return mMainView
@@ -140,7 +140,9 @@ class TestFragment : BaseFragment(
         super.onDestroyView()
         _binding = null
     }
+
     // main access point. it does:
+    // - init & validate mSubjectParcel
     // - (try) instanciate the correct TestClass
     // - call mTest.initTest() and wait for EVENT_TEST_SETUP_COMPLETED
     // - onTestSetupComplete() -> mTest.adjustBlocks, mTest.start()
@@ -154,22 +156,29 @@ class TestFragment : BaseFragment(
         binding.btPause.visibility     = View.INVISIBLE
         binding.txtDebugInfo.visibility = View.INVISIBLE
 
-        mSubjectParcel          = arguments?.getParcelable(TestBasic.TESTINFO_BUNDLE_LABEL) ?: return
+        val subj:SubjectBasicParcel? = arguments?.getParcelable(TestBasic.TESTINFO_BUNDLE_LABEL)
+        if(subj == null){
+            showAlert(requireActivity(), resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
+            showAlert(requireActivity(), resources.getString(R.string.critical_error), "Subject Info is null")
+            Navigation.findNavController(requireView()).popBackStack()
+        }
+        else mSubjectParcel = subj
+
         speechManager           = SpeechManager(requireContext()){
             try{
 
                 vibrator                    = VibrationManager(requireContext()).init()
                 speechRecognitionManager    = SpeechRecognitionManager(requireContext())
-                py                          = SPython.getInstance(requireContext())
+                SPython.getInstance(requireContext())   // init python here that we have a context. in Test Classes we get the instance created here
 
-                when(mSubjectParcel!!.type){
+                when(mSubjectParcel.type){
 
                     TestBasic.TEST_BISECTION_AUDIO,
                     TestBasic.TEST_BISECTION_TACTILE,
                     TestBasic.TEST_BISECTION_AUDIO_TACTILE,
-                    TestBasic.TEST_BISECTION_AUDIO_VIDEO    -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager)
+                    TestBasic.TEST_BISECTION_AUDIO_VIDEO    -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager)
 
-                    TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), requireActivity(), this, mSubjectParcel!!, speechManager)
+                    TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), requireActivity(), this, mSubjectParcel, speechManager)
 
                     TestBasic.TEST_TID_SHORT_AUDIO,
                     TestBasic.TEST_TID_SHORT_TACTILE,
@@ -185,25 +194,25 @@ class TestFragment : BaseFragment(
                     TestBasic.TEST_ATB_TIME_DOUBLESTIM,
                     TestBasic.TEST_ATB_TIME_SINGLESTIM_TOD,
                     TestBasic.TEST_ATB_TIME_DOUBLESTIM_TOD,
-                    TestBasic.TEST_ATB_TIME_INF      -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, speechManager)
+                    TestBasic.TEST_ATB_TIME_INF      -> mTest = TestATB(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, speechManager)
 
                     TestBasic.TEST_AVB_TIME_SINGLESTIM,
                     TestBasic.TEST_AVB_TIME_DOUBLESTIM,
                     TestBasic.TEST_AVB_TIME_SINGLESTIM_TOD,
                     TestBasic.TEST_AVB_TIME_DOUBLESTIM_TOD,
-                    TestBasic.TEST_AVB_TIME_INF      -> mTest = TestAVB(requireContext(), requireActivity(), this, mSubjectParcel!!, binding.circleView, speechManager)
+                    TestBasic.TEST_AVB_TIME_INF      -> mTest = TestAVB(requireContext(), requireActivity(), this, mSubjectParcel, binding.circleView, speechManager)
 
                     TestBasic.TEST_TVB_TIME_SINGLESTIM,
                     TestBasic.TEST_TVB_TIME_DOUBLESTIM,
                     TestBasic.TEST_TVB_TIME_SINGLESTIM_TOD,
                     TestBasic.TEST_TVB_TIME_DOUBLESTIM_TOD,
-                    TestBasic.TEST_TVB_TIME_INF      -> mTest = TestTVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager)
+                    TestBasic.TEST_TVB_TIME_INF      -> mTest = TestTVB(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager)
 
                     TestBasic.TEST_ATVB_TIME_S_UNBAL,
                     TestBasic.TEST_ATVB_TIME_S_BAL,
                     TestBasic.TEST_ATVB_TIME_S_BAL2,
                     TestBasic.TEST_ATVB_TIME_D_UNBAL,
-                    TestBasic.TEST_ATVB_TIME_D_BAL   -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager)
+                    TestBasic.TEST_ATVB_TIME_D_BAL   -> mTest = TestATVB(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager)
 
                     TestBasic.TEST_SAMPLE_ALIGNED,
                     TestBasic.TEST_SAMPLE_SHIFTED,
@@ -212,24 +221,24 @@ class TestFragment : BaseFragment(
                     TestBasic.TEST_TFI,
                     TestBasic.TEST_TFI_BIMODAL,
                     TestBasic.TEST_TFI_AV,
-                    TestBasic.TEST_TFI_TODDLERS ->      mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager)
+                    TestBasic.TEST_TFI_TODDLERS ->      mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager)
 
                     TestBasic.TEST_FGI_1_UNSCRAMBLED,
                     TestBasic.TEST_FGI_1_SCRAMBLED,
                     TestBasic.TEST_FGI_2_UNSCRAMBLED,
                     TestBasic.TEST_FGI_2_SCRAMBLED,
                     TestBasic.TEST_FGI_3_UNSCRAMBLED,
-                    TestBasic.TEST_FGI_3_SCRAMBLED ->   mTest = TestFGI(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager, mMainView)
+                    TestBasic.TEST_FGI_3_SCRAMBLED ->   mTest = TestFGI(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
 
                     TestBasic.TEST_RIVGRP_RIV_HF,
                     TestBasic.TEST_RIVGRP_GRP_HF,
                     TestBasic.TEST_RIVGRP_RIVGRP_HF,
                     TestBasic.TEST_RIVGRP_RIV_HC,
                     TestBasic.TEST_RIVGRP_GRP_HC,
-                    TestBasic.TEST_RIVGRP_RIVGRP_HC ->  mTest = TestRIVGRP(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager, mMainView)
+                    TestBasic.TEST_RIVGRP_RIVGRP_HC ->  mTest = TestRIVGRP(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
 
                     TestBasic.TEST_BEADS_LOWUNCERT,
-                    TestBasic.TEST_BEADS_MIDUNCERT ->   mTest = TestBeads(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager, mMainView)
+                    TestBasic.TEST_BEADS_MIDUNCERT ->   mTest = TestBeads(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
                     else    -> {
                         Log.e("TestFragment", "Test non riconosciuto")
                         showAlert(requireActivity(), resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
@@ -238,21 +247,21 @@ class TestFragment : BaseFragment(
                     }
                 }
 
-                userPopulation  = mSubjectParcel!!.population
+                userPopulation  = mSubjectParcel.population
                 isBlindUser     = Populations.vi_populations.getIds().contains(userPopulation)
                 isDeafUser      = Populations.ai_populations.getIds().contains(userPopulation)
-
                 if(isBlindUser && !speechManager.isValid){
                     showAlert(requireActivity(), resources.getString(R.string.error), resources.getString(R.string.contact_developer))
                     return@SpeechManager
                 }
+
                 // get a reference to the AnswerDialogFragment
                 val answerDialogClass = if(isBlindUser)
                                             // population is visually impaired. use AnswerGestureDF
                                             "iit.uvip.psysuite.core.ui.fragments.answers.AnswerGestureDialogFragment"
                                         else {
-                                            if (mSubjectParcel!!.classes.size > 1 && mSubjectParcel!!.classes[1].isNotEmpty())
-                                                mSubjectParcel!!.classes[1]
+                                            if (mSubjectParcel.classes.size > 1 && mSubjectParcel.classes[1].isNotEmpty())
+                                                mSubjectParcel.classes[1]
                                             else "iit.uvip.psysuite.core.ui.fragments.answers.TwoAFCAnswerDialogFragment"
                                         }
                 answerDialogRef       = getCompanionObjectMethod(answerDialogClass, "newInstance")
@@ -275,7 +284,7 @@ class TestFragment : BaseFragment(
     private fun onTestSetupComplete(){
 
         // block is always -1 but when is continuing a previous session (in that case if it found ..._blk2.txt => block=3 ...thus is always > 0)
-        mTest.adjustBlocks(mSubjectParcel!!.block)     // set currTrial, mCurrBlock, mTrial
+        mTest.adjustBlocks(mSubjectParcel.block)     // set currTrial, mCurrBlock, mTrial
 
         if(isBlindUser)     showAnswerDialog(TRG_REQ_CODE_INSTRUCTIONS)
         else                startTest()
@@ -407,7 +416,7 @@ class TestFragment : BaseFragment(
     }
     //---------------------------------------------------------------------------------------------------------------------------------------
     // called by: 1) onActivityResult after answer, 2) speechrecognition result
-    private fun onAnswer(prev_result: Int = -1, elapsed: Int = -1, extra_text:String = ""){
+    private fun onAnswerGiven(prev_result: Int = -1, elapsed: Int = -1, extra_text:String = ""){
 
         // dont' know whether an answer dialog was present or it was listening for vocal response or it was playbacking something. stop all!
         abortRecognition = true
@@ -460,7 +469,7 @@ class TestFragment : BaseFragment(
         else            showToast(msg, requireContext())
 
         navigateBack(TestBasic.TEST_COMPLETED, listOf(  mTest.getAbsoluteResultFilePath(),
-            mSubjectParcel!!.getAbsoluteSubjectFilePath(),
+            mSubjectParcel.getAbsoluteSubjectFilePath(),
             mTest.closeSummary()))
     }
 
@@ -480,7 +489,7 @@ class TestFragment : BaseFragment(
             { /* okClb */
                 mTest.abortTest(false)
                 navigateBack(TestBasic.TEST_ABORTED, listOf(mTest.getAbsoluteResultFilePath(),
-                                                            mSubjectParcel!!.getAbsoluteSubjectFilePath(),
+                                                            mSubjectParcel.getAbsoluteSubjectFilePath(),
                                                             mTest.closeSummary()))
             },
             { /* cancelClb*/
@@ -497,7 +506,7 @@ class TestFragment : BaseFragment(
 
         showAlert(requireActivity(), resources.getString(R.string.critical_error), msg)
         navigateBack(TestBasic.TEST_ABORTED_WITH_ERROR, listOf( mTest.getAbsoluteResultFilePath(),
-                                                                mSubjectParcel!!.getAbsoluteSubjectFilePath(),
+                                                                mSubjectParcel.getAbsoluteSubjectFilePath(),
                                                                 mTest.closeSummary()))
     }
 
@@ -542,7 +551,7 @@ class TestFragment : BaseFragment(
             if(it.isNotEmpty()) files_list.add(it)
         }
         // data class TestResult      (code:Int=-1, mailsubject:String, mailbody:String,                       res_files:ArrayList<String> = arrayListOf(),  testClass:String)
-        setNavigationResult(TestResult(result_code, mTest.mTestLabel, mSubjectParcel!!.composeSubjectFileName(requireContext()),
+        setNavigationResult(TestResult(result_code, mTest.mTestLabel, mSubjectParcel.composeSubjectFileName(requireContext()),
                             files_list, mTest.javaClass.name), TestBasic.TEST_BUNDLE_RESULT_LABEL)
         Navigation.findNavController(requireView()).popBackStack()
     }
@@ -596,19 +605,22 @@ class TestFragment : BaseFragment(
     //=======================================================================================================================================
     // ANSWERS
     //=======================================================================================================================================
-    // create answer dialog and process response (repeat same trial or show next one
+    // create answer dialog and process response (repeat same trial or show next one)
     private fun showAnswerDialog(trg_req_code: Int){
 
         val b = Bundle()
         b.putInt("trial_id", mTest.currTrial)
         b.putInt("tot_trials", mTest.nTrials)
+
         b.putString("question", mTest.mQuestion)
         b.putStringArrayList("answers", mTest.validAnswers as ArrayList<String>)
-        b.putString("debugInfo", currDebugInfo)
-        b.putBoolean("isDebug", mSubjectParcel?.isDebug ?: false)
-
-        b.putBoolean("show_result", mTest.showResult)
+        b.putInt("show_result", mSubjectParcel.showResult)
         b.putInt("correct_answer", mTest.getTrialCorrectAnswer())
+
+        b.putInt("can_repeat_trial", mSubjectParcel.canRepeat)
+
+        b.putString("debugInfo", currDebugInfo)
+        b.putBoolean("isDebug", mSubjectParcel.isDebug)
 
         answerDialogFragment = answerDialogRef.first?.call(answerDialogRef.second, "", speechManager) as DialogFragment
         if(answerDialogFragment == null){
@@ -640,7 +652,7 @@ class TestFragment : BaseFragment(
                         val result      = data.getIntExtra(EVENT_ANSWER_RESULT, -1)
                         val elapsedTime = data.getIntExtra(EVENT_TIME_TO_ANSWER, -1)
                         val result_extra= data.getStringExtra(EVENT_ANSWER_RESULT_EXTRA) ?: ""
-                        onAnswer(result, elapsedTime, result_extra)
+                        onAnswerGiven(result, elapsedTime, result_extra)
                     }
                     TestBasic.EVENT_TRIAL_REPEAT -> mTest.repeatTrial()
                     TestBasic.EVENT_TRIAL_ABORT -> onAbortTest()
@@ -668,7 +680,7 @@ class TestFragment : BaseFragment(
 
                             if (valid_results.isEmpty()) {      // free answer, collect spoken word and send it as results
                                 binding.btAbort.visibility = View.INVISIBLE
-                                onAnswer(-1, elapsedTime, rec_word)
+                                onAnswerGiven(-1, elapsedTime, rec_word)
                             }
                             else{                                // check whether given response is allowed
                                 val answer_id = valid_results.indexOf(rec_word)
@@ -686,7 +698,7 @@ class TestFragment : BaseFragment(
                                 }
                                 else{
                                     binding.btAbort.visibility = View.INVISIBLE
-                                    onAnswer(answer_id, elapsedTime, rec_word)
+                                    onAnswerGiven(answer_id, elapsedTime, rec_word)
                                 }
                             }
                         }

@@ -30,7 +30,7 @@
 
     <string name="name">nome</string>
     <string name="gender">sesso</string>
-    <string name="age">ETA\'</string>
+    <string name="age">età</string>
     <string name="group">gruppo</string>
 
     <string name="source">sorgente</string>
@@ -57,10 +57,11 @@
     <string name="volume_short">vol</string>
     <string name="resource_name">nome</string>
     <string name="interactivity">interattivo</string>
+    <string name="trials_management">gestione trials</string>
 
     <string name="time">tempo</string>
     <string name="frequency">frequenza</string>
-    <string name="condition">condizione sperimentale</string>
+    <string name="condition">condizione</string>
     <string name="population">popolazione</string>
 
     <string name="warning">Attenzione</string>
@@ -94,7 +95,7 @@
 
     <string name="yes">si</string>
     <string name="no">no</string>
-    <string name="whitenoise">aggiungi rumore bianco</string>
+    <string name="whitenoise">rumore bianco</string>
 
     <string name="session">sessione</string>
     <string name= "main_email">psysuite.uvip@gmail.com</string>
@@ -130,14 +131,14 @@
     <!-- ATB -->
     <string name="start_atb" translatable="false">AT Binding (AT-B)</string>
 
-    <string name="atb_subtask_time_single">Singolo Stimolo</string>
+    <string name="atb_subtask_time_single">Sing Stim</string>
     <string name="atb_subtask_time_single_tag" translatable="false">SS</string>
-    <string name="atb_subtask_time_double">Doppio Stimolo</string>
+    <string name="atb_subtask_time_double">Dop Stim</string>
     <string name="atb_subtask_time_double_tag" translatable="false">DS</string>
 
-    <string name="atb_subtask_time_single_tod">Singolo Stimolo Toddlers</string>
+    <string name="atb_subtask_time_single_tod">Sing Stim Toddl</string>
     <string name="atb_subtask_time_single_tod_tag" translatable="false">SST</string>
-    <string name="atb_subtask_time_double_tod">Doppio Stimolo Toddlers</string>
+    <string name="atb_subtask_time_double_tod">Dop Stim Toddl</string>
     <string name="atb_subtask_time_double_tod_tag" translatable="false">DST</string>
 
     <string name="atb_subtask_time_infants">tempo infanti</string>
@@ -150,15 +151,15 @@
     <!-- ATVB -->
     <string name="start_atvb" translatable="false">ATV Binding (ATV-B)</string>
 
-    <string name="atvb_subtask_time_single">Singolo Stimolo</string>
+    <string name="atvb_subtask_time_single">Sing Stim</string>
     <string name="atvb_subtask_time_single_tag" translatable="false">SSU</string>
-    <string name="atvb_subtask_time_single_b">Singolo Stimolo bilanciato</string>
+    <string name="atvb_subtask_time_single_b">Sing Stim bilanciato</string>
     <string name="atvb_subtask_time_single_b_tag" translatable="false">SSB</string>
-    <string name="atvb_subtask_time_single_b2">Singolo Stimolo bilanciato 2</string>
+    <string name="atvb_subtask_time_single_b2">Sing Stim bilanciato 2</string>
     <string name="atvb_subtask_time_single_b2_tag" translatable="false">SSB</string>
-    <string name="atvb_subtask_time_double">Doppio Stimolo</string>
+    <string name="atvb_subtask_time_double">Dop Stim</string>
     <string name="atvb_subtask_time_double_tag" translatable="false">DSU</string>
-    <string name="atvb_subtask_time_double2">Doppio Stimolo bilanciato</string>
+    <string name="atvb_subtask_time_double2">Dop Stim bilanciato</string>
     <string name="atvb_subtask_time_double2_tag" translatable="false">DSB</string>
 
     <string name="atvb_rb1_text">si</string>
@@ -170,14 +171,14 @@
     <!-- TVB -->
     <string name="start_tvb" translatable="false">TV Binding (TV-B)</string>
 
-    <string name="tvb_subtask_time_single">Singolo Stimolo</string>
+    <string name="tvb_subtask_time_single">Sing Stim</string>
     <string name="tvb_subtask_time_single_tag" translatable="false">SS</string>
-    <string name="tvb_subtask_time_double">Doppio Stimolo</string>
+    <string name="tvb_subtask_time_double">Dop Stim</string>
     <string name="tvb_subtask_time_double_tag" translatable="false">DS</string>
 
-    <string name="tvb_subtask_time_single_tod">Singolo Stimolo Toddlers</string>
+    <string name="tvb_subtask_time_single_tod">Sing Stim Toddl</string>
     <string name="tvb_subtask_time_single_tod_tag" translatable="false">SST</string>
-    <string name="tvb_subtask_time_double_tod">Doppio Stimolo Toddlers</string>
+    <string name="tvb_subtask_time_double_tod">Dop Stim Toddl</string>
     <string name="tvb_subtask_time_double_tod_tag" translatable="false">DST</string>
 
     <string name="tvb_rb1_text">uguali</string>
@@ -187,14 +188,14 @@
     <!-- AVB -->
     <string name="start_avb" translatable="false">AV Binding (AV-B)</string>
 
-    <string name="avb_subtask_time_single">Singolo Stimolo</string>
+    <string name="avb_subtask_time_single">Sing Stim</string>
     <string name="avb_subtask_time_single_tag" translatable="false">SS</string>
-    <string name="avb_subtask_time_double">Doppio Stimolo</string>
+    <string name="avb_subtask_time_double">Dop Stim</string>
     <string name="avb_subtask_time_double_tag" translatable="false">DS</string>
 
-    <string name="avb_subtask_time_single_tod">Singolo Stimolo Toddlers</string>
+    <string name="avb_subtask_time_single_tod">Sing Stim Toddl</string>
     <string name="avb_subtask_time_single_tod_tag" translatable="false">SST</string>
-    <string name="avb_subtask_time_double_tod">Doppio Stimolo Toddlers</string>
+    <string name="avb_subtask_time_double_tod">Dop Stim Toddl</string>
     <string name="avb_subtask_time_double_tod_tag" translatable="false">DST</string>
 
     <string name="avb_rb1_text">uguali</string>
@@ -336,6 +337,11 @@
         <item>sequence</item>
     </string-array>
 
+    <string-array name="trial_manager_types">
+        <item>fixed</item>
+        <item>quest</item>
+    </string-array>
+
     <string-array name="sample_audioassets_array">
         <item>t1000hz_7ms.wav</item>
         <item>t1000hz_10ms.wav</item>
@@ -350,5 +356,9 @@
     </string-array>
     <string name="abort_test">ANNULLA TEST</string>
     <string name="iti">ITI [s]</string>
+    <string name="repeat_trial">ripeti il trial</string>
+    <string name="show_result">mostra risultato</string>
+    <string name="correct_answer">risposta esatta</string>
+    <string name="wrong_answer">risposta sbagliata</string>
 
 </resources>

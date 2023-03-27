@@ -15,27 +15,30 @@ import org.albaspazio.core.accessory.getDateString
 // session
 @Parcelize
 class SubjectTIDParcel(
-    override var type: Int = -1,
+
+    override var classes: List<String> = listOf("iit.uvip.psysuite.core.tests.tid.TestTID"),
     override var label: String = "",
     override var age: Int = -1,
     override var gender: Int = -1,
-    override var nextTrailModality: Int = -1,
-    override var canRecordAudio:Boolean = false,
-    override var classes:List<String> = listOf(),
-    override var device: Device? = null,
-    override var block:Int = -1,
-    override var stimuliDelays: DelaysAligner = DelaysAligner(),
-    override var whitenoise: Int = TestBasic.TEST_WNOISE_DISABLED,
-    override var trman_type: Int = TestBasic.TEST_TRMAN_FIXED,
-    override var vercode: Int = -1,
-    override var showResult: Boolean = false,
     override var population: Int = Populations.POPULATION_TD,
+    override var type: Int = -1,
+
+    override var block: Int = -1,
     override var isDebug: Boolean = false,
+    override var device: Device? = null,
+    override var vercode: Int = -1,
+    override var stimuliDelays: DelaysAligner = DelaysAligner(),
+
+    override var nextTrailModality: Int = TestBasic.TEST_NEXTTRIAL_ANSWER,
+    override var whitenoise: Int = TestBasic.TEST_SWITCH_CHOOSE_OFF,
+    override var trman_type: Int = TestBasic.TEST_TRMAN_CHOOSE_FIXED,
+    override var showResult: Int = TestBasic.TEST_SWITCH_CHOOSE_OFF,
+    override var canRepeat:Int = TestBasic.TEST_SWITCH_DISABLED,
 
     override var spinner_sel: Int = -1,
     override var spinner_data_resource: Int = -1,
     var group: Int = -1
-) : SubjectLongitParcel(type, label, age, gender, nextTrailModality, canRecordAudio, classes, device, block, stimuliDelays, whitenoise, trman_type, vercode, showResult, population, isDebug, spinner_sel, spinner_data_resource){
+) : SubjectLongitParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, spinner_sel, spinner_data_resource){
 
     override fun getFilesPrefix(ctx:Context):String{
 

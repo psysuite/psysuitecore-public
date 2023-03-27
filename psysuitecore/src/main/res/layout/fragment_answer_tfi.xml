@@ -179,6 +179,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+
+    <ImageView
+        android:id="@+id/imgvResult"
+        android:layout_width="113dp"
+        android:layout_height="127dp"
+        android:layout_marginTop="12dp"
+        android:src="@drawable/failure_icon"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/txt_debug" />
+
     <TextView
         android:id="@+id/txt_debug"
         android:layout_width="336dp"
