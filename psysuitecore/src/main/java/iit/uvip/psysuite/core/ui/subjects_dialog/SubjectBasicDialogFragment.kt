@@ -104,6 +104,12 @@ open class SubjectBasicDialogFragment: DialogFragment(){
                 else    setSelection(1)
             }
         }
+        binding.spTrialManager.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                setTrialManager(binding.spTrialManager.selectedItem)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
         //------------------------------------------------------
         // NEXT TRIAL MODALITY
         //------------------------------------------------------
@@ -258,6 +264,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         binding.spPopulation.setSelection(selPopulation, false)
     }
 
+    protected open fun setTrialManager(selManager:Any){}
     //------------------------------------------------------------------------------------
     // UI presses
     //------------------------------------------------------------------------------------

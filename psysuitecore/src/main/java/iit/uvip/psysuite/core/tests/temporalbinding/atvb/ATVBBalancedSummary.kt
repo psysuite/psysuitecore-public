@@ -52,11 +52,11 @@ class ATVBBalancedSummary(ctx:Context) : Summary(ctx){
                 ATVBsummaryRow(type, cond_label, balshSD[2].second))
 
         override fun add(trial: TrialBasic){
-                when((trial as TrialBindingsBalanced).stim_value){
+                when((trial as TrialBindingsBalanced).magnitude){
                     balshSD[2].first    -> rows[3].add(trial)
                     balshSD[1].first    -> rows[2].add(trial)
                     balshSD[0].first    -> rows[1].add(trial)
-                    0L                  -> rows[0].add(trial)
+                    0.0F                -> rows[0].add(trial)
                 }
             }
     }

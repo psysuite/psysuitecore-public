@@ -3,7 +3,7 @@ package iit.uvip.psysuite.core.tests.sample
 import iit.uvip.psysuite.core.trials.TrialBasic
 
 
-class TrialSample(id:Int=-1, type:Int, label:String, val source:Int, val extraTrial:Any?): TrialBasic(id,type,label, -1){
+class TrialSample(id:Int=-1, type:Int, label:String, val source:Int, val extraTrial:Any?): TrialBasic(id,type,label){
 
     companion object {
         @JvmStatic val LOG_HEADER           = "id\tlabel\tlat\tconflict\tres\tcor_ans\tuser_ans\telapsed\trep\n"
@@ -21,10 +21,5 @@ class TrialSample(id:Int=-1, type:Int, label:String, val source:Int, val extraTr
     // data exported to log file
     override fun Log():String{
         return id.toString() +  "\t" + label + "\t" + "\n"
-    }
-
-
-    override fun debugInfo():String{
-        return "${super.debugInfo()}"
     }
 }

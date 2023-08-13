@@ -19,7 +19,7 @@ class SubjectTIDDialogFragment : SubjectLongitudinalDialogFragment(), AdapterVie
 
     private var selGroup: Int = -1
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         mView = inflater.inflate(R.layout.fragment_subject_info_tid, container, false)
         return mView
     }
@@ -73,7 +73,7 @@ class SubjectTIDDialogFragment : SubjectLongitudinalDialogFragment(), AdapterVie
         // when selecting training sessions => selCondition = selGroup (and condition spinner gets disabled)
 
         // check session change
-        when((binding as FragmentSubjectInfoTidBinding).spinner.selectedItemPosition){
+        when(binding.spinner.selectedItemPosition){
             in 2..6   -> {
                         setConditions(listOf(mTaskCodeLabels[binding.spGroup.selectedItemPosition])) // make condition spinner GONE
                         binding.spCondition.isEnabled = false

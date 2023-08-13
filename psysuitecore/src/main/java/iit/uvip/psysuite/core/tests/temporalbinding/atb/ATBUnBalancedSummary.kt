@@ -47,7 +47,7 @@ class ATBUnBalancedSummary(ctx:Context) : Summary(ctx){
             when(trial.type){
                 TYPE_A          ->   rows[0].add(trial)
                 TYPE_A_T        -> {
-                    when((trial as TrialBindingsUnBalanced).stim_value){
+                    when((trial as TrialBindingsUnBalanced).magnitude){
                         unbalSD[6].first    -> rows[1].add(trial)
                         unbalSD[5].first    -> rows[2].add(trial)
                         unbalSD[4].first    -> rows[3].add(trial)
@@ -59,7 +59,7 @@ class ATBUnBalancedSummary(ctx:Context) : Summary(ctx){
                 }
                 TYPE_AT         -> rows[8].add(trial)
                 TYPE_T_A        -> {
-                    when((trial as TrialBindingsUnBalanced).stim_value){
+                    when((trial as TrialBindingsUnBalanced).magnitude){
                         unbalSD[0].first    -> rows[9].add(trial)
                         unbalSD[1].first    -> rows[10].add(trial)
                         unbalSD[2].first    -> rows[11].add(trial)

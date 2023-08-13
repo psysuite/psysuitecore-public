@@ -24,7 +24,12 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
 
     protected val wrapperClass:PyObject
 
+    val range:Float
+
     init {
+
+        range                   = adaptiveWrapper.params.range
+
         val adaptparams_dict    = sPy.class2dict(adaptiveWrapper.qparams)
         val taskparams_dict     = sPy.class2dict(adaptiveWrapper.params)
 
@@ -37,6 +42,7 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
         currTrial++
 
         val newvalue = getStimulus()
+
         Log.d("QUEST_VALUE", "${newvalue} , prev resp: $prev_resp")
 
         return mTrial
@@ -44,13 +50,17 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
 
     // get next stim value from adaptive model and update current trial
     override fun getStimulus():Long{
-        val newvalue = wrapperClass.callAttr("get").toFloat().toLong()
-        mTrial.updateTrial(newvalue)
-        return newvalue
+        return  if(mTrial.isADA) {
+                    var magn = wrapperClass.callAttr("get").toFloat()
+                    magn = magn.coerceAtMost(range)
+                    magn = magn.coerceAtLeast(0.0F)
+                    mTrial.updateTrial(magn)
+                }
+                else    mTrial.stim_value
     }
 
     override fun setResponse(result: Int, elapsedms: Int, extra_text:String){
         mTrial.setResponse(result, elapsedms)   // it updates mTrial.success
-        wrapperClass.callAttr("set", mTrial.success, mTrial.stim_value)
+        if(mTrial.isADA)   wrapperClass.callAttr("set", mTrial.success, mTrial.magnitude)
     }
 }

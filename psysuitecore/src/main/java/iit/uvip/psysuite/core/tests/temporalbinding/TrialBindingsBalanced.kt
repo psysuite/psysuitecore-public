@@ -8,7 +8,8 @@ import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_V_T_A
 
 
-class TrialBindingsBalanced(id:Int=-1, type:Int=0, override var stim_value:Long=0L, correct_answers:List<String>):TrialBindings3latencies(id, type, 0,0,0, -1) {
+class TrialBindingsBalanced(id:Int=-1, type:Int=0, override var magnitude:Float, private val correct_answers:List<String>, isADA:Boolean=false)
+     :TrialBindings3latencies(id, type, 0L,0L,0L, isADA=isADA) {
 
     companion object {
         @JvmStatic
@@ -16,7 +17,12 @@ class TrialBindingsBalanced(id:Int=-1, type:Int=0, override var stim_value:Long=
     }
 
     init {
-        
+        updateTrial(magnitude)
+    }
+
+    override fun updateTrial(newvalue: Float):Long{
+        magnitude       = newvalue
+
         when(type){
             TYPE_T_A_V -> {
                 t = 0
@@ -56,6 +62,7 @@ class TrialBindingsBalanced(id:Int=-1, type:Int=0, override var stim_value:Long=
                 correct_answer = 2
             }
         }
+        return stim_value
     }
 
     // all class exported as string
@@ -65,7 +72,7 @@ class TrialBindingsBalanced(id:Int=-1, type:Int=0, override var stim_value:Long=
 
     // data exported to log file
     override fun Log():String {
-        return "$id\t$type\t$stim_value\t$user_answer\t$success\t$elapsed\n"
+        return "$id\t$type\t$stim_value\t${correct_answers[user_answer]}\t$success\t$elapsed\n"
     }
 
     override fun debugInfo():String{

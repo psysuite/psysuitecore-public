@@ -101,7 +101,7 @@ class ATVBUnBalancedSummary(ctx:Context) : Summary(ctx){
         override fun add(trial: TrialBasic){
             when(trial.type){
                 TYPE_A_TV, TYPE_T_AV, TYPE_V_AT ->{
-                    when((trial as TrialBindingsUnBalanced).stim_value){
+                    when((trial as TrialBindingsUnBalanced).magnitude){
                         unbalSD[6].first    -> rows[0].add(trial)
                         unbalSD[5].first    -> rows[1].add(trial)
                         unbalSD[4].first    -> rows[2].add(trial)
@@ -112,7 +112,7 @@ class ATVBUnBalancedSummary(ctx:Context) : Summary(ctx){
                     }
                 }
                 TYPE_TV_A, TYPE_AV_T, TYPE_AT_V ->{
-                    when((trial as TrialBindingsUnBalanced).stim_value){
+                    when((trial as TrialBindingsUnBalanced).magnitude){
                         unbalSD[0].first    -> rows[7].add(trial)
                         unbalSD[1].first    -> rows[8].add(trial)
                         unbalSD[2].first    -> rows[9].add(trial)

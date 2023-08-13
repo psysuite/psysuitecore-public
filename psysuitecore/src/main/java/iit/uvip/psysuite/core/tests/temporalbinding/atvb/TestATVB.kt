@@ -5,13 +5,18 @@ import android.content.Context
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import iit.uvip.psysuite.adaptive.AdaptiveWrapper
+import iit.uvip.psysuite.adaptive.TaskADAParams
+import iit.uvip.psysuite.adaptive.ado.ADOParams
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
-import iit.uvip.psysuite.core.stimuli.*
-import iit.uvip.psysuite.core.trials.FixedTrialsManager
+import iit.uvip.psysuite.core.stimuli.AudioManager
+import iit.uvip.psysuite.core.stimuli.ImageViewDefinedException
+import iit.uvip.psysuite.core.stimuli.StimuliManager
+import iit.uvip.psysuite.core.stimuli.TactileManager
+import iit.uvip.psysuite.core.stimuli.VibratorNotDefinedException
+import iit.uvip.psysuite.core.stimuli.VisualManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.trials.TrialBasic
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.ISI
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.STIM_DURATION
@@ -34,11 +39,13 @@ import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindings3latencies
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsBalanced
 import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
+import iit.uvip.psysuite.core.trials.AdaptiveTrialsManager
+import iit.uvip.psysuite.core.trials.FixedTrialsManager
+import iit.uvip.psysuite.core.trials.TrialBasic
 import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.CorrectedStimuliDelay
 import iit.uvip.psysuite.core.utility.Stimulus3delay
 import iit.uvip.psysuite.core.utility.StimulusDelay
-import iit.uvip.psysuite.adaptive.quest.QuestParams
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
@@ -163,91 +170,92 @@ class TestATVB(
     // 72 different elements. UNUSED !
     private val lStimuliBalanced: List<Stimulus3delay> = listOf(
 
-        Stimulus3delay( 0,50, 100, 0),
-        Stimulus3delay( 0,50, 0, 100),
-        Stimulus3delay( 0,100, 50, 0),
-        Stimulus3delay( 0,0, 50, 100),
-        Stimulus3delay( 0,0, 100, 50),
-        Stimulus3delay( 0,100, 0, 50),
-        Stimulus3delay( 0,100, 50, 0),
-        Stimulus3delay( 0,100, 0, 50),
-        Stimulus3delay( 0,0, 100, 50),
-        Stimulus3delay( 0,50, 100, 0),
-        Stimulus3delay( 0,0, 50, 100),
-        Stimulus3delay( 0,50, 0, 100),
+        Stimulus3delay( 0,50.0F, 100.0F, 0.0F),
+        Stimulus3delay( 0,50.0F, 0.0F, 100.0F),
+        Stimulus3delay( 0,100.0F, 50.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 50.0F, 100.0F),
+        Stimulus3delay( 0,0.0F, 100.0F, 50.0F),
+        Stimulus3delay( 0,100.0F, 0.0F, 50.0F),
+        Stimulus3delay( 0,100.0F, 50.0F, 0.0F),
+        Stimulus3delay( 0,100.0F, 0.0F, 50.0F),
+        Stimulus3delay( 0,0.0F, 100.0F, 50.0F),
+        Stimulus3delay( 0,50.0F, 100.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 50.0F, 100.0F),
+        Stimulus3delay( 0,50.0F, 0.0F, 100.0F),
 
-        Stimulus3delay( 0,100, 200, 0),
-        Stimulus3delay( 0,100, 0, 200),
-        Stimulus3delay( 0,200, 100, 0),
-        Stimulus3delay( 0,0, 100, 200),
-        Stimulus3delay( 0,0, 200, 100),
-        Stimulus3delay( 0,200, 0, 100),
-        Stimulus3delay( 0,200, 100, 0),
-        Stimulus3delay( 0,200, 0, 100),
-        Stimulus3delay( 0,0, 200, 100),
-        Stimulus3delay( 0,100, 200, 0),
-        Stimulus3delay( 0,0, 100, 200),
-        Stimulus3delay( 0,100, 0, 200),
+        Stimulus3delay( 0,100.0F, 200.0F, 0.0F),
+        Stimulus3delay( 0,100.0F, 0.0F, 200.0F),
+        Stimulus3delay( 0,200.0F, 100.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 100.0F, 200.0F),
+        Stimulus3delay( 0,0.0F, 200.0F, 100.0F),
+        Stimulus3delay( 0,200.0F, 0.0F, 100.0F),
+        Stimulus3delay( 0,200.0F, 100.0F, 0.0F),
+        Stimulus3delay( 0,200.0F, 0.0F, 100.0F),
+        Stimulus3delay( 0,0.0F, 200.0F, 100.0F),
+        Stimulus3delay( 0,100.0F, 200.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 100.0F, 200.0F),
+        Stimulus3delay( 0,100.0F, 0.0F, 200.0F),
 
-        Stimulus3delay( 0,200, 400, 0),
-        Stimulus3delay( 0,200, 0, 400),
-        Stimulus3delay( 0,400, 200, 0),
-        Stimulus3delay( 0,0, 200, 400),
-        Stimulus3delay( 0,0, 400, 200),
-        Stimulus3delay( 0,400, 0, 200),
-        Stimulus3delay( 0,400, 200, 0),
-        Stimulus3delay( 0,400, 0, 200),
-        Stimulus3delay( 0,0, 400, 200),
-        Stimulus3delay( 0,200, 400, 0),
-        Stimulus3delay( 0,0, 200, 400),
-        Stimulus3delay( 0,200, 0, 400),
+        Stimulus3delay( 0,200.0F, 400.0F, 0.0F),
+        Stimulus3delay( 0,200.0F, 0.0F, 400.0F),
+        Stimulus3delay( 0,400.0F, 200.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 200.0F, 400.0F),
+        Stimulus3delay( 0,0.0F, 400.0F, 200.0F),
+        Stimulus3delay( 0,400.0F, 0.0F, 200.0F),
+        Stimulus3delay( 0,400.0F, 200.0F, 0.0F),
+        Stimulus3delay( 0,400.0F, 0.0F, 200.0F),
+        Stimulus3delay( 0,0.0F, 400.0F, 200.0F),
+        Stimulus3delay( 0,200.0F, 400.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 200.0F, 400.0F),
+        Stimulus3delay( 0,200.0F, 0.0F, 400.0F),
 
-        Stimulus3delay( 0,300, 600, 0),
-        Stimulus3delay( 0,300, 0, 600),
-        Stimulus3delay( 0,600, 300, 0),
-        Stimulus3delay( 0,0, 300, 600),
-        Stimulus3delay( 0,0, 600, 300),
-        Stimulus3delay( 0,600, 0, 300),
-        Stimulus3delay( 0,600, 300, 0),
-        Stimulus3delay( 0,600, 0, 300),
-        Stimulus3delay( 0,0, 600, 300),
-        Stimulus3delay( 0,300, 600, 0),
-        Stimulus3delay( 0,0, 300, 600),
-        Stimulus3delay( 0,300, 0, 600),
+        Stimulus3delay( 0,300.0F, 600.0F, 0.0F),
+        Stimulus3delay( 0,300.0F, 0.0F, 600.0F),
+        Stimulus3delay( 0,600.0F, 300.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 300.0F, 600.0F),
+        Stimulus3delay( 0,0.0F, 600.0F, 300.0F),
+        Stimulus3delay( 0,600.0F, 0.0F, 300.0F),
+        Stimulus3delay( 0,600.0F, 300.0F, 0.0F),
+        Stimulus3delay( 0,600.0F, 0.0F, 300.0F),
+        Stimulus3delay( 0,0.0F, 600.0F, 300.0F),
+        Stimulus3delay( 0,300.0F, 600.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 300.0F, 600.0F),
+        Stimulus3delay( 0,300.0F, 0.0F, 600.0F),
 
-        Stimulus3delay( 0,400, 800, 0),
-        Stimulus3delay( 0,400, 0, 800),
-        Stimulus3delay( 0,800, 400, 0),
-        Stimulus3delay( 0,0, 400, 800),
-        Stimulus3delay( 0,0, 800, 400),
-        Stimulus3delay( 0,800, 0, 400),
-        Stimulus3delay( 0,800, 400, 0),
-        Stimulus3delay( 0,800, 0, 400),
-        Stimulus3delay( 0,0, 800, 400),
-        Stimulus3delay( 0,400, 800, 0),
-        Stimulus3delay( 0,0, 400, 800),
-        Stimulus3delay( 0,400, 0, 800),
+        Stimulus3delay( 0,400.0F, 800.0F, 0.0F),
+        Stimulus3delay( 0,400.0F, 0.0F, 800.0F),
+        Stimulus3delay( 0,800.0F, 400.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 400.0F, 800.0F),
+        Stimulus3delay( 0,0.0F, 800.0F, 400.0F),
+        Stimulus3delay( 0,800.0F, 0.0F, 400.0F),
+        Stimulus3delay( 0,800.0F, 400.0F, 0.0F),
+        Stimulus3delay( 0,800.0F, 0.0F, 400.0F),
+        Stimulus3delay( 0,0.0F, 800.0F, 400.0F),
+        Stimulus3delay( 0,400.0F, 800.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 400.0F, 800.0F),
+        Stimulus3delay( 0,400.0F, 0.0F, 800.0F),
 
-        Stimulus3delay( 0,800, 1600, 0),
-        Stimulus3delay( 0,800, 0, 1600),
-        Stimulus3delay( 0,1600, 800, 0),
-        Stimulus3delay( 0,0, 800, 1600),
-        Stimulus3delay( 0,0, 1600, 800),
-        Stimulus3delay( 0,1600, 0, 800),
-        Stimulus3delay( 0,1600, 800, 0),
-        Stimulus3delay( 0,1600, 0, 800),
-        Stimulus3delay( 0,0, 1600, 800),
-        Stimulus3delay( 0,800, 1600, 0),
-        Stimulus3delay( 0,0, 800, 1600),
-        Stimulus3delay( 0,800, 0, 1600)
+        Stimulus3delay( 0,800.0F, 1600.0F, 0.0F),
+        Stimulus3delay( 0,800.0F, 0.0F, 1600.0F),
+        Stimulus3delay( 0,1600.0F, 800.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 800.0F, 1600.0F),
+        Stimulus3delay( 0,0.0F, 1600.0F, 800.0F),
+        Stimulus3delay( 0,1600.0F, 0.0F, 800.0F),
+        Stimulus3delay( 0,1600.0F, 800.0F, 0.0F),
+        Stimulus3delay( 0,1600.0F, 0.0F, 800.0F),
+        Stimulus3delay( 0,0.0F, 1600.0F, 800.0F),
+        Stimulus3delay( 0,800.0F, 1600.0F, 0.0F),
+        Stimulus3delay( 0,0.0F, 800.0F, 1600.0F),
+        Stimulus3delay( 0,800.0F, 0.0F, 1600.0F)
     )
 
     private var allQuestions:MutableList<String> = mutableListOf()
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle)
 
-    private val nQuestTrials = 30
-    private val questParams = QuestParams()
-    private val questWrapper: AdaptiveWrapper = AdaptiveWrapper("roelofs.RoelofsQuest", "RoelofsQuest", questParams, listOf(800))
+    private val nQuestTrials                = 30
+    private val adoParams                   = ADOParams(guess_rate=0.5F, lapse_rate=0.04F, noise_perc=0.1F)
+    private val taskADAParams               = TaskADAParams(1200.0F, nQuestTrials+10)
+    private val adoWrapper:AdaptiveWrapper  = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
 
     // =============================================================================================================================
     // INIT
@@ -267,37 +275,53 @@ class TestATVB(
         currStimulusDuration    = STIM_DURATION // 50L
 
         validAnswers        =   if(subject.type == TEST_ATVB_TIME_S_BAL2 || subject.type == TEST_ATVB_TIME_S_BAL)
-            mutableListOf(ctx.resources.getString(R.string.audio), ctx.resources.getString(R.string.tactile), ctx.resources.getString(R.string.visual))
-        else
-            mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
+                                    mutableListOf(ctx.resources.getString(R.string.audio), ctx.resources.getString(R.string.tactile), ctx.resources.getString(R.string.visual))
+                                else
+                                    mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
 
-
-//        subject.isDebug = true
-        val trials = if(!subject.isDebug) {
-                        when (subject.type) {
-                            TEST_ATVB_TIME_S_UNBAL,
-                            TEST_ATVB_TIME_D_UNBAL -> {
-                                createResultFile(TrialBindingsUnBalanced.LOG_HEADER)
-                                createTrialsTimeUnbalanced()
-                            }
-
-                            TEST_ATVB_TIME_S_BAL,
-                            TEST_ATVB_TIME_D_BAL -> {
-                                createResultFile(TrialBindingsBalanced.LOG_HEADER)
-                                createTrialsTimeBalanced()
-                            }
-                            else -> {
-                                throw Exception("ERROR in TESTATVB")
-                            }
-            //                TEST_ATVB_TIME_S_BAL2 -> {
-            //                    createResultFile(TrialBindingsBalanced.LOG_HEADER)
-            //                    createTrialsTimeBalanced2()
-            //                }
+        mTrialsManager =
+            if(subject.trman_type == TEST_TRMAN_FIXED){
+                val trials = if(!subject.isDebug) {
+                    // create trials/summary
+                    when (subject.type) {
+                        TEST_ATVB_TIME_S_UNBAL,
+                        TEST_ATVB_TIME_D_UNBAL -> {
+                            createResultFile(TrialBindingsUnBalanced.LOG_HEADER)
+                            createTrialsTimeUnbalanced()
                         }
-                    }
-                    else    createTrialsDebug()
-        mTrialsManager = FixedTrialsManager(trials as MutableList<TrialBasic>)
 
+                        TEST_ATVB_TIME_S_BAL,
+                        TEST_ATVB_TIME_D_BAL -> {
+                            createResultFile(TrialBindingsBalanced.LOG_HEADER)
+                            createTrialsTimeBalanced()
+                        }
+                        else -> throw Exception("ERROR in TEST ATVB")
+                    }
+                }
+                else{
+                    createResultFile(TrialBindingsBalanced.LOG_HEADER)
+                    createTrialsDebug()
+                }
+                val ntr = trials.size
+                mListBlocks = mutableListOf((ntr *0.25F).roundToInt(), (ntr*0.5F).roundToInt(), (ntr*0.75F).roundToInt())    // define 5 blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
+                FixedTrialsManager(trials as MutableList<TrialBasic>)
+            }
+            else{
+                createResultFile(TrialBindingsUnBalanced.LOG_HEADER)
+                initSummary()
+
+                val trials = when (subject.type) {
+                    TEST_ATVB_TIME_S_UNBAL,
+                    TEST_ATVB_TIME_D_UNBAL      -> createTrialsAdaptiveUnbalanced()
+
+                    TEST_ATVB_TIME_S_BAL,
+                    TEST_ATVB_TIME_D_BAL        -> createTrialsAdaptiveBalanced()
+                    else                        -> throw Exception("ERROR in TEST ATVB")
+                }
+                val trman = AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
+                trman.getStimulus()
+                trman
+            }
         initSummary()
 
         mQuestion  = when (subject.type) {
@@ -307,11 +331,7 @@ class TestATVB(
             TEST_ATVB_TIME_D_BAL    -> allQuestions[1]
             else                    -> allQuestions[0]
         }
-
         if (subject.whitenoise > TEST_SWITCH_CHOOSE_OFF)    mNoise = AudioManager.getAudioResource(ctx, "wnoise_20s", 0.01f)
-
-        mListBlocks     = mutableListOf((nTrials * 0.25F).roundToInt(), (nTrials * 0.5F).roundToInt(), (nTrials * 0.75F).roundToInt())    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
-//        mListBlocks     = mutableListOf(0,2)    // define two blocks, at the end of the first a window ask use whether continuing or ending (to be later continued)
 
         mTestLabel      = ""
         getConditionsInfo(ctx).map {
@@ -339,21 +359,21 @@ class TestATVB(
 
             val rtrials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
             for (j in 0 until 2) {
-                rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0, 0))
-                rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0, 0))
-                rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0, 0))
+                rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0.0F))
+                rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0.0F))
+                rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0.0F))
 
                 // 36
                 lStimuliUnbalanced.map {
-                    rtrials.add(TrialBindingsUnBalanced(++cnt, it.type, it.stim_value, 1))
+                    rtrials.add(TrialBindingsUnBalanced(++cnt, it.type, it.magnitude))
                 }
             }
-            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_AT_V, unbalSD[6].first, 1))
-            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_AT, unbalSD[6].first, 1))
-            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_AV_T, unbalSD[6].first, 1))
-            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_T_AV, unbalSD[6].first, 1))
-            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, unbalSD[6].first, 1))
-            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, unbalSD[6].first, 1))
+            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_AT_V, unbalSD[6].first))
+            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_AT, unbalSD[6].first))
+            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_AV_T, unbalSD[6].first))
+            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_T_AV, unbalSD[6].first))
+            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, unbalSD[6].first))
+            rtrials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, unbalSD[6].first))
 
             rtrials.shuffle()
             trials.addAll(rtrials)
@@ -361,12 +381,79 @@ class TestATVB(
         return trials
     }
 
-    private fun createTrialsAdaptive():List<TrialBasic>{
+    // [18 + 3] * 2 * NUM_REPETITIONS2(8) = 336
+    private fun createTrialsTimeBalanced():List<TrialBasic> {
         var cnt = -1
-        val trials: MutableList<TrialBasic> = mutableListOf()
-        for (i in 0 until nQuestTrials) {
-            trials.add(TrialBindingsUnBalanced(++cnt, BindingsConstants.TYPE_AT, 0, 0))
+        val trials:MutableList<TrialBasic> = mutableListOf()
+        for (i in 0 until NUM_REPETITIONS_B) {   // NUM_REPETITIONS2
+            for (j in 0 until 2) {
+                val rtrials: MutableList<TrialBindingsBalanced> = mutableListOf()
+
+                rtrials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0.0F,  validAnswers))
+                rtrials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0.0F,  validAnswers))
+                rtrials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0.0F,  validAnswers))
+
+                // 18
+                lStimuliBalancedShort.map {
+                    rtrials.add(TrialBindingsBalanced(++cnt, it.type, it.magnitude, validAnswers))
+                }
+                rtrials.shuffle()
+                trials.addAll(rtrials)
+            }
         }
+        return trials
+    }
+
+    // 44 fixed + 48 adaptive
+    private fun createTrialsAdaptiveUnbalanced():List<TrialBasic>{
+        var cnt = -1
+        val trials:MutableList<TrialBasic> = mutableListOf()
+
+        // static part
+        // 8
+        for (i in 0 until 8) trials.add(TrialBindingsUnBalanced(++cnt, BindingsConstants.TYPE_ATV, 0.0F))
+
+        // 36
+        lStimuliUnbalanced.map {
+            trials.add(TrialBindingsUnBalanced(++cnt, it.type, it.magnitude))
+        }
+
+        // 48
+        for (j in 0 until 8) {
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_AT_V, 0.0F, isADA = true))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_AT, 0.0F, isADA = true))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_AV_T, 0.0F, isADA = true))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_T_AV, 0.0F, isADA = true))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, 0.0F, isADA = true))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, 0.0F, isADA = true))
+        }
+        trials.shuffle()
+        return trials
+    }
+
+    // 24 fixed + 32 adaptive
+    private fun createTrialsAdaptiveBalanced():List<TrialBasic>{
+        var cnt = -1
+        val trials:MutableList<TrialBasic> = mutableListOf()
+
+        // static part
+        // 8
+        for (i in 0 until 8) trials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0.0F, validAnswers))
+
+        // 16
+        lStimuliBalancedShort.map {
+            trials.add(TrialBindingsBalanced(++cnt, it.type, it.magnitude, validAnswers))
+        }
+        // 32
+        for (j in 0 until 8) {
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_V_A_T, 0.0F, validAnswers, isADA = true))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_T_A_V, 0.0F, validAnswers, isADA = true))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_A_T_V, 0.0F, validAnswers, isADA = true))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_V_T_A, 0.0F, validAnswers, isADA = true))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_A_V_T, 0.0F, validAnswers, isADA = true))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_T_V_A, 0.0F, validAnswers, isADA = true))
+        }
+        trials.shuffle()
         return trials
     }
 
@@ -392,10 +479,8 @@ class TestATVB(
 //            mTrials.addAll(trials)
 //        }
         for (i in 0 until 100000) {
-
-            val trials: MutableList<TrialBindingsUnBalanced> = mutableListOf()
             for (j in 0 until 2) {
-                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0, 0))
+                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_ATV, 0.0F))
 //                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, 100, validAnswers[0]))
 //                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, 100, validAnswers[0]))
 //                trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, 50, validAnswers[0]))
@@ -405,28 +490,6 @@ class TestATVB(
         return trials
     }
 
-    // [18 + 3] * 2 * NUM_REPETITIONS2(8) = 336
-    private fun createTrialsTimeBalanced():List<TrialBasic> {
-        var cnt = -1
-        val trials:MutableList<TrialBasic> = mutableListOf()
-        for (i in 0 until NUM_REPETITIONS_B) {   // NUM_REPETITIONS2
-            for (j in 0 until 2) {
-                val rtrials: MutableList<TrialBindings3latencies> = mutableListOf()
-
-                rtrials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0L,  validAnswers))
-                rtrials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0L,  validAnswers))
-                rtrials.add(TrialBindingsBalanced(++cnt, TYPE_ATV, 0L,  validAnswers))
-
-                // 18
-                lStimuliBalancedShort.map {
-                    rtrials.add(TrialBindingsBalanced(++cnt, it.type, it.stim_value, validAnswers))
-                }
-                rtrials.shuffle()
-                trials.addAll(rtrials)
-             }
-        }
-        return trials
-    }
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================

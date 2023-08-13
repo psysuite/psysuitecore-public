@@ -7,11 +7,11 @@ import iit.uvip.psysuite.core.trials.TrialBasic
     corresponding to the number of audio/tactile/visual stimuli present in the trial.
 */
 
-class TrialTFI(id:Int=-1, type:Int, label:String, correct_answer:Int=-1, val soa:Long, val valid_answers:List<String>)
-    : TrialBasic(id,type,label, correct_answer=correct_answer){
+class TrialTFI(id:Int=-1, type:Int, label:String, override var correct_answer:Int=-1, val soa:Long, val valid_answers:List<String>)
+    : TrialBasic(id,type,label){
 
     companion object {
-        @JvmStatic val LOG_HEADER           = "id\tlabel\tsoa\tres\tcor_ans\tuser_ans\telapsed\n"
+        @JvmStatic val LOG_HEADER           = "id\tla                                                                                                                                                                                      bel\tsoa\tres\tcor_ans\tuser_ans\telapsed\n"
         val A: Int = 0
         val T: Int = 1
         val V: Int = 2

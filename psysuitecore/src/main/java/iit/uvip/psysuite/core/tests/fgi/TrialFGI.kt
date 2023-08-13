@@ -4,7 +4,7 @@ import iit.uvip.psysuite.core.trials.TrialBasic
 
 //                trial_id    0/1      fig_res
 class TrialFGI(id: Int = -1, type: Int, label: String, var audio_name:String) :
-    TrialBasic(id, type, label, -1) {
+    TrialBasic(id, type, label) {
 
     companion object {
         @JvmStatic val LOG_HEADER           = "id\ttype\tfig\taudio\n"

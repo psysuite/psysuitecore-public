@@ -5,7 +5,7 @@ import android.content.Context
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import iit.uvip.psysuite.adaptive.AdaptiveWrapper
-import iit.uvip.psysuite.adaptive.quest.QuestParams
+import iit.uvip.psysuite.adaptive.ado.ADOParams
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.stimuli.*
@@ -16,6 +16,7 @@ import iit.uvip.psysuite.core.trials.FixedTrialsManager
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.trials.TrialBasic
 import iit.uvip.psysuite.core.trials.AdaptiveTrialsManager
+import iit.uvip.psysuite.adaptive.TaskADAParams
 import iit.uvip.psysuite.core.trials.TrialsManager
 import iit.uvip.psysuite.core.utility.ConditionData
 import org.albaspazio.core.accessory.VibrationManager
@@ -41,18 +42,14 @@ class TestTID(ctx: Context,
 {
     override var LOG_TAG:String = TestTID::class.java.simpleName
 
-    private val nQuestTrials = 30
-    private val questParams = QuestParams()
-    private val questWrapper: AdaptiveWrapper = AdaptiveWrapper("roelofs.RoelofsQuest", "RoelofsQuest", questParams, listOf("1900","1080","40","170"))
-
     private var currISI:Long            = 0L
     private var currREP_X_BLOCK:Int     = 0
     private var currNTRIALS_X_BLOCK:Int = 0
-    private var currREP_X_LATENCY:Int   = 0
+    private var NLATENCIES:Int          = 0
 
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle)
 
-    private var refDelta:Long           = 0L
+    private var refDelta:Float          = 0.0F
 
     companion object {
 
@@ -62,20 +59,22 @@ class TestTID(ctx: Context,
         @JvmStatic var NUM_BLOCKS                       = 2
         @JvmStatic var NUM_TRAIN_TRIALS                 = 100
 
-        @JvmStatic val REF_STIM_DUR_SHORT:Long          = 200
+        @JvmStatic val REF_STIM_DUR_SHORT:Float         = 200.0F
+        @JvmStatic val ADO_RANGE_DUR_SHORT:Float        = 100.0F
         @JvmStatic val ISI_SHORT:Long                   = 1000L  // interval between pair#1 and pair#2
-        @JvmStatic val NUM_FIXED_LATENCIES_SHORT        = 8
+        @JvmStatic val NUM_FIXED_LATENCIES_SHORT        = 8     // four magnitudes presented before and after
         @JvmStatic val NUM_REP_X_LATENCY_X_BLOCK_SHORT  = 4     // MUST BE ODD !!!
-        @JvmStatic var NUM_TRIALS_X_BLOCK_SHORT         = NUM_FIXED_LATENCIES_SHORT * NUM_FIXED_LATENCIES_SHORT
+        @JvmStatic var NUM_TRIALS_X_BLOCK_SHORT         = NUM_FIXED_LATENCIES_SHORT * NUM_REP_X_LATENCY_X_BLOCK_SHORT
 
-        @JvmStatic val REF_STIM_DUR_LONG:Long           = 2000L
+        @JvmStatic val REF_STIM_DUR_LONG:Float          = 2000.0F
+        @JvmStatic val ADO_RANGE_DUR_LONG:Float         = 1000.0F
         @JvmStatic val ISI_LONG:Long                    = 1000L  // interval between pair#1 and pair#2
         @JvmStatic val NUM_FIXED_LATENCIES_LONG         = 8
         @JvmStatic val NUM_REP_X_LATENCY_X_BLOCK_LONG   = 4     // MUST BE ODD !!!
-        @JvmStatic var NUM_TRIALS_X_BLOCK_LONG          = NUM_FIXED_LATENCIES_LONG * NUM_FIXED_LATENCIES_LONG
+        @JvmStatic var NUM_TRIALS_X_BLOCK_LONG          = NUM_FIXED_LATENCIES_LONG * NUM_REP_X_LATENCY_X_BLOCK_LONG
 
         @JvmStatic val recipients:Array<String>         = arrayOf(  "uvip.apptester@gmail.com","psysuite.uvip@gmail.com",
-                                                                    "nicola.domenici@iit.it") // "psysuite.uvip@gmail.com",
+                                                                    "nicola.domenici@iit.it")
 
 //        @JvmStatic val TEST_STIMULUS_DURATION_1_MIN = 100
 //        @JvmStatic val TEST_STIMULUS_DURATION_1_MAX = 300
@@ -147,9 +146,15 @@ class TestTID(ctx: Context,
         fun getEmailRecipients():Array<String> = recipients
     }
 
-    private val shortLatencies:List<Long>       = listOf(100, 128, 157, 185, 214, 242, 271, 300)
-    private val shortTrainLatencies:List<Long>  = listOf(75, 350)
-    private val longLatencies:List<Long>        = listOf(1000, 1280, 1570, 1850, 2140, 2420, 2710, 3000)
+    private val shortLatencies:List<Float>       = listOf(100.0F, 72.0F, 43.0F, 15.0F)
+    private val shortTrainLatencies:List<Float>  = listOf(150.0F)
+    private val longLatencies:List<Float>        = listOf(1000.0F, 720.0F, 430.0F, 150.0F)
+    private var currLatencies:List<Float>        = listOf()
+
+    private val nQuestTrials                = 30
+    private val adoParams                   = ADOParams(guess_rate=0.5F, lapse_rate=0.04F, noise_perc=0.1F)
+    private lateinit var taskADAParams: TaskADAParams
+    private lateinit var adoWrapper:AdaptiveWrapper
 
     // =============================================================================================================================
     // INIT
@@ -174,35 +179,47 @@ class TestTID(ctx: Context,
         }
 
         // set values according to chosen latency
-        currISI             = ISI_SHORT
-        currREP_X_BLOCK     = NUM_REP_X_LATENCY_X_BLOCK_SHORT
-        currNTRIALS_X_BLOCK = NUM_TRIALS_X_BLOCK_SHORT
-        currREP_X_LATENCY   = shortLatencies.size
+
 
         when(subject.type){
             TEST_TID_LONG_AUDIO, TEST_TID_LONG_TACTILE, TEST_TID_LONG_VISUAL  -> {
                 currISI             = ISI_LONG
                 currREP_X_BLOCK     = NUM_REP_X_LATENCY_X_BLOCK_LONG
                 currNTRIALS_X_BLOCK = NUM_TRIALS_X_BLOCK_LONG
-                currREP_X_LATENCY   = longLatencies.size
+                NLATENCIES   = longLatencies.size
+                taskADAParams       = TaskADAParams(ADO_RANGE_DUR_LONG, nQuestTrials+10)
+                currLatencies       = longLatencies
+            }
+            else -> {
+                currISI             = ISI_SHORT
+                currREP_X_BLOCK     = NUM_REP_X_LATENCY_X_BLOCK_SHORT
+                currNTRIALS_X_BLOCK = NUM_TRIALS_X_BLOCK_SHORT
+                NLATENCIES   = shortLatencies.size
+                taskADAParams       = TaskADAParams(ADO_RANGE_DUR_SHORT, nQuestTrials+10)
+                currLatencies       = shortLatencies
             }
         }
+        adoWrapper  = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
 
         refDelta = when(subject.type) {
             TEST_TID_LONG_AUDIO, TEST_TID_LONG_TACTILE, TEST_TID_LONG_VISUAL -> REF_STIM_DUR_LONG
             else                                                             -> REF_STIM_DUR_SHORT
         }
 
-        mTrialsManager =    if(!subject.isDebug) {
-                                if(subject.trman_type == TEST_TRMAN_FIXED) {
-                                    val trials = createConstantTrials(currStimulusDuration)
-                                    FixedTrialsManager(trials as MutableList<TrialBasic>)
-                                } else {
-                                    val trials = createQuestTrials(currStimulusDuration)
-                                    AdaptiveTrialsManager(trials as MutableList<TrialBasic>, questWrapper)
-                                }
-                            }
-                            else FixedTrialsManager(createTrialsDebug() as MutableList<TrialBasic>)
+        mTrialsManager =
+            when (subject.trman_type) {
+                TEST_TRMAN_FIXED -> {
+                    val trials =    if (!subject.isDebug)   createConstantTrials(currStimulusDuration)
+                                    else                    createTrialsDebug()
+                    FixedTrialsManager(trials as MutableList<TrialBasic>)
+                }
+                else -> {
+                    val trials = createQuestTrials(currStimulusDuration)
+                    val trman = AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
+                    trman.getStimulus()
+                    trman
+                }
+            }
 
         mTestLabel = ""
         getConditionsInfo(ctx).map {
@@ -215,17 +232,17 @@ class TestTID(ctx: Context,
         mNoise = AudioManager.getAudioResource(ctx,"wnoise_20s", 0.01f)
 
         mStimuliManager =   if(vibrator != null)
-            StimuliManager(
-                AudioManager(AUDIO_TYPE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-                TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
-                VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-                delaysAligner, ctx, mStimuliHandler)
-        else
-            StimuliManager(
-                AudioManager(AUDIO_TYPE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
-                null,
-                VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-                delaysAligner, ctx, mStimuliHandler)
+                                StimuliManager(
+                                    AudioManager(AUDIO_TYPE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+                                    TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
+                                    VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
+                                    delaysAligner, ctx, mStimuliHandler)
+                            else
+                                StimuliManager(
+                                    AudioManager(AUDIO_TYPE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
+                                    null,
+                                    VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
+                                    delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
     }
@@ -243,10 +260,10 @@ class TestTID(ctx: Context,
             TEST_TID_SHORT_AUDIO_TRAIN, TEST_TID_SHORT_TACTILE_TRAIN, TEST_TID_SHORT_VISUAL_TRAIN    -> {
                 for(b in 0 until NUM_BLOCKS){
                     for(t in 0 until NUM_TRAIN_TRIALS/(4* NUM_BLOCKS)){
-                        block_trials.add(TrialTID(-1, subject.type, t, (subject as SubjectTIDParcel).group, subject.session,  refDelta, shortTrainLatencies[0], true, duration, validAnswers))
-                        block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, shortTrainLatencies[0], refDelta,false, duration, validAnswers))
-                        block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, shortTrainLatencies[1], true, duration, validAnswers))
-                        block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, shortTrainLatencies[1], refDelta,false, duration, validAnswers))
+                        block_trials.add(TrialTID(-1, subject.type, t, (subject as SubjectTIDParcel).group, subject.session, refDelta, shortTrainLatencies[0],true, true,  duration, validAnswers))
+                        block_trials.add(TrialTID(-1, subject.type, t, subject.group                      , subject.session, refDelta, shortTrainLatencies[0],true, false, duration, validAnswers))
+                        block_trials.add(TrialTID(-1, subject.type, t, subject.group                      , subject.session, refDelta, shortTrainLatencies[0],false,true,  duration, validAnswers))
+                        block_trials.add(TrialTID(-1, subject.type, t, subject.group                      , subject.session, refDelta, shortTrainLatencies[0],false,false, duration, validAnswers))
                     }
                     block_trials.shuffle()
                     trials.addAll(block_trials)
@@ -255,17 +272,11 @@ class TestTID(ctx: Context,
             else -> {
                 for(b in 0 until NUM_BLOCKS){
                     for(t in 0 until currREP_X_BLOCK/2){
-                        for(l in 0 until currREP_X_LATENCY){
-                            when(subject.type) {
-                                TEST_TID_SHORT_AUDIO, TEST_TID_SHORT_TACTILE, TEST_TID_SHORT_VISUAL    -> {
-                                    block_trials.add(TrialTID(-1, subject.type, b, (subject as SubjectTIDParcel).group, subject.session,  refDelta, shortLatencies[l], true, duration, validAnswers))
-                                    block_trials.add(TrialTID(-1, subject.type, b, subject.group,                       subject.session, shortLatencies[l], refDelta,false, duration, validAnswers))
-                                }
-                                TEST_TID_LONG_AUDIO, TEST_TID_LONG_TACTILE, TEST_TID_LONG_VISUAL      -> {
-                                    block_trials.add(TrialTID(-1, subject.type, b, (subject as SubjectTIDParcel).group, subject.session,  refDelta, longLatencies[l], true, duration, validAnswers))
-                                    block_trials.add(TrialTID(-1, subject.type, b, subject.group,                       subject.session, longLatencies[l], refDelta,false, duration, validAnswers))
-                                }
-                            }
+                        for(l in 0 until NLATENCIES){
+                            block_trials.add(TrialTID(-1, subject.type, b, (subject as SubjectTIDParcel).group, subject.session, refDelta, currLatencies[l], true, true,  duration, validAnswers))
+                            block_trials.add(TrialTID(-1, subject.type, b, subject.group                      , subject.session, refDelta, currLatencies[l], true, false, duration, validAnswers))
+                            block_trials.add(TrialTID(-1, subject.type, b, subject.group                      , subject.session, refDelta, currLatencies[l],false, true,   duration, validAnswers))
+                            block_trials.add(TrialTID(-1, subject.type, b, subject.group                      , subject.session, refDelta, currLatencies[l],false, false,  duration, validAnswers))
                         }
                     }
                     block_trials.shuffle()
@@ -278,25 +289,27 @@ class TestTID(ctx: Context,
 
     private fun createQuestTrials(duration:Long):List<TrialBasic>{
 
-        var ref_delta = REF_STIM_DUR_SHORT
-        when(subject.type) {
-            TEST_TID_LONG_AUDIO, TEST_TID_LONG_TACTILE, TEST_TID_LONG_VISUAL -> ref_delta = REF_STIM_DUR_LONG
+        val block_trials:MutableList<TrialTID> = mutableListOf()
+
+        // 4*4 = 16
+        for(l in 0 until NLATENCIES){
+            block_trials.add(TrialTID(-1, subject.type, l, (subject as SubjectTIDParcel).group, subject.session, refDelta, currLatencies[l], true, true,  duration, validAnswers))
+            block_trials.add(TrialTID(-1, subject.type, l, subject.group                      , subject.session, refDelta, currLatencies[l], true, false, duration, validAnswers))
+            block_trials.add(TrialTID(-1, subject.type, l, subject.group                      , subject.session, refDelta, currLatencies[l],false, true,   duration, validAnswers))
+            block_trials.add(TrialTID(-1, subject.type, l, subject.group                      , subject.session, refDelta, currLatencies[l],false, false,  duration, validAnswers))
         }
 
-        val trials:MutableList<TrialBasic> = mutableListOf()
-        for(b in 0 until NUM_BLOCKS){
-
-            val block_trials:MutableList<TrialTID> = mutableListOf()
-
-            for(t in 0 until NUM_TRIALS_X_BLOCK_SHORT /2){
-                //                    id:Int=-1, type:Int, val block:Int, val group:Int,            val session:Int,  var delta1:Int, var delta2:Int, val ref_first:Boolean, val duration:Int, answers:List<String>
-                block_trials.add(TrialTID(-1, subject.type, b, (subject as SubjectTIDParcel).group, subject.session,  ref_delta, TrialsManager.ADAPTIVE_VALUE, true, duration, validAnswers))
-                block_trials.add(TrialTID(-1, subject.type, b, subject.group,                       subject.session, TrialsManager.ADAPTIVE_VALUE, ref_delta,false, duration, validAnswers))
-            }
-            block_trials.shuffle()
-            trials.addAll(block_trials)
+        // 8*4 = 32
+        for(t in 0 until 8){
+            //                    id:Int=-1, type:Int, val block:Int, val group:Int,            val session:Int,  var delta1:Int, var delta2:Int, val ref_first:Boolean, val duration:Int, answers:List<String>
+            block_trials.add(TrialTID(-1, subject.type, t, (subject as SubjectTIDParcel).group, subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, true,  true, duration, validAnswers, isADA = true))
+            block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, true, false, duration, validAnswers, isADA = true))
+            block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, false, true, duration, validAnswers, isADA = true))
+            block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, false, false, duration, validAnswers, isADA = true))
         }
-        return trials
+        block_trials.shuffle()
+
+        return block_trials
     }
 
     private fun createTrialsDebug():List<TrialBasic>{
@@ -304,13 +317,31 @@ class TestTID(ctx: Context,
 
         val trials:MutableList<TrialBasic> = mutableListOf()
         for(b in 0 until 10000){
-            trials.add(TrialTID(-1, TEST_TID_SHORT_AUDIO, b,  (subject as SubjectTIDParcel).group, subject.session,  REF_STIM_DUR_SHORT,         100, true, duration, validAnswers))
-            trials.add(TrialTID(-1, TEST_TID_SHORT_TACTILE, b, subject.group, subject.session,  REF_STIM_DUR_SHORT,         100, true, duration, validAnswers))
-            trials.add(TrialTID(-1, TEST_TID_SHORT_VISUAL, b, subject.group, subject.session,  REF_STIM_DUR_SHORT,         100, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_AUDIO, b,  (subject as SubjectTIDParcel).group, subject.session,  REF_STIM_DUR_SHORT, 100.0F, true, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_AUDIO, b,  subject.group                      , subject.session,  REF_STIM_DUR_SHORT, 100.0F, true, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_AUDIO, b,  subject.group                      , subject.session,  REF_STIM_DUR_SHORT, 100.0F, false, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_AUDIO, b,  subject.group                      , subject.session,  REF_STIM_DUR_SHORT, 100.0F, false, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_TACTILE, b, subject.group                     , subject.session,  REF_STIM_DUR_SHORT, 100.0F, true, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_TACTILE, b, subject.group                     , subject.session,  REF_STIM_DUR_SHORT, 100.0F, true, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_TACTILE, b, subject.group                     , subject.session,  REF_STIM_DUR_SHORT, 100.0F, false, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_TACTILE, b, subject.group                     , subject.session,  REF_STIM_DUR_SHORT, 100.0F, false, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_VISUAL, b, subject.group                      , subject.session,  REF_STIM_DUR_SHORT, 100.0F, true, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_VISUAL, b, subject.group                      , subject.session,  REF_STIM_DUR_SHORT, 100.0F, true, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_VISUAL, b, subject.group                      , subject.session,  REF_STIM_DUR_SHORT, 100.0F, false, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_SHORT_VISUAL, b, subject.group                      , subject.session,  REF_STIM_DUR_SHORT, 100.0F, false, false, duration, validAnswers))
 
-            trials.add(TrialTID(-1, TEST_TID_LONG_AUDIO, b,  subject.group, subject.session,  REF_STIM_DUR_LONG,         2000, true, duration, validAnswers))
-            trials.add(TrialTID(-1, TEST_TID_LONG_TACTILE, b, subject.group, subject.session,  REF_STIM_DUR_LONG,         2000, true, duration, validAnswers))
-            trials.add(TrialTID(-1, TEST_TID_LONG_VISUAL, b, subject.group, subject.session,  REF_STIM_DUR_LONG,         2000, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_AUDIO, b,  subject.group                       , subject.session,  REF_STIM_DUR_LONG, 1000.0F, true, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_AUDIO, b,  subject.group                       , subject.session,  REF_STIM_DUR_LONG, 1000.0F, true, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_AUDIO, b,  subject.group                       , subject.session,  REF_STIM_DUR_LONG, 1000.0F, false, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_AUDIO, b,  subject.group                       , subject.session,  REF_STIM_DUR_LONG, 1000.0F, false, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_TACTILE, b, subject.group                      , subject.session,  REF_STIM_DUR_LONG, 1000.0F, true, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_TACTILE, b, subject.group                      , subject.session,  REF_STIM_DUR_LONG, 1000.0F, true, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_TACTILE, b, subject.group                      , subject.session,  REF_STIM_DUR_LONG, 1000.0F, false, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_TACTILE, b, subject.group                      , subject.session,  REF_STIM_DUR_LONG, 1000.0F, false, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_VISUAL, b, subject.group                       , subject.session,  REF_STIM_DUR_LONG, 1000.0F, true, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_VISUAL, b, subject.group                       , subject.session,  REF_STIM_DUR_LONG, 1000.0F, true, false, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_VISUAL, b, subject.group                       , subject.session,  REF_STIM_DUR_LONG, 1000.0F, false, true, duration, validAnswers))
+            trials.add(TrialTID(-1, TEST_TID_LONG_VISUAL, b, subject.group                       , subject.session,  REF_STIM_DUR_LONG, 1000.0F, false, false, duration, validAnswers))
         }
         return trials
     }
@@ -327,13 +358,13 @@ class TestTID(ctx: Context,
         mNoise?.start()
         // PAIR 1
         mStimuliHandler.postDelayed({
-            deliverPair((trial as TrialTID).type, trial.delta1.toLong())
+            deliverPair((trial as TrialTID).type, trial.delta1)
             testEvent.accept(Triple(EVENT_STIMULI_START, null, listOf()))
         }, FIRST_STIMULUS_DELAY)
 
         // PAIR 2
         mStimuliHandler.postDelayed({
-            deliverPair((trial as TrialTID).type, trial.delta2.toLong())
+            deliverPair((trial as TrialTID).type, trial.delta2)
         }, FIRST_STIMULUS_DELAY + currStimulusDuration + (trial as TrialTID).delta1 + currStimulusDuration + currISI)
 
         // send stimuli-end event

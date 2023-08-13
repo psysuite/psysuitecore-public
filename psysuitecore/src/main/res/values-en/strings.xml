@@ -93,7 +93,7 @@
 
     <string name="yes">yes</string>
     <string name="no">no</string>
-    <string name="whitenoise">white noise</string>
+    <string name="whitenoise">w. noise</string>
 
     <string name="session">session</string>
     <string name="main_email">psysuite.uvip@gmail.com</string>
@@ -322,5 +322,8 @@
     <string name="trials_management">trials management</string>
     <string name="correct_answer">answer is correct</string>
     <string name="wrong_answer">answer is wrong</string>
+    <string name="trials_fixed">fixed</string>
+    <string name="trials_adaptive">adaptive</string>
+    <string name="sequence">sequence</string>
 
 </resources>

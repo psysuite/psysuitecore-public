@@ -94,8 +94,12 @@
 
     <string name="yes">si</string>
     <string name="no">no</string>
-    <string name="whitenoise">rumore bianco</string>
+    <string name="whitenoise">rumore</string>
 
+    <string name="trials_fixed">fissi</string>
+    <string name="trials_adaptive">adattativi</string>
+
+    <string name="sequence">sequenza</string>
     <string name="session">sessione</string>
     <string name= "main_email">psysuite.uvip@gmail.com</string>
 
@@ -332,13 +336,13 @@
     </string-array>
 
     <string-array name="sample_tactile_types">
-        <item>single</item>
-        <item>sequence</item>
+        <item>@string/single</item>
+        <item>@string/sequence</item>
     </string-array>
 
     <string-array name="trial_manager_types">
-        <item>fixed</item>
-        <item>quest</item>
+        <item>@string/trials_fixed</item>
+        <item>@string/trials_adaptive</item>
     </string-array>
 
     <string-array name="sample_audioassets_array">
@@ -353,6 +357,7 @@
         <item>t1000hz_1000ms.wav</item>
         <item>t200hz_1000ms.wav</item>
     </string-array>
+
     <string name="abort_test">ANNULLA TEST</string>
     <string name="iti">ITI [s]</string>
     <string name="repeat_trial">ripeti il trial</string>

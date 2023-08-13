@@ -4,19 +4,19 @@ class BindingsConstants {
 
     companion object {
 
-        @JvmStatic val balshSD:List<Pair<Long, String>> = listOf(
-            Pair(200L, "200"),
-            Pair(250L, "250"),
-            Pair(300L, "300"))
+        @JvmStatic val balshSD:List<Pair<Float, String>> = listOf(
+            Pair(200.0F,    "200"),
+            Pair(250.0F,    "250"),
+            Pair(300.0F,    "300"))
 
-        @JvmStatic val unbalSD:List<Pair<Long, String>> = listOf(
-            Pair(50L,  "50"),
-            Pair(100L, "100"),
-            Pair(200L, "200"),
-            Pair(300L, "300"),
-            Pair(400L, "400"),
-            Pair(800L, "800"),
-            Pair(1200L,"1200"))
+        @JvmStatic val unbalSD:List<Pair<Float, String>> = listOf(
+            Pair(50.0F,     "50"),
+            Pair(100.0F,    "100"),
+            Pair(200.0F,    "200"),
+            Pair(300.0F,    "300"),
+            Pair(400.0F,    "400"),
+            Pair(800.0F,    "800"),
+            Pair(1200.0F,   "1200"))
 
         @JvmStatic val WN_FIRSTSTIM_INTERVAL   = 1000L
         @JvmStatic val STIM_DURATION_INF       = 1000L
@@ -25,14 +25,12 @@ class BindingsConstants {
         @JvmStatic val ISI                     = 1000L
         @JvmStatic val ISI_INF                 = 2000L // distance between stimuli onsets
 
-
         // unimodal
         @JvmStatic val TYPE_A      = 1
         @JvmStatic val TYPE_T      = 2
         @JvmStatic val TYPE_V      = 3
 
         // bimodal
-
         @JvmStatic val TYPE_AT     = 12
         @JvmStatic val TYPE_AV     = 13
         @JvmStatic val TYPE_TV     = 23

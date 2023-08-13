@@ -11,7 +11,7 @@ type:
 abstract class TrialsManager(val type:Int = 0, val mTrials:MutableList<TrialBasic>) {
 
     companion object {
-        val ADAPTIVE_VALUE: Long = -99999999L
+        val ADAPTIVE_VALUE:Float = -99999999.9F
     }
 
     init {

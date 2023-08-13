@@ -3,26 +3,34 @@ package iit.uvip.psysuite.core.tests.tid
 import iit.uvip.psysuite.core.trials.TrialBasic
 
 
-class TrialTID(id:Int=-1, type:Int, val block:Int, val group:Int, val session:Int, val refdelta:Long, nonrefdelta:Long, val ref_first:Boolean, val duration:Long, val answers:List<String>): TrialBasic(id, type,"", -1){
+class TrialTID(id:Int=-1, type:Int, val block:Int, val group:Int, val session:Int, val refdelta:Float, override var magnitude:Float, val ref_first:Boolean, isBefore:Boolean, val duration:Long, val answers:List<String>, isADA:Boolean=false): TrialBasic(id, type,"", extra_param=isBefore, isADA=isADA){
 
     var delta1:Long = 0L
     var delta2:Long = 0L
+
+    val ref_stim_value:Long
+        get() = refdelta.toLong()
+
+    override val stim_value:Long
+        get() = if(extra_param as Boolean)  ref_stim_value - magnitude.toLong()
+        else                                ref_stim_value + magnitude.toLong()
 
     companion object {
         @JvmStatic val LOG_HEADER           = "id\ttype\tbl\tgrp\tses\tanswer\tsucc\telapsed\td1\td2\tref_first\n"
     }
 
     init {
-        updateTrial(nonrefdelta)
+        updateTrial(magnitude)
     }
 
-    override fun updateTrial(newvalue:Long){
+    override fun updateTrial(newvalue: Float):Long{
+        magnitude = newvalue
         if(ref_first){
-            delta1 = refdelta
-            delta2 = newvalue
+            delta1 = ref_stim_value
+            delta2 = stim_value
         }else{
-            delta2 = refdelta
-            delta1 = newvalue
+            delta2 = ref_stim_value
+            delta1 = stim_value
         }
 
         // in quest mode, this assignment is wrong. correct_answer is updated when the new test value is calculated on-line
@@ -30,6 +38,7 @@ class TrialTID(id:Int=-1, type:Int, val block:Int, val group:Int, val session:In
             true    -> 1
             false   -> 0
         }
+        return stim_value
     }
 
     override fun setResponse(result: Int, elapsedms: Int, extra_text:String) {

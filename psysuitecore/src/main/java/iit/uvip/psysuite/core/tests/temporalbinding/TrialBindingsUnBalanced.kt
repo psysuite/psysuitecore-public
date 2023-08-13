@@ -4,11 +4,15 @@ import iit.uvip.psysuite.core.trials.TrialBasic
 
 
 //                     trial_id    0-8      "none"
-class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, override var stim_value:Long=0L, correct_answer:Int=-1):
-    TrialBasic(id, type, "", correct_answer=correct_answer) {
+class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, final override var magnitude:Float, isADA:Boolean=false):
+    TrialBasic(id, type, "", isADA=isADA) {
 
     companion object {
         @JvmStatic val LOG_HEADER = "id\ttype\tdelay\tanswer\tsuccess\telapsed\n"
+    }
+
+    init {
+        updateTrial(magnitude)
     }
 
     // all class exported as string
@@ -25,7 +29,10 @@ class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, override var stim_value:Lon
         return "${super.debugInfo()}, delay=$stim_value"
     }
 
-    override fun updateTrial(newvalue:Long){
-        stim_value = newvalue
+    override fun updateTrial(newvalue: Float): Long {
+        magnitude       = newvalue
+        correct_answer  =   if(magnitude == 0.0F)   1
+                            else                    0
+        return stim_value
     }
 }

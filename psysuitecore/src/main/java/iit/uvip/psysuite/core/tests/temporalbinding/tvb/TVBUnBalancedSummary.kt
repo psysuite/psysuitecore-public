@@ -4,16 +4,16 @@ import android.content.Context
 import iit.uvip.psysuite.core.model.summary.Summary
 import iit.uvip.psysuite.core.model.summary.SummaryCondition
 import iit.uvip.psysuite.core.model.summary.SummaryRow
-import iit.uvip.psysuite.core.trials.TrialBasic
-import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.unbalSD
-import iit.uvip.psysuite.core.tests.temporalbinding.BindingsSummaryCondition
-import iit.uvip.psysuite.core.tests.temporalbinding.BindingsSummaryRow
-import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_T
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_TV
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_T_V
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_V
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_V_T
+import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.unbalSD
+import iit.uvip.psysuite.core.tests.temporalbinding.BindingsSummaryCondition
+import iit.uvip.psysuite.core.tests.temporalbinding.BindingsSummaryRow
+import iit.uvip.psysuite.core.tests.temporalbinding.TrialBindingsUnBalanced
+import iit.uvip.psysuite.core.trials.TrialBasic
 
 
 class TVBUnBalancedSummary(ctx:Context) : Summary(ctx){
@@ -48,7 +48,7 @@ class TVBUnBalancedSummary(ctx:Context) : Summary(ctx){
             when(trial.type){
                 TYPE_T          ->   rows[0].add(trial)
                 TYPE_T_V        -> {
-                    when((trial as TrialBindingsUnBalanced).stim_value){
+                    when((trial as TrialBindingsUnBalanced).magnitude){
                         unbalSD[6].first    -> rows[1].add(trial)
                         unbalSD[5].first    -> rows[2].add(trial)
                         unbalSD[4].first    -> rows[3].add(trial)
@@ -60,7 +60,7 @@ class TVBUnBalancedSummary(ctx:Context) : Summary(ctx){
                 }
                 TYPE_TV         -> rows[8].add(trial)
                 TYPE_V_T        -> {
-                    when((trial as TrialBindingsUnBalanced).stim_value){
+                    when((trial as TrialBindingsUnBalanced).magnitude){
                         unbalSD[0].first    -> rows[9].add(trial)
                         unbalSD[1].first    -> rows[10].add(trial)
                         unbalSD[2].first    -> rows[11].add(trial)
