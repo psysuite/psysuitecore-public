@@ -37,7 +37,7 @@ class SubjectBindingsDialogFragment : SubjectBasicDialogFragment(), AdapterView.
     // create the list of available condition when using adapative trials (all but infants ones)
     override fun initData() {
         super.initData()
-
+        mTaskCodeLabelsADA = mutableListOf()
         for(cond in mTaskCodeLabels){
             if (cond.id != TEST_ATB_TIME_INF && cond.id != TEST_TVB_TIME_INF && cond.id != TEST_AVB_TIME_INF)
                 mTaskCodeLabelsADA.add(cond)

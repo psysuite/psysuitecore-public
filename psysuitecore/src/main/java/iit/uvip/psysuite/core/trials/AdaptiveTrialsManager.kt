@@ -39,11 +39,13 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
     // increment trial, get new value, update with new value and return it
     override fun getNewTrial():TrialBasic {
         val prev_resp = mTrial.user_answer
+        val prev_succ = mTrial.success
+
         currTrial++
 
         val newvalue = getStimulus()
 
-        Log.d("QUEST_VALUE", "${newvalue} , prev resp: $prev_resp")
+        Log.d("QUEST_VALUE", "${newvalue} , prev resp: $prev_resp , prev succ: $prev_succ")
 
         return mTrial
     }

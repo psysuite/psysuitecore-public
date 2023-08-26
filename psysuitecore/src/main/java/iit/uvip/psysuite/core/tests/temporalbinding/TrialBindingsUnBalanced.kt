@@ -31,8 +31,8 @@ class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, final override var magnitud
 
     override fun updateTrial(newvalue: Float): Long {
         magnitude       = newvalue
-        correct_answer  =   if(magnitude == 0.0F)   1
-                            else                    0
+        correct_answer  =   if(magnitude == 0.0F)   0
+                            else                    1
         return stim_value
     }
 }
