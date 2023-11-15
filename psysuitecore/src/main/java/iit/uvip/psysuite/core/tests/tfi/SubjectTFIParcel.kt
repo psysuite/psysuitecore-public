@@ -11,7 +11,7 @@ import org.albaspazio.core.accessory.Device
 @Parcelize
 class SubjectTFIParcel(
 
-    override var classes: List<String> = listOf("iit.uvip.psysuite.core.tests.temporalbinding.tfi.TestTFI",
+    override var classes: List<String> = listOf("iit.uvip.psysuite.core.tests.tfi.TestTFI",
                                                 "iit.uvip.psysuite.core.tests.tfi.AnswerDialogFragmentTFI"),
     override var label: String = "",
     override var age: Int = -1,

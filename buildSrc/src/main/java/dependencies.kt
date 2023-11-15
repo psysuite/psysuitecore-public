@@ -11,6 +11,8 @@ object Configs {
 object Plugins {
 
     const val androidLibrary        = "com.android.library"
+
+    // org.albaspazio.core
     const val kotlinAndroid         = "org.jetbrains.kotlin.android"
     const val kotlinParcelize       = "org.jetbrains.kotlin.plugin.parcelize"
 
@@ -19,6 +21,16 @@ object Plugins {
 
 object Versions {
 
+    const val gradlePlugin = "4.1.1"
+    const val navVersion = "2.3.5"
+    const val navSafeArgsGradlePlugin = "1.0.0"
+    const val fragment = "1.4.0"
+
+    const val permissions = "2.0.54"
+    const val legacy_support = "1.0.0"
+
+
+    // iit.uvip.psysuite.core
     const val chaquopy          = "14.0.2"
     const val legacySupport     = "1.0.0"
     const val preference        = "1.2.0"
@@ -26,7 +38,7 @@ object Versions {
 
     // org.albaspazio.core
     const val kotlin = "1.6.10"
-    const val ktxCore = "1.8.0"
+    const val ktxCore = "1.7.0"
     const val appCompat = "1.5.1"
     const val androidLibrary = "7.2.0"
     const val kparcelablePlugin = "1.7.0"
@@ -36,6 +48,9 @@ object Versions {
     const val localbroadcastmanager = "1.1.0"
     const val navFragment = "2.3.5"
     const val moshi = "1.12.0"
+    const val rxkotlin = "2.4.0"
+    const val rxandroid = "2.1.1"
+    const val sunmail = "1.6.7"
 
     const val junit = "4.13.2"
     const val testRunner = "1.5.2"
@@ -44,8 +59,16 @@ object Versions {
 
 object Dependencies {
 
+    const val permissions       = "com.intentfilter:android-permissions:${Versions.permissions}"
+
     object AndroidX {
 
+        const val localbroadcastmanager   = "androidx.localbroadcastmanager:localbroadcastmanager:${Versions.localbroadcastmanager}"
+        const val livecycleviewmodel= "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}"
+        const val legacy_support    = "androidx.legacy:legacy-support-v4:${Versions.legacy_support}"
+        const val fragment          = "androidx.fragment:fragment:${Versions.fragment}"
+
+        // iit.uvip.psysuite.core
         const val preference        = "androidx.preference:preference-ktx:${Versions.preference}"
         const val recycleView       = "androidx.recyclerview:recyclerview:${Versions.recycleView}"
         const val legacySupport     = "androidx.legacy:legacy-support-v4:${Versions.legacySupport}"
@@ -60,26 +83,37 @@ object Dependencies {
 
         const val livecycledataKtx  = "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.lifecycle}"
         const val livecyclecommon   = "androidx.lifecycle:lifecycle-common-java8:${Versions.lifecycle}"
-        const val localbroadcastmanager   = "androidx.localbroadcastmanager:localbroadcastmanager:${Versions.localbroadcastmanager}"
 
         const val testRunner        = "androidx.test:runner:${Versions.testRunner}"
         const val testEspressoCore  = "androidx.test.espresso:espresso-core:${Versions.testEspressoCore}"
     }
 
     object Kotlin {
-        const val stdLib = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}"
+        const val stdLib    = "org.jetbrains.kotlin:kotlin-stdlib:${Versions.kotlin}"
         const val reflect   = "org.jetbrains.kotlin:kotlin-reflect:${Versions.kotlin}"
     }
 
     object Moshi {
-        const val moshi = "com.squareup.moshi:moshi:${Versions.moshi}"
-        const val moshiKt = "com.squareup.moshi:moshi-kotlin:${Versions.moshi}"
+        const val moshi     = "com.squareup.moshi:moshi:${Versions.moshi}"
+        const val moshiKt   = "com.squareup.moshi:moshi-kotlin:${Versions.moshi}"
     }
 
-    const val junit             = "junit:junit:${Versions.junit}"
+    object rx {
+        const val rxandroid = "io.reactivex.rxjava2:rxandroid:${Versions.rxandroid}"
+        const val rxrelay   = "com.jakewharton.rxrelay2:rxrelay:${Versions.rxandroid}"
+        const val rxkotlin  = "io.reactivex.rxjava2:rxkotlin:${Versions.rxkotlin}"
+    }
+
+    object sunmail {
+        const val mail          = "com.sun.mail:android-mail:${Versions.sunmail}"
+        const val activation    = "com.sun.mail:android-activation:${Versions.sunmail}"
+    }
+
+
+    const val junit         = "junit:junit:${Versions.junit}"
 }
 
 object ProGuards {
-    val androidDefault = "proguard-rules.pro"
-    val proguardTxt = "proguard-android.txt"
+    const val androidDefault = "proguard-rules.pro"
+    const val proguardTxt = "proguard-android.txt"
 }

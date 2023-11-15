@@ -50,6 +50,11 @@ open class SubjectSampleDialogFragment: DialogFragment(), AdapterView.OnItemSele
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentSubjectInfoSampleBinding.bind(mView)
+        initData()
+    }
+
+    // cannot call super.initData as some UI elements are missing
+    private fun initData() {
 
         val subj: SubjectSampleParcel? = arguments?.getParcelable(SubjectBasicDialogFragment.EVENT_SUBJECT)
         if (subj == null) {
@@ -60,12 +65,7 @@ open class SubjectSampleDialogFragment: DialogFragment(), AdapterView.OnItemSele
             dismiss()
             return
         } else subject = subj
-        initData(subject)        
-    }
 
-    // cannot call super.initData as some UI elements are missing
-    private fun initData(subj: SubjectBasicParcel) {
-        
         binding = FragmentSubjectInfoSampleBinding.bind(mView)
 
         val ntm         = getCompanionObjectMethod(subject.classes[0], "getNextTrialModes")

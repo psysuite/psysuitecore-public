@@ -1,19 +1,17 @@
 pluginManagement {
     repositories {
-        gradlePluginPortal()
         google()
+        jcenter()
         mavenCentral()
-        maven {
-            url = uri("https://dl.bintray.com/kyonifer/maven")
-        }
+        gradlePluginPortal()
     }
 }
-
 dependencyResolutionManagement {
-    repositoriesMode.set(org.gradle.api.initialization.resolve.RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
+        jcenter()
     }
 }
 

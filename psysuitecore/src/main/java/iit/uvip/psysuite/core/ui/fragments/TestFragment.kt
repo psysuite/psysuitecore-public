@@ -74,7 +74,6 @@ class TestFragment : BaseFragment(
     landscape           = false,
     hideAndroidControls = true
 ){
-
     private var _binding: FragmentTestBinding? = null
     val binding get() = _binding!!
 
@@ -175,8 +174,10 @@ class TestFragment : BaseFragment(
 
                     TestBasic.TEST_BISECTION_AUDIO,
                     TestBasic.TEST_BISECTION_TACTILE,
+                    TestBasic.TEST_BISECTION_VISUAL,
                     TestBasic.TEST_BISECTION_AUDIO_TACTILE,
-                    TestBasic.TEST_BISECTION_AUDIO_VIDEO    -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager)
+                    TestBasic.TEST_BISECTION_VISUAL_TACTILE,
+                    TestBasic.TEST_BISECTION_AUDIO_VISUAL   -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager)
 
                     TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), requireActivity(), this, mSubjectParcel, speechManager)
 

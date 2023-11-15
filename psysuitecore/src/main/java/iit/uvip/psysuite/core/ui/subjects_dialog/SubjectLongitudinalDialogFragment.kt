@@ -22,7 +22,6 @@ open class SubjectLongitudinalDialogFragment : SubjectBasicSpinnerDialogFragment
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         mView = inflater.inflate(R.layout.fragment_subject_info_basic_spinner, container, false)
         return mView
-
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

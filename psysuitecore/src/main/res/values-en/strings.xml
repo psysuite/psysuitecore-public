@@ -227,7 +227,7 @@
     </string-array>
 
     <string name="bisection_question_text_audio">Was the second sound closer to the first or the third one?</string>
-    <string name="bisection_question_text_video">Was the yellow light closer to the green or the red one?</string>
+    <string name="bisection_question_text_visual">Was the yellow light closer to the green or the red one?</string>
     <string name="bisection_question_text_tactile">Was the second vibration closer to the first or the third one?</string>
     <string name="bisection_question_text_mixed">Was the second stimulus closer to the first or the third one?</string>
 

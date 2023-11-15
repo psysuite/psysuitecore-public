@@ -105,6 +105,16 @@
         app:layout_constraintTop_toTopOf="@+id/guideline9" />
 
 
+    <Spinner
+        android:id="@+id/spCondition"
+        android:layout_width="200dp"
+        android:layout_height="28dp"
+        android:layout_marginTop="88dp"
+        android:layout_marginEnd="20dp"
+        android:textAlignment="textEnd"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline15" />
+
     <Switch
         android:id="@+id/swInteractive"
         android:layout_width="150dp"
@@ -116,12 +126,12 @@
         app:layout_constraintTop_toTopOf="@+id/guideline15" />
 
     <Switch
-        android:id="@+id/swRepeatTrial"
+        android:id="@+id/swShowResult"
         android:layout_width="150dp"
         android:layout_height="24dp"
-        android:layout_marginTop="188dp"
+        android:layout_marginTop="228dp"
         android:layout_marginEnd="16dp"
-        android:text="@string/repeat_trial"
+        android:text="@string/show_result"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline15" />
 
@@ -135,24 +145,13 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline15" />
 
-    <TextView
-        android:id="@+id/labTrialManager"
+    <Switch
+        android:id="@+id/swRepeatTrial"
         android:layout_width="150dp"
-        android:layout_height="27dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="148dp"
-        android:text="@string/trials_management"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline15" />
-
-    <Spinner
-        android:id="@+id/spTrialManager"
-        android:layout_width="150dp"
-        android:layout_height="28dp"
-        android:layout_marginTop="148dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="188dp"
         android:layout_marginEnd="16dp"
-        android:gravity="end"
-        android:textAlignment="textEnd"
+        android:text="@string/repeat_trial"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline15" />
 
@@ -165,27 +164,6 @@
         android:text="@string/condition"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline15" />
-
-    <Spinner
-        android:id="@+id/spCondition"
-        android:layout_width="200dp"
-        android:layout_height="28dp"
-        android:layout_marginTop="88dp"
-        android:layout_marginEnd="20dp"
-        android:textAlignment="textEnd"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline15" />
-
-    <Switch
-        android:id="@+id/swShowResult"
-        android:layout_width="150dp"
-        android:layout_height="24dp"
-        android:layout_marginTop="228dp"
-        android:layout_marginEnd="16dp"
-        android:text="@string/show_result"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline15" />
-
 
     <TextView
         android:id="@+id/labGender"
@@ -231,6 +209,27 @@
         android:textAlignment="textEnd"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/radioGroupGender" />
+
+    <TextView
+        android:id="@+id/labTrialManager"
+        android:layout_width="150dp"
+        android:layout_height="27dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="148dp"
+        android:text="@string/trials_management"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline15" />
+
+    <Spinner
+        android:id="@+id/spTrialManager"
+        android:layout_width="150dp"
+        android:layout_height="28dp"
+        android:layout_marginTop="148dp"
+        android:layout_marginEnd="16dp"
+        android:gravity="end"
+        android:textAlignment="textEnd"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline15" />
 
 
     <TextView

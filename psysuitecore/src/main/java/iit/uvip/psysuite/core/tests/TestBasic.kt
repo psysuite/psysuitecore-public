@@ -284,7 +284,9 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_BISECTION_AUDIO         = 100
         @JvmStatic val TEST_BISECTION_TACTILE       = 101
         @JvmStatic val TEST_BISECTION_AUDIO_TACTILE = 102
-        @JvmStatic val TEST_BISECTION_AUDIO_VIDEO   = 103
+        @JvmStatic val TEST_BISECTION_AUDIO_VISUAL  = 103
+        @JvmStatic val TEST_BISECTION_VISUAL        = 104
+        @JvmStatic val TEST_BISECTION_VISUAL_TACTILE= 105
 
         @JvmStatic val TEST_MUSICAL_METERS          = 110
 

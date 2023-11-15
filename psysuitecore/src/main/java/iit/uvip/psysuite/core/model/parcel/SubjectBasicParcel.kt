@@ -13,6 +13,7 @@ import iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_NEXTTRIAL_NOCHOOSE
 import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.getIds
 import iit.uvip.psysuite.core.utility.getLabelLog
+import kotlinx.parcelize.Parcelize
 
 import org.albaspazio.core.accessory.Device
 import org.albaspazio.core.accessory.getCompanionObjectMethod
@@ -28,7 +29,6 @@ This class manage simple subjects that participate in tests with only one condit
  initializing all the options presently
  particularly: classes, nextTrailModality, showFeedback, canRepeat, showResult, whitenoise
 */
-
 abstract class SubjectBasicParcel(
     open var classes: List<String> = listOf(),
     open var label: String = "",

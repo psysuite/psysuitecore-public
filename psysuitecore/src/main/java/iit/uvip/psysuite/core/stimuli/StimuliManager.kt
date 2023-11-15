@@ -368,7 +368,7 @@ class StimuliManager(
         }
     }
 
-    private fun deliverVStimulus(onEnd:() -> Unit = {}){
+    fun deliverVStimulus(onEnd:() -> Unit = {}){
 
         try {
             if(mVisualManager == null)   throw Exception("deliverVStimulus: mVisualManager is null")

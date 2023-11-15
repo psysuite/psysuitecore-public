@@ -264,7 +264,7 @@
     </string-array>
 
     <string name="bisection_question_text_audio">Il secondo suono era più vicino al primo o al terzo?</string>
-    <string name="bisection_question_text_video">La luce gialla era più vicina alla verde o alla rossa?</string>
+    <string name="bisection_question_text_visual">La luce gialla era più vicina alla verde o alla rossa?</string>
     <string name="bisection_question_text_tactile">La seconda vibrazione era più vicina alla prima o alla terza?</string>
     <string name="bisection_question_text_mixed">Il secondo stimolo era più vicino al primo o al terzo?</string>
 

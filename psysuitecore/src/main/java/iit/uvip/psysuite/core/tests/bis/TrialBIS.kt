@@ -4,14 +4,14 @@ import iit.uvip.psysuite.core.trials.TrialBasic
 
 // trial adopting the pattern where magnitude and stim_value does not coincide....I fix a magnitude and, through the isBefore parameter, I calculate the stim_value
 
-open class TrialBIS(id:Int=-1, type:Int, label:String, final override var magnitude:Float, isBefore:Boolean, val conflict_type:String, val duration:Long, private val duration2:Long=0L, val mid_latency:Long = 500L, isADA:Boolean=false): TrialBasic(id, type, label, extra_param=isBefore, isADA=isADA){
+open class TrialBIS(id:Int=-1, type:Int, label:String, final override var magnitude:Float, isBefore:Boolean, val conflict_type:String, val duration:Long, private val duration2:Long=0L, val mid_latency:Long = 500L, val conflict_magn:Float=0F, isADA:Boolean=false): TrialBasic(id, type, label, extra_param=isBefore, isADA=isADA){
 
     override val stim_value:Long
         get() = if(extra_param as Boolean)   mid_latency - magnitude.toLong()
                 else                         mid_latency + magnitude.toLong()
 
     companion object {
-        @JvmStatic val LOG_HEADER = "id\tlabel\tlat\tconfl\tres\tcor_ans\tuser_ans\telapsed\trep\n"
+        @JvmStatic val LOG_HEADER = "id\tlabel\tlat\tconfl\tres\tcor_ans\tuser_ans\telapsed\trep\tconfl_magn\n"
     }
 
     init {
@@ -24,7 +24,7 @@ open class TrialBIS(id:Int=-1, type:Int, label:String, final override var magnit
 
     // data exported to log file
     override fun Log():String{
-        return "$id\t$label\t$stim_value\t$conflict_type\t$success\t$correct_answer\t$user_answer\t$elapsed\t$repetitions\n"
+        return "$id\t$label\t$stim_value\t$conflict_type\t$success\t$correct_answer\t$user_answer\t$elapsed\t$repetitions\t$conflict_magn\n"
     }
 
     override fun debugInfo():String{
