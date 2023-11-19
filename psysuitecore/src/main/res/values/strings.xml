@@ -317,6 +317,10 @@
     <string name="label_choose_jar">Scegli Urna</string>
 
 
+    <!-- MOTPRED TEST -->
+    <string name="label_motpred" translatable="false">MOTOR PRED (MPRED)</string>
+
+
     <!-- SAMPLE TEST -->
 
     <string name="samples_test">CUSTOM STIMULI CREATOR (CSC) </string>

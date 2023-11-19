@@ -22,6 +22,10 @@ abstract class TrialsManager(val type:Int = 0, val mTrials:MutableList<TrialBasi
 
     var currTrial:Int = 0
 
+    val prevTrial:Int
+        get() = (currTrial - 1).coerceAtLeast(0)
+
+
     val nTrials:Int
         get() = mTrials.size
 
@@ -30,6 +34,9 @@ abstract class TrialsManager(val type:Int = 0, val mTrials:MutableList<TrialBasi
         set(value) {
             mTrials[currTrial] = value
         }
+
+    open val mPrevTrial:TrialBasic
+        get() = mTrials[prevTrial]
 
     // used in Quest managers to set the first value
     open fun getStimulus():Long{

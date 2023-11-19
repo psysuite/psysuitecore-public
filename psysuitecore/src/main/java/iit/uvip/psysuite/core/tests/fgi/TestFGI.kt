@@ -224,7 +224,7 @@ class TestFGI(ctx: Context,
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
-    override fun onEndTrial(prev_result: Int, elapsed: Int, extra_text:String){
+    override fun onNextTrial(){
 
         // if !last trial && !block end => doNextTrial
         when {
@@ -265,7 +265,7 @@ class TestFGI(ctx: Context,
 
             val audio_res = (trial as TrialFGI).audio_name
             if(audio_res.isNotEmpty()) {
-                currMP =(mStimuliManager.getValidAudioManager(null) as AudioManager).loadMPResource(audio_res, loop = true)
+                currMP =(mStimuliManager.getValidAudioManager() as AudioManager).loadMPResource(audio_res, loop = true)
                 mStimuliManager.deliverAlignedStimulus(STIM_AV)
             }
             else    mStimuliManager.deliverAlignedStimulus(STIM_V)

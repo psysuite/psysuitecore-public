@@ -176,7 +176,7 @@ class StimuliManager(
         mVisualManager?.clear()
     }
 
-    fun getValidAudioManager(manager: iStimulusManager?):iStimulusManager?{
+    fun getValidAudioManager(manager: iStimulusManager?=null):iStimulusManager?{
 
         val mam_dur =  mAudioManager?.isValid ?: false
         val am_dur  =  manager?.isValid ?: false
@@ -188,7 +188,7 @@ class StimuliManager(
         }
     }
 
-    fun getValidTactileManager(manager: TactileManager?):TactileManager?{
+    fun getValidTactileManager(manager: TactileManager?=null):TactileManager?{
 
         val mtm_dur =  mTactileManager?.isValid ?: false
         val tm_dur  =  manager?.isValid ?: false
@@ -200,7 +200,7 @@ class StimuliManager(
         }
     }
 
-    fun getValidVisualManager(manager: VisualManager?):VisualManager?{
+    fun getValidVisualManager(manager: VisualManager?=null):VisualManager?{
 
         val mvm_dur =  mVisualManager?.isValid ?: false
         val vm_dur  =  manager?.isValid ?: false
@@ -233,6 +233,13 @@ class StimuliManager(
         return Triple(Collections.max(durs) as Long, Collections.min(durs) as Long, mean)
     }
 
+    fun show(){
+        (getValidVisualManager(null) as VisualManager).hide()
+    }
+
+    fun hide(){
+        (getValidVisualManager(null) as VisualManager).hide()
+    }
 
     //region STIMULI DELIVERY
     // =============================================================================================================================

@@ -168,7 +168,7 @@ class TestBeads(ctx: Context,
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
-    override fun onEndTrial(prev_result: Int, elapsed: Int, extra_text:String){
+    override fun onNextTrial(){
 
         // if !last trial && !block end => doNextTrial
         when {

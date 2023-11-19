@@ -440,9 +440,9 @@ class TestATB(ctx: Context,
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
-    override fun onEndTrial(prev_result: Int, elapsed: Int, extra_text:String){
+    override fun onNextTrial(){
         testEvent.accept(Triple(EVENT_UPDATE_TRIAL_ID, 0L, listOf()))
-        return super.onEndTrial(prev_result, elapsed, extra_text)
+        return super.onNextTrial()
     }
 
     // called by secondTrain

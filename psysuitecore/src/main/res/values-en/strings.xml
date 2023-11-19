@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="lab_test_res">Test Results</string>
 
     <!--    parte comune-->
+    <string name="lab_test_res">Test Results</string>
     <string name="start">start</string>
     <string name="next">next</string>
     <string name="session_text">session</string>

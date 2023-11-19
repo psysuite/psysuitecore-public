@@ -92,28 +92,27 @@ abstract class TestBasic(protected val ctx: Context,
         show(mTrial, true)
     }
 
-    // called by:   - TestFragment:: onAnswerGiven, showShortAbort, btNext ,btAbort (no abort response), btPause
-    // prev trial has ended. set user response (if present)
-    // and check whether entire task/block has ended or call next trial
-    open fun onEndTrial(prev_result: Int = -1, elapsed: Int = -1, extra_text:String = "") {
-
+    open fun onAnswerGiven(prev_result: Int = -1, elapsed: Int = -1, extra_text:String = ""){
         if (prev_result != -1 || extra_text != ""){
             mTrialsManager.setResponse(prev_result, elapsed, extra_text)
             mSummary?.add(mTrial)
         }
-        // if !last trial && !block end => doNextTrial
+    }
+    // called by:   - TestFragment:: onAnswerGiven, showShortAbort, btNext ,btAbort (no abort response), btPause
+    // prev trial has ended. set user response (if present)
+    // and check whether entire task/block has ended or call next trial
+    open fun onNextTrial() {
+
+        saveText(mTrial.Log())
         when {
             currTrial == (nTrials - 1) -> {
-                saveText(mTrial.Log())
                 terminateTest(TEST_COMPLETED)
                 testEvent.accept(Triple(EVENT_TEST_END, null, listOf()))            // END !
             }
             mListBlocks.contains(currTrial) -> {
-                saveText(mTrial.Log())
                 testEvent.accept(Triple(EVENT_BLOCK_END, null, listOf()))
             }
             else -> {
-                saveText(mTrial.Log())
                 testEvent.accept(Triple(EVENT_TRIAL_STARTED, null, listOf()))
                 doNextTrial()
             }
@@ -349,6 +348,9 @@ abstract class TestBasic(protected val ctx: Context,
 
         @JvmStatic val TEST_BEADS_LOWUNCERT         = 210
         @JvmStatic val TEST_BEADS_MIDUNCERT         = 211
+
+        @JvmStatic val TEST_MOTPRE_VISUAL_HORIZ     = 220
+        @JvmStatic val TEST_MOTPRE_VISUAL_VERT      = 221
 
 
         //-----------------------------------------------------------------------------------------

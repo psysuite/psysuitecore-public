@@ -32,6 +32,26 @@ class VisualManager(
         }
     }
 
+    fun hide(){
+        if(type == StimuliManager.STIM_TYPE_V1){
+            imgV.visibility = View.INVISIBLE
+        }
+        else{
+            imgV.setImageResource(drawResOff)
+            imgV.visibility = View.VISIBLE
+        }
+    }
+
+    fun show(){
+        if(type == StimuliManager.STIM_TYPE_V1){
+            imgV.visibility = View.VISIBLE
+        }
+        else{
+            imgV.setImageResource(drawResOn)
+            imgV.visibility = View.VISIBLE
+        }
+    }
+
     override fun deliver(dur: Any?, id: Int){
         val d = dur ?: duration
         if(type == StimuliManager.STIM_TYPE_V1)     imgV.visibility = View.VISIBLE

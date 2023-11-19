@@ -446,9 +446,9 @@ class TestTVB(ctx: Context,
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
-    override fun onEndTrial(prev_result: Int, elapsed: Int, extra_text:String){
+    override fun onNextTrial(){
         testEvent.accept(Triple(EVENT_UPDATE_TRIAL_ID, 0L, listOf()))
-        super.onEndTrial(prev_result, elapsed, extra_text)
+        super.onNextTrial()
     }
 
     // called by secondTrain

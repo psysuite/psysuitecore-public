@@ -22,13 +22,13 @@ import io.reactivex.rxkotlin.subscribeBy
 
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.databinding.FragmentTestBinding
-import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.tests.beads.TestBeads
 import iit.uvip.psysuite.core.tests.bis.TestBIS
 import iit.uvip.psysuite.core.tests.fgi.TestFGI
 import iit.uvip.psysuite.core.tests.mmd.TestMMD
+import iit.uvip.psysuite.core.tests.mpred.TestMotPred
 import iit.uvip.psysuite.core.tests.rivgrp.TestRIVGRP
 import iit.uvip.psysuite.core.tests.sample.SubjectSampleParcel
 import iit.uvip.psysuite.core.tests.sample.TestSample
@@ -40,11 +40,8 @@ import iit.uvip.psysuite.core.tests.tfi.TestTFI
 import iit.uvip.psysuite.core.tests.tid.SubjectTIDParcel
 import iit.uvip.psysuite.core.tests.tid.TestTID
 import iit.uvip.psysuite.core.utility.TestResult
-import iit.uvip.psysuite.core.utility.getIds
-import iit.uvip.psysuite.python.SPython
 
 import org.albaspazio.core.accessory.*
-import org.albaspazio.core.filesystem.getAbsoluteFilePath
 import org.albaspazio.core.fragments.BaseFragment
 import org.albaspazio.core.fragments.setNavigationResult
 import org.albaspazio.core.speech.SpeechManager
@@ -239,7 +236,11 @@ class TestFragment : BaseFragment(
                     TestBasic.TEST_RIVGRP_RIVGRP_HC ->  mTest = TestRIVGRP(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
 
                     TestBasic.TEST_BEADS_LOWUNCERT,
-                    TestBasic.TEST_BEADS_MIDUNCERT ->   mTest = TestBeads(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
+                    TestBasic.TEST_BEADS_MIDUNCERT  ->   mTest = TestBeads(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
+
+                    TestBasic.TEST_MOTPRE_VISUAL_HORIZ,
+                    TestBasic.TEST_MOTPRE_VISUAL_VERT->  mTest = TestMotPred(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
+
                     else    -> {
                         Log.e("TestFragment", "Test non riconosciuto")
                         showAlert(requireActivity(), resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
@@ -299,7 +300,7 @@ class TestFragment : BaseFragment(
             binding.btNext.visibility      = View.INVISIBLE
             binding.btPause.visibility     = View.INVISIBLE
 
-            mTest.onEndTrial()
+            mTest.onNextTrial()
         }
 
         binding.btAbort.setOnClickListener{
@@ -314,7 +315,7 @@ class TestFragment : BaseFragment(
                     binding.btNext.visibility = View.INVISIBLE
                     binding.btPause.visibility = View.INVISIBLE
 
-                    mTest.onEndTrial()
+                    mTest.onNextTrial()
                 })
         }
 
@@ -322,7 +323,7 @@ class TestFragment : BaseFragment(
             if(isPaused){
                 binding.btPause.text = resources.getString(R.string.pause)
                 binding.btPause.visibility = View.INVISIBLE
-                mTest.onEndTrial()
+                mTest.onNextTrial()
             }
             else{
                 mHandler.removeCallbacksAndMessages(null)
@@ -496,7 +497,7 @@ class TestFragment : BaseFragment(
     }
 
     //=======================================================================================================================================
-    // ANSWERS
+    //region ANSWERS
     //=======================================================================================================================================
     // called by mTest.testEvent listener (when test trial stimulus and user response is needed) & onTestSetupComplete (for blind users)
     // PURE UI: create answer dialog
@@ -624,12 +625,14 @@ class TestFragment : BaseFragment(
         }
         closeAnswerDialog()
 
+        mTest.onAnswerGiven(prev_result, elapsed, extra_text)
         // close trial (e.g. set answer) & check whether it was the last => test ended
-        mTest.onEndTrial(prev_result, elapsed, extra_text)
+        mTest.onNextTrial()
     }
+    //#endregion
 
     //---------------------------------------------------------------------------------------------------------------------------------------
-    // ELEMENT VISIBILITY
+    //region ELEMENT VISIBILITY
     //---------------------------------------------------------------------------------------------------------------------------------------
     // manage TrialID text and abort button, called after mTest.nextTrial if test is not finished
     // PURE UI
@@ -685,7 +688,7 @@ class TestFragment : BaseFragment(
             mRunnable = Runnable {
                 binding.btAbort.visibility = View.INVISIBLE
                 binding.btPause.visibility = View.INVISIBLE
-                mTest.onEndTrial()
+                mTest.onNextTrial()
             }
 
             mHandler.postDelayed(mRunnable!!, remove)
@@ -699,6 +702,6 @@ class TestFragment : BaseFragment(
         if(isBlindUser) speechManager.speak(msg)
         else            showToast(msg, requireContext())
     }
-
+    //#endregion
     // ========================================================================================================================================
 }

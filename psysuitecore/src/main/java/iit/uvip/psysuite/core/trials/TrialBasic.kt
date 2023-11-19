@@ -1,7 +1,6 @@
 package iit.uvip.psysuite.core.trials
 
-// extra_param may be used to work in adaptive trials to manage the conversion from magnitude to/from stim_value
-abstract class TrialBasic(var id:Int=-1, val type:Int, protected val label:String="", open var magnitude:Float=0F, val isADA:Boolean=false, var extra_param:Any? = null) {
+abstract class TrialBasic(var id:Int=-1, val type:Int, protected val label:String="", open var magnitude:Float=0F, val isADA:Boolean=false) {
 
     var user_answer:Int             = -1
     var repetitions:Int             =  1
