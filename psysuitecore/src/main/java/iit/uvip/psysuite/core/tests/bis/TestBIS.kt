@@ -88,9 +88,15 @@ class TestBIS(
             else
                 mutableListOf(
                     ConditionData(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO           , TEST_BISECTION_AUDIO          , "${TEST_BASIC_LABEL}$STIMULUS_TYPE_AUDIO_LOG"           , Populations.hearing_populations),
+                    ConditionData(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_VISUAL          , TEST_BISECTION_VISUAL          , "${TEST_BASIC_LABEL}$STIMULUS_TYPE_VISUAL_LOG"          , Populations.sighted_populations),
                     ConditionData(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO_VISUAL     , TEST_BISECTION_AUDIO_VISUAL    , "${TEST_BASIC_LABEL}$STIMULUS_TYPE_AUDIO_VISUAL_LOG"     , Populations.sighted_hearing_populations))
         }
-        fun getNextTrialModes(ctx:Context):List<List<Int>> = listOf(listOf(TEST_NEXTTRIAL_ANSWER)) //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
+        fun getNextTrialModes(ctx: Context):List<List<Int>>{
+            return if(VibrationManager.sysHasVibrator(ctx))
+                listOf(listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER))
+            else
+                listOf(listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER))
+        }
     }
 
     // contains : stimulus type & delay

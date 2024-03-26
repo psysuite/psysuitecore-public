@@ -217,7 +217,7 @@ class AudioManager(
             }
         }    }
 
-    override fun deliver(dur: Any?, id: Int){       // id is the index, within the list given during inizialization, of the sound to be played
+    override fun deliver(dur:Any?, id:Int){       // id is the index, within the list given during inizialization, of the sound to be played
         val d = when(dur){
                     null,0L  -> duration
                     else    -> dur
@@ -249,7 +249,7 @@ class AudioManager(
             }
             StimuliManager.STIM_TYPE_A4 -> {
 //                Log.d(TAG,"${getOnsetDate()}: STARTED in thread, id=$id")
-                PlaybackEngine.deliver(0)
+                PlaybackEngine.deliver(id)
             }
         }
     }

@@ -25,7 +25,6 @@ abstract class TrialsManager(val type:Int = 0, val mTrials:MutableList<TrialBasi
     val prevTrial:Int
         get() = (currTrial - 1).coerceAtLeast(0)
 
-
     val nTrials:Int
         get() = mTrials.size
 

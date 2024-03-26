@@ -5,6 +5,7 @@
 
     <!--    parte comune-->
     <string name="start">inizia</string>
+    <string name="reset" translatable="false">reset</string>
     <string name="next">prossimo</string>
     <string name="session_text">sessione</string>
     <string name="trial_id">trial #%1$s</string>
@@ -101,7 +102,7 @@
 
     <string name="sequence">sequenza</string>
     <string name="session">sessione</string>
-    <string name= "main_email">psysuite.uvip@gmail.com</string>
+    <string name= "main_email" translatable="false">antares.psysuite@gmail.com</string>
 
     <string name="empty_subject_parcel">SOGGETTO E\' VUOTO</string>
     <string name="critical_error">ERRORE IRRECUPERABILE</string>
@@ -317,9 +318,11 @@
     <string name="label_choose_jar">Scegli Urna</string>
 
 
-    <!-- MOTPRED TEST -->
-    <string name="label_motpred" translatable="false">MOTOR PRED (MPRED)</string>
+    <!-- TTC TEST -->
+    <string name="label_ttc" translatable="false">TIME TO CONTACT (TTC)</string>
 
+    <!-- RT TEST -->
+    <string name="RT_label">REACTION TIMES (RT)</string>
 
     <!-- SAMPLE TEST -->
 

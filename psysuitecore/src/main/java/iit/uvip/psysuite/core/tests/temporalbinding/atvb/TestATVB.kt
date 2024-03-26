@@ -758,7 +758,6 @@ A+500,T
 //                mTrials.addAll(trials)
 //             }
 //        }
-//        setTrialsID()   // set id according to their order
 //    }
 
  */

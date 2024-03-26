@@ -80,8 +80,12 @@ class TestTFI(ctx: Context,
                     }
         }
 
-        fun getNextTrialModes(ctx:Context):List<List<Int>> = listOf(listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER))
-
+        fun getNextTrialModes(ctx: Context):List<List<Int>>{
+            return if(VibrationManager.sysHasVibrator(ctx))
+                listOf(listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER))
+            else
+                listOf(listOf(TEST_NEXTTRIAL_ANSWER))
+        }
         fun getEmailRecipients():Array<String> = recipients
     }
 

@@ -22,14 +22,8 @@ class VisualManager(
     }
 
     override fun load(stim1: Any, stim2:Any?, clb: () -> Unit) {
-        if(type == StimuliManager.STIM_TYPE_V1){
-            imgV.setImageResource(stim1 as Int)
-            imgV.visibility = View.INVISIBLE
-        }
-        else{
-            imgV.setImageResource(stim2 as Int)
-            imgV.visibility = View.VISIBLE
-        }
+        if(type == StimuliManager.STIM_TYPE_V1) setResource(stim1 as Int)
+        else                                    setResource(stim2 as Int, false)
     }
 
     fun hide(){
@@ -70,5 +64,11 @@ class VisualManager(
 
     override fun clear() {
         imgV.setImageDrawable(null)
+    }
+
+    fun setResource(resid:Int, hide:Boolean=true){
+        imgV.setImageResource(resid)
+        if(hide) imgV.visibility = View.INVISIBLE
+        else     imgV.visibility = View.VISIBLE
     }
 }

@@ -96,7 +96,6 @@
     <string name="whitenoise">rumore</string>
 
     <string name="session">sessione</string>
-    <string name="main_email">psysuite.uvip@gmail.com</string>
 
     <string name="empty_subject_parcel">SOGGETTO E\' VUOTO</string>
     <string name="critical_error">ERRORE IRRECUPERABILE</string>
@@ -277,6 +276,10 @@
     <string name="label_jar2">Urna 2</string>
     <string name="label_new_bead">Nuova pallina</string>
     <string name="label_choose_jar">Scegli Urna</string>
+
+    <!-- RT TEST -->
+
+    <string name="RT_label">TEMPI DI REAZIONE (RT)</string>
 
 
     <!-- SAMPLE TEST -->

@@ -187,7 +187,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_end="151dp" />
+        app:layout_constraintGuide_end="90dp" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline15"
@@ -197,35 +197,35 @@
         app:layout_constraintGuide_begin="220dp" />
 
 
-    <ImageButton
+    <Button
         android:id="@+id/bt_clear"
-        android:layout_width="121dp"
-        android:layout_height="63dp"
-        android:layout_marginStart="40dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline9"
-        app:srcCompat="@android:drawable/ic_menu_revert" />
+        style="@style/Base.Widget.AppCompat.Button.Colored"
+        android:layout_width="120dp"
+        android:layout_height="60dp"
+        android:background="@color/colorPrimary"
+        android:text="@string/reset"
+        app:layout_constraintEnd_toStartOf="@+id/bt_confirm"
+        app:layout_constraintStart_toEndOf="@+id/bt_cancel"
+        app:layout_constraintTop_toTopOf="@+id/guideline9" />
 
-    <ImageButton
+    <Button
         android:id="@+id/bt_confirm"
-        android:layout_width="130dp"
-        android:layout_height="62dp"
-        android:layout_marginEnd="24dp"
-        android:background="@android:color/transparent"
+        style="@style/Base.Widget.AppCompat.Button.Colored"
+        android:layout_width="120dp"
+        android:layout_height="60dp"
+        android:layout_marginEnd="16dp"
+        android:text="@string/start"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/guideline9"
-        app:srcCompat="@drawable/green_tick" />
+        app:layout_constraintTop_toTopOf="@+id/guideline9" />
 
     <Button
         android:id="@+id/bt_cancel"
         style="@style/Base.Widget.AppCompat.Button.Colored"
-        android:layout_width="371dp"
-        android:layout_height="55dp"
-        android:layout_marginTop="84dp"
+        android:layout_width="120dp"
+        android:layout_height="60dp"
+        android:layout_marginStart="16dp"
+        android:background="@color/design_default_color_error"
         android:text="@string/cancel"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.4"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline9" />
 

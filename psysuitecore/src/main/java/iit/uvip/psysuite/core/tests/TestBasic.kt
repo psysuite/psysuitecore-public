@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.os.Handler
+import android.os.Looper
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.jakewharton.rxrelay2.PublishRelay
@@ -99,7 +100,7 @@ abstract class TestBasic(protected val ctx: Context,
         }
     }
     // called by:   - TestFragment:: onAnswerGiven, showShortAbort, btNext ,btAbort (no abort response), btPause
-    // prev trial has ended. set user response (if present)
+    // prev trial has ended, save it
     // and check whether entire task/block has ended or call next trial
     open fun onNextTrial() {
 
@@ -280,6 +281,11 @@ abstract class TestBasic(protected val ctx: Context,
         //-----------------------------------------------------------------------------------------
         // TESTS UNIQUE CODES
         //-----------------------------------------------------------------------------------------
+
+        @JvmStatic val TEST_RT_AUDIO                = 1
+        @JvmStatic val TEST_RT_TACTILE              = 2
+        @JvmStatic val TEST_RT_VISUAL               = 3
+
         @JvmStatic val TEST_BISECTION_AUDIO         = 100
         @JvmStatic val TEST_BISECTION_TACTILE       = 101
         @JvmStatic val TEST_BISECTION_AUDIO_TACTILE = 102
@@ -349,8 +355,14 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_BEADS_LOWUNCERT         = 210
         @JvmStatic val TEST_BEADS_MIDUNCERT         = 211
 
-        @JvmStatic val TEST_MOTPRE_VISUAL_HORIZ     = 220
-        @JvmStatic val TEST_MOTPRE_VISUAL_VERT      = 221
+        @JvmStatic val TEST_MOTPRE_VH               = 220
+        @JvmStatic val TEST_MOTPRE_VV               = 221
+        @JvmStatic val TEST_MOTPRE_VHV              = 222
+        @JvmStatic val TEST_MOTPRE_VV_CUE_ARROW     = 223
+        @JvmStatic val TEST_MOTPRE_VH_CUE_ARROW     = 224
+        @JvmStatic val TEST_MOTPRE_VV_CUE_WEIGHT    = 225
+        @JvmStatic val TEST_MOTPRE_VH_FACTOR_SPACE  = 226
+        @JvmStatic val TEST_MOTPRE_VH_FACTOR_SPEED  = 227
 
 
         //-----------------------------------------------------------------------------------------
@@ -406,7 +418,7 @@ abstract class TestBasic(protected val ctx: Context,
     // in case of error an exception is thrown and test is aborted.
     // the only susceptible to error is AudioManager in case of the test involves different resources to be loaded
     protected lateinit var mStimuliManager: StimuliManager
-    protected var mStimuliHandler: Handler = Handler()         // IDE suggested: Handler(Looper.myLooper()!!)
+    protected var mStimuliHandler: Handler = Handler(Looper.getMainLooper())         // IDE suggested: Handler(Looper.myLooper()!!)
 
     protected var currStimulusLabel:String      = ""
     protected var currStimulusDuration:Long     = 100L          // default value to be used when stimulus duration in not given

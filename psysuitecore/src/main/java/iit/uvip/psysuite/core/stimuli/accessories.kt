@@ -4,7 +4,7 @@ import android.media.AudioTrack
 import android.media.MediaPlayer
 
 // these handlers have a null property in TestBasic
-// in each subclass, their dependance (vibrator, ImageView) are validated in init.
+// in each subclass, their dependence (vibrator, ImageView) are validated in init.
 
 
 interface iStimulusManager{

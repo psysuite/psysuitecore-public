@@ -28,7 +28,7 @@ import iit.uvip.psysuite.core.tests.beads.TestBeads
 import iit.uvip.psysuite.core.tests.bis.TestBIS
 import iit.uvip.psysuite.core.tests.fgi.TestFGI
 import iit.uvip.psysuite.core.tests.mmd.TestMMD
-import iit.uvip.psysuite.core.tests.mpred.TestMotPred
+import iit.uvip.psysuite.core.tests.ttc.TestTTC
 import iit.uvip.psysuite.core.tests.rivgrp.TestRIVGRP
 import iit.uvip.psysuite.core.tests.sample.SubjectSampleParcel
 import iit.uvip.psysuite.core.tests.sample.TestSample
@@ -219,14 +219,16 @@ class TestFragment : BaseFragment(
                     TestBasic.TEST_TFI,
                     TestBasic.TEST_TFI_BIMODAL,
                     TestBasic.TEST_TFI_AV,
-                    TestBasic.TEST_TFI_TODDLERS ->      mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager)
+                    TestBasic.TEST_TFI_TODDLERS
+                                                    ->  mTest = TestTFI(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager)
 
                     TestBasic.TEST_FGI_1_UNSCRAMBLED,
                     TestBasic.TEST_FGI_1_SCRAMBLED,
                     TestBasic.TEST_FGI_2_UNSCRAMBLED,
                     TestBasic.TEST_FGI_2_SCRAMBLED,
                     TestBasic.TEST_FGI_3_UNSCRAMBLED,
-                    TestBasic.TEST_FGI_3_SCRAMBLED ->   mTest = TestFGI(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
+                    TestBasic.TEST_FGI_3_SCRAMBLED
+                                                    ->   mTest = TestFGI(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
 
                     TestBasic.TEST_RIVGRP_RIV_HF,
                     TestBasic.TEST_RIVGRP_GRP_HF,
@@ -238,8 +240,15 @@ class TestFragment : BaseFragment(
                     TestBasic.TEST_BEADS_LOWUNCERT,
                     TestBasic.TEST_BEADS_MIDUNCERT  ->   mTest = TestBeads(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
 
-                    TestBasic.TEST_MOTPRE_VISUAL_HORIZ,
-                    TestBasic.TEST_MOTPRE_VISUAL_VERT->  mTest = TestMotPred(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
+                    TestBasic.TEST_MOTPRE_VH,
+                    TestBasic.TEST_MOTPRE_VV,
+                    TestBasic.TEST_MOTPRE_VHV,
+                    TestBasic.TEST_MOTPRE_VV_CUE_ARROW,
+                    TestBasic.TEST_MOTPRE_VH_CUE_ARROW,
+                    TestBasic.TEST_MOTPRE_VV_CUE_WEIGHT,
+                    TestBasic.TEST_MOTPRE_VH_FACTOR_SPACE,
+                    TestBasic.TEST_MOTPRE_VH_FACTOR_SPEED
+                                                    ->  mTest = TestTTC(requireContext(), requireActivity(), this, mSubjectParcel, vibrator, binding.circleView, speechManager, mMainView)
 
                     else    -> {
                         Log.e("TestFragment", "Test non riconosciuto")

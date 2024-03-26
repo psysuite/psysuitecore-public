@@ -1,6 +1,10 @@
 package iit.uvip.psysuite.core.trials
 
-abstract class TrialBasic(var id:Int=-1, val type:Int, protected val label:String="", open var magnitude:Float=0F, val isADA:Boolean=false) {
+open class TrialBasic(var id:Int=-1, val type:Int, protected val label:String="", open var magnitude:Float=0F, val isADA:Boolean=false) {
+
+    companion object {
+        @JvmStatic val LOG_HEADER           = "id\tlabel\tres\tcor_ans\tuser_ans\telapsed\trep\n"
+    }
 
     var user_answer:Int             = -1
     var repetitions:Int             =  1
@@ -15,7 +19,9 @@ abstract class TrialBasic(var id:Int=-1, val type:Int, protected val label:Strin
         get() = magnitude.toLong()
 
     // data exported to log file
-    abstract fun Log():String
+    open fun Log():String{
+        return id.toString() +  "\t" + label + "\t" + success.toString() + "\t" + correct_answer + "\t" + user_answer + "\t" + elapsed.toString() + "\t" + repetitions.toString() + "\n"
+    }
 
     open fun debugInfo():String{
         return "lab=$label, type=$type, stim_value=$stim_value, corr_answ=$correct_answer"

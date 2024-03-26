@@ -96,7 +96,6 @@
     <string name="whitenoise">w. noise</string>
 
     <string name="session">session</string>
-    <string name="main_email">psysuite.uvip@gmail.com</string>
 
     <string name="empty_subject_parcel">THE SUBJECT IS EMPTY</string>
     <string name="critical_error">NOT RECOVERABLE ERROR</string>
@@ -278,6 +277,10 @@
     <string name="label_jar2">Bead 2</string>
     <string name="label_new_bead">new ball</string>
     <string name="label_choose_jar">Select bead</string>
+
+    <!-- RT TEST -->
+
+    <string name="RT_label">REACTION TIMES (RT)</string>
 
 
     <!-- SAMPLE TEST -->
