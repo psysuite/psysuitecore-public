@@ -128,15 +128,16 @@ class TestTTC(ctx: Context,
 
     // TASK VARYING SPEED
     // reference movement : 900 px in 2250 ms (0.4 px/ms)
-    // first 550 px in 1375 ms, last 350 px in 875 ms
+    // first 550 px in 1375 ms, last 350 px in 625 ms
     // I want to vary the speed, preserving:
     //          - the 1375 ms of trajectory observation time in all trials.
     //          - the distance of the invisible trajectory
 
     // increasing the speed (e.g. 0.45), the distance of the first part increase to 618.75 px
-    //    speed	    0.36	0.4	    0.45	0.51			vis time = 1375, invis distance = 350
+    //    speed	    0.36	0.4	    0.45	0.51
     //    distance	845	    900	    968.75	1051.25
-    //    duration	2347	2250	2152	2061
+    //    duration	2347.2	2250	2152.7	2061.2
+
 
     private val fixedVisibleTime:Long           = 1375L    // default visible (then it disappears) time in varying speed task
     private val fixedInvisibleDistance:Int      = 350
@@ -230,11 +231,13 @@ class TestTTC(ctx: Context,
     }
 
     // VISUAL - HORIZONTAL -> RIGHT - CHANGE INVISIBILITY ONSET
-    // 2 x 1direction x 4lat x 8rep + 4 test@zero + 3 test = 71  -> 17 trials for one direction, for each (4) latencies + 3 at 0-latency
+    // 2 x 1direction x 4lat x 8rep + 8 test@zero + 3 test = 75  -> 17 trials for one direction, for each (4) latencies + 7 at 0-latency
     private fun createFT_VH_SPACE():List<TrialBasic> {
 
         val alltrials:MutableList<TrialBasic> = mutableListOf()
 
+        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
+        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
         alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
         alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
 
@@ -242,17 +245,19 @@ class TestTTC(ctx: Context,
         alltrials.add(TrialTTC(-1, subject.type, mTestLabel, mPercInvisibility[1], movementDuration, fixedDistance, mDrawablesResource[0], true, true))
         alltrials.add(TrialTTC(-1, subject.type, mTestLabel, mPercInvisibility[0], movementDuration, fixedDistance, mDrawablesResource[0], true, true))
 
-        for (i in 0 until TRIALS_BLOCK_NREP) {
-            val trials: MutableList<TrialBasic> = mutableListOf()
+        val trials: MutableList<TrialBasic> = mutableListOf()
 
+        for (i in 0 until TRIALS_BLOCK_NREP) {
+            trials.clear()
             for(l in mPercInvisibility){
                 trials.add(TrialTTC(-1, subject.type, mTestLabel, movementDuration*l, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
                 trials.add(TrialTTC(-1, subject.type, mTestLabel, movementDuration*l, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
             }
-
             trials.shuffle()
             alltrials.addAll(trials)
         }
+        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
+        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
         alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
         alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, movementDuration, fixedDistance, mDrawablesResource[0], true, true))
 
@@ -260,14 +265,27 @@ class TestTTC(ctx: Context,
     }
 
     // VISUAL - HORIZONTAL -> RIGHT - CHANGE TARGET SPEED
-    // 2 x 1direction x 4lat x 8rep + 8 test@zero with different speed = 72  -> 16 trials for one direction, for each (4) speed + 8 at 0-latency
+    // 2 x 1direction x 4lat x 8rep + 16 test@zero with different speed = 80  -> 16 trials for one direction, for each (4) speed + 16 at 0-latency
     private fun createFT_VH_SPEED():List<TrialBasic> {
-        val alltrials:MutableList<TrialBasic> = mutableListOf()
 
-        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[0], fixedDistance, mDrawablesResource[0], true, true))
-        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[2], fixedDistance, mDrawablesResource[0], true, true))
-        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[1], fixedDistance, mDrawablesResource[0], true, true))
-        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[3], fixedDistance, mDrawablesResource[0], true, true))
+        // these trials are inserted within valid trials
+        val catchtrials:MutableList<TrialBasic> = mutableListOf()
+        catchtrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[0], mDistances[0], mDrawablesResource[0], true, true))
+        catchtrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[1], mDistances[1], mDrawablesResource[0], true, true))
+        catchtrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[2], mDistances[2], mDrawablesResource[0], true, true))
+        catchtrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[3], mDistances[3], mDrawablesResource[0], true, true))
+        catchtrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[0], mDistances[0], mDrawablesResource[0], true, true))
+        catchtrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[1], mDistances[1], mDrawablesResource[0], true, true))
+        catchtrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[2], mDistances[2], mDrawablesResource[0], true, true))
+        catchtrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[3], mDistances[3], mDrawablesResource[0], true, true))
+        catchtrials.shuffle()
+
+        // first 4 trials are catch trials
+        val alltrials:MutableList<TrialBasic> = mutableListOf()
+        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[0], mDistances[0], mDrawablesResource[0], true, true))
+        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[1], mDistances[1], mDrawablesResource[0], true, true))
+        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[2], mDistances[2], mDrawablesResource[0], true, true))
+        alltrials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[3], mDistances[3], mDrawablesResource[0], true, true))
         alltrials.shuffle()
 
         val trials: MutableList<TrialBasic> = mutableListOf()
@@ -276,20 +294,22 @@ class TestTTC(ctx: Context,
             trials.clear()
 
             mDurations.mapIndexed{id, duration ->
-                trials.add(TrialTTC(-1, subject.type, mTestLabel, fixedVisibleTime.toFloat(), duration, mDistances[id], mDrawablesResource[0], true, true))
-                trials.add(TrialTTC(-1, subject.type, mTestLabel, fixedVisibleTime.toFloat(), duration, mDistances[id], mDrawablesResource[0], true, true))
+                trials.add(TrialTTC(-1, subject.type, mTestLabel, duration - fixedVisibleTime.toFloat(), duration, mDistances[id], mDrawablesResource[0], true, true))
+                trials.add(TrialTTC(-1, subject.type, mTestLabel, duration - fixedVisibleTime.toFloat(), duration, mDistances[id], mDrawablesResource[0], true, true))
             }
-
+            trials.add(catchtrials.removeFirst())
             trials.shuffle()
+
             alltrials.addAll(trials)
         }
 
+        // last 4 trials are catch trials
         trials.clear()
-        trials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[0], fixedDistance, mDrawablesResource[0], true, true))
-        trials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[2], fixedDistance, mDrawablesResource[0], true, true))
-        trials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[1], fixedDistance, mDrawablesResource[0], true, true))
-        trials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[3], fixedDistance, mDrawablesResource[0], true, true))
-        alltrials.shuffle()
+        trials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[0], mDistances[0], mDrawablesResource[0], true, true))
+        trials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[1], mDistances[1], mDrawablesResource[0], true, true))
+        trials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[2], mDistances[2], mDrawablesResource[0], true, true))
+        trials.add(TrialTTC(-1, subject.type, mTestLabel, 0F, mDurations[3], mDistances[3], mDrawablesResource[0], true, true))
+        trials.shuffle()
 
         alltrials.addAll(trials)
         return alltrials
