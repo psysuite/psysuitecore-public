@@ -46,10 +46,10 @@ class TestBIS(
         @JvmStatic val STIMULUS_DURATION_VISUAL:Long    = 50
         @JvmStatic val STIMULUS_DURATION_TACTILE:Long   = 50
         @JvmStatic val STIMULUS_DURATION_AUDIO:Long     = 50
-        @JvmStatic val QUESTION_DELAY                   = 1500      // latency
+        @JvmStatic val QUESTION_DELAY                   = 500      // latency
         @JvmStatic val FIRST_STIMULUS_DELAY             = 1000L     // ms to wait before sending the first trial
-        @JvmStatic val LAST_STIMULUS_DELAY              = 1000L     // ms of the third stimulus wrt first
-        @JvmStatic val LAST_STIMULUS_DELAY_SUPRA        = 4000L     // ms of the third stimulus wrt first
+        @JvmStatic val LAST_STIMULUS_DELAY_SUB          = 1000L     // ms of the third stimulus wrt first
+        @JvmStatic val LAST_STIMULUS_DELAY_SUPRA        = 2500L     // ms of the third stimulus wrt first
 
         @JvmStatic val TRIAL_STAGE_1                    = 1
         @JvmStatic val TRIAL_STAGE_2                    = 2
@@ -114,8 +114,8 @@ class TestBIS(
         }
     }
 
-    // contains : stimulus type & delay
-    private var trialsDefaultSchema:List<StimuliSetBIS> = listOf(
+    // region: DEFINE TRIALS SCHEMA: stimulus type & delay
+    private var trialsUnimodalSubSchema:List<StimuliSetBIS> = listOf(
         StimuliSetBIS(4, 300F, true, CONFLICT_TYPE_NONE),
         StimuliSetBIS(5, 200F, true, CONFLICT_TYPE_NONE),
         StimuliSetBIS(6, 100F, true, CONFLICT_TYPE_NONE),
@@ -128,80 +128,72 @@ class TestBIS(
         StimuliSetBIS(4, 300F, false, CONFLICT_TYPE_NONE)
     )
 
-    private val bimodalStimuliDelta = listOf(0F,100F,200F)       // ms between the AV stimuli
+    private var trialsUnimodalSupraSchema:List<StimuliSetBIS> = listOf(
+        StimuliSetBIS(4, 300F, true, CONFLICT_TYPE_NONE),
+        StimuliSetBIS(5, 200F, true, CONFLICT_TYPE_NONE),
+        StimuliSetBIS(6, 100F, true, CONFLICT_TYPE_NONE),
+        StimuliSetBIS(5, 50F, true, CONFLICT_TYPE_NONE),
+        StimuliSetBIS(2, 15F, true, CONFLICT_TYPE_NONE),
+        StimuliSetBIS(2, 15F, false, CONFLICT_TYPE_NONE),
+        StimuliSetBIS(5, 50F, false, CONFLICT_TYPE_NONE),
+        StimuliSetBIS(6, 100F, false, CONFLICT_TYPE_NONE),
+        StimuliSetBIS(5, 200F, false, CONFLICT_TYPE_NONE),
+        StimuliSetBIS(4, 300F, false, CONFLICT_TYPE_NONE)
+    )
 
-    // first stim is delivered at the given latency. the second  AV_STIMULUS_DELTA after
-                                                                        // ntrials  latency conflict-type
+    private val bimodalStimuliDelta = listOf(0F,100F,200F)      // ms between the AV stimuli
+                                                                // first stim is delivered at the given latency. the second  AV_STIMULUS_DELTA after
+                                                                // ntrials latency conflict-type
     // 64 trials
-    private var trialsAudioVisualSchema:List<StimuliSetBIS> = listOf(
-        StimuliSetBIS(2, 300F, true,  STIMULUS_TYPE_VISUAL_AUDIO_LOG),
-        StimuliSetBIS(4, 200F, true,  STIMULUS_TYPE_VISUAL_AUDIO_LOG),
-        StimuliSetBIS(4, 100F, true,  STIMULUS_TYPE_VISUAL_AUDIO_LOG),
-        StimuliSetBIS(4, 50F,  true,  STIMULUS_TYPE_VISUAL_AUDIO_LOG),
-        StimuliSetBIS(2, 15F,  true,  STIMULUS_TYPE_VISUAL_AUDIO_LOG),
-        StimuliSetBIS(2, 15F,  false, STIMULUS_TYPE_VISUAL_AUDIO_LOG),
-        StimuliSetBIS(4, 50F,  false, STIMULUS_TYPE_VISUAL_AUDIO_LOG),
-        StimuliSetBIS(4, 100F, false, STIMULUS_TYPE_VISUAL_AUDIO_LOG),
-        StimuliSetBIS(4, 200F, false, STIMULUS_TYPE_VISUAL_AUDIO_LOG),
-        StimuliSetBIS(2, 300F, false, STIMULUS_TYPE_VISUAL_AUDIO_LOG),
+    private var trialsBimodalSubSchema:List<StimuliSetBIS> = listOf(
+        StimuliSetBIS(2, 300F, true),
+        StimuliSetBIS(4, 200F, true),
+        StimuliSetBIS(4, 100F, true),
+        StimuliSetBIS(4, 50F,  true),
+        StimuliSetBIS(2, 15F,  true),
+        StimuliSetBIS(2, 15F,  false),
+        StimuliSetBIS(4, 50F,  false),
+        StimuliSetBIS(4, 100F, false),
+        StimuliSetBIS(4, 200F, false),
+        StimuliSetBIS(2, 300F, false),
 
-        StimuliSetBIS(2, 300F, true,  STIMULUS_TYPE_AUDIO_VISUAL_LOG),
-        StimuliSetBIS(4, 200F, true,  STIMULUS_TYPE_AUDIO_VISUAL_LOG),
-        StimuliSetBIS(4, 100F, true,  STIMULUS_TYPE_AUDIO_VISUAL_LOG),
-        StimuliSetBIS(4, 50F,  true,  STIMULUS_TYPE_AUDIO_VISUAL_LOG),
-        StimuliSetBIS(2, 15F,  true,  STIMULUS_TYPE_AUDIO_VISUAL_LOG),
-        StimuliSetBIS(2, 15F,  false, STIMULUS_TYPE_AUDIO_VISUAL_LOG),
-        StimuliSetBIS(4, 50F,  false, STIMULUS_TYPE_AUDIO_VISUAL_LOG),
-        StimuliSetBIS(4, 100F, false, STIMULUS_TYPE_AUDIO_VISUAL_LOG),
-        StimuliSetBIS(4, 200F, false, STIMULUS_TYPE_AUDIO_VISUAL_LOG),
-        StimuliSetBIS(2, 300F, false, STIMULUS_TYPE_AUDIO_VISUAL_LOG)
+        StimuliSetBIS(2, 300F, true),
+        StimuliSetBIS(4, 200F, true),
+        StimuliSetBIS(4, 100F, true),
+        StimuliSetBIS(4, 50F,  true),
+        StimuliSetBIS(2, 15F,  true),
+        StimuliSetBIS(2, 15F,  false),
+        StimuliSetBIS(4, 50F,  false),
+        StimuliSetBIS(4, 100F, false),
+        StimuliSetBIS(4, 200F, false),
+        StimuliSetBIS(2, 300F, false)
     )
-    private var trialsVisualTactileSchema:List<StimuliSetBIS> = listOf(
-        StimuliSetBIS(2, 300F, true,  STIMULUS_TYPE_VISUAL_TACTILE_LOG),
-        StimuliSetBIS(4, 200F, true,  STIMULUS_TYPE_VISUAL_TACTILE_LOG),
-        StimuliSetBIS(4, 100F, true,  STIMULUS_TYPE_VISUAL_TACTILE_LOG),
-        StimuliSetBIS(4, 50F,  true,  STIMULUS_TYPE_VISUAL_TACTILE_LOG),
-        StimuliSetBIS(2, 15F,  true,  STIMULUS_TYPE_VISUAL_TACTILE_LOG),
-        StimuliSetBIS(2, 15F,  false, STIMULUS_TYPE_VISUAL_TACTILE_LOG),
-        StimuliSetBIS(4, 50F,  false, STIMULUS_TYPE_VISUAL_TACTILE_LOG),
-        StimuliSetBIS(4, 100F, false, STIMULUS_TYPE_VISUAL_TACTILE_LOG),
-        StimuliSetBIS(4, 200F, false, STIMULUS_TYPE_VISUAL_TACTILE_LOG),
-        StimuliSetBIS(2, 300F, false, STIMULUS_TYPE_VISUAL_TACTILE_LOG),
 
-        StimuliSetBIS(2, 300F, true,  STIMULUS_TYPE_TACTILE_VISUAL_LOG),
-        StimuliSetBIS(4, 200F, true,  STIMULUS_TYPE_TACTILE_VISUAL_LOG),
-        StimuliSetBIS(4, 100F, true,  STIMULUS_TYPE_TACTILE_VISUAL_LOG),
-        StimuliSetBIS(4, 50F,  true,  STIMULUS_TYPE_TACTILE_VISUAL_LOG),
-        StimuliSetBIS(4, 15F,  true,  STIMULUS_TYPE_TACTILE_VISUAL_LOG),
-        StimuliSetBIS(2, 15F,  false, STIMULUS_TYPE_TACTILE_VISUAL_LOG),
-        StimuliSetBIS(2, 50F,  false, STIMULUS_TYPE_TACTILE_VISUAL_LOG),
-        StimuliSetBIS(4, 100F, false, STIMULUS_TYPE_TACTILE_VISUAL_LOG),
-        StimuliSetBIS(4, 200F, false, STIMULUS_TYPE_TACTILE_VISUAL_LOG),
-        StimuliSetBIS(2, 300F, false, STIMULUS_TYPE_TACTILE_VISUAL_LOG)
-    )
-    private var trialsAudioTactileSchema:List<StimuliSetBIS> = listOf(
-        StimuliSetBIS(2, 300F, true,  STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-        StimuliSetBIS(4, 200F, true,  STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-        StimuliSetBIS(4, 100F, true,  STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-        StimuliSetBIS(4, 50F,  true,  STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-        StimuliSetBIS(4, 15F,  true,  STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-        StimuliSetBIS(2, 15F,  false, STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-        StimuliSetBIS(2, 50F,  false, STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-        StimuliSetBIS(4, 100F, false, STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-        StimuliSetBIS(4, 200F, false, STIMULUS_TYPE_AUDIO_TACTILE_LOG),
-        StimuliSetBIS(2, 300F, false, STIMULUS_TYPE_AUDIO_TACTILE_LOG),
+    private var trialsBimodalSupraSchema:List<StimuliSetBIS> = listOf(
+        StimuliSetBIS(2, 300F, true),
+        StimuliSetBIS(4, 200F, true),
+        StimuliSetBIS(4, 100F, true),
+        StimuliSetBIS(4, 50F,  true),
+        StimuliSetBIS(2, 15F,  true),
+        StimuliSetBIS(2, 15F,  false),
+        StimuliSetBIS(4, 50F,  false),
+        StimuliSetBIS(4, 100F, false),
+        StimuliSetBIS(4, 200F, false),
+        StimuliSetBIS(2, 300F, false),
 
-        StimuliSetBIS(2, 300F, true,  STIMULUS_TYPE_TACTILE_AUDIO_LOG),
-        StimuliSetBIS(4, 200F, true,  STIMULUS_TYPE_TACTILE_AUDIO_LOG),
-        StimuliSetBIS(4, 100F, true,  STIMULUS_TYPE_TACTILE_AUDIO_LOG),
-        StimuliSetBIS(4, 50F,  true,  STIMULUS_TYPE_TACTILE_AUDIO_LOG),
-        StimuliSetBIS(4, 15F,  true,  STIMULUS_TYPE_TACTILE_AUDIO_LOG),
-        StimuliSetBIS(2, 15F,  false, STIMULUS_TYPE_TACTILE_AUDIO_LOG),
-        StimuliSetBIS(2, 50F,  false, STIMULUS_TYPE_TACTILE_AUDIO_LOG),
-        StimuliSetBIS(4, 100F, false, STIMULUS_TYPE_TACTILE_AUDIO_LOG),
-        StimuliSetBIS(4, 200F, false, STIMULUS_TYPE_TACTILE_AUDIO_LOG),
-        StimuliSetBIS(2, 300F, false, STIMULUS_TYPE_TACTILE_AUDIO_LOG)
+        StimuliSetBIS(2, 300F, true),
+        StimuliSetBIS(4, 200F, true),
+        StimuliSetBIS(4, 100F, true),
+        StimuliSetBIS(4, 50F,  true),
+        StimuliSetBIS(2, 15F,  true),
+        StimuliSetBIS(2, 15F,  false),
+        StimuliSetBIS(4, 50F,  false),
+        StimuliSetBIS(4, 100F, false),
+        StimuliSetBIS(4, 200F, false),
+        StimuliSetBIS(2, 300F, false)
     )
+
+    // endregion
 
     private var STIM_A  = StimuliManager.STIM_TYPE_A4
     private var STIM_V  = StimuliManager.STIM_TYPE_V2
@@ -214,6 +206,7 @@ class TestBIS(
     private var conflictType:String = ""
     private var lastStimulusDelay:Long = 0L
     private var midLatency:Long = 0L
+    private var questionDelay:Long = 0L
 
     private var currStimulus:String = ""
     private var currStimulusDuration2:Long     = 0L          // default value to be used when second stimulus duration is not given
@@ -221,6 +214,8 @@ class TestBIS(
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.white_circle, R.drawable.red_circle, R.drawable.grey_circle, R.drawable.blue_circle)
 
     private val nAdaptiveTrials             = 88
+    private val nAT_range_sub               = 400F
+    private val nAT_range_supra             = 600F
     private val adoParams                   = ADOParams(guess_rate=0.5F, lapse_rate=0.04F, noise_perc=0.1F)
 
     lateinit private var taskADAParams:TaskADAParams
@@ -238,35 +233,32 @@ class TestBIS(
         validAnswers = mutableListOf(ctx.resources.getString(R.string.bisection_rb1_text), ctx.resources.getString(R.string.bisection_rb3_text))
 
         lastStimulusDelay = if(subject.type > TEST_BISECTION_AUDIO_VISUAL) {
-                                taskADAParams   = TaskADAParams(600.0F, nAdaptiveTrials)
+                                taskADAParams   = TaskADAParams(nAT_range_supra, nAdaptiveTrials)
                                 LAST_STIMULUS_DELAY_SUPRA
                             }
                             else {
-                                taskADAParams = TaskADAParams(400.0F, nAdaptiveTrials)
-                                LAST_STIMULUS_DELAY
+                                taskADAParams = TaskADAParams(nAT_range_sub, nAdaptiveTrials)
+                                LAST_STIMULUS_DELAY_SUB
                             }
-        midLatency = lastStimulusDelay / 2
-        adoWrapper = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
+        midLatency      = lastStimulusDelay / 2
+        questionDelay   = lastStimulusDelay + QUESTION_DELAY
+        adoWrapper      = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
 
-        // set mQuestion/ currStimulusDuration/ currStimulusDuration2/ currStimulusLabel
-        when (subject.type) {
-            TEST_BISECTION_AUDIO, TEST_BISECTION_AUDIO_SUPRA                    -> initBisectionAudio()
-            TEST_BISECTION_TACTILE, TEST_BISECTION_TACTILE_SUPRA                -> initBisectionTactile()
-            TEST_BISECTION_VISUAL, TEST_BISECTION_VISUAL_SUPRA                  -> initBisectionVisual()
-            TEST_BISECTION_AUDIO_TACTILE, TEST_BISECTION_AUDIO_TACTILE_SUPRA    -> initBisectionAudioTactile()
-            TEST_BISECTION_AUDIO_VISUAL, TEST_BISECTION_AUDIO_VISUAL_SUPRA      -> initBisectionAudioVisual()
-            else                                                                -> initBisectionVisualTactile()
-        }
+        initBisection(subject.type) // set mQuestion/ currStimulusDuration/ currStimulusDuration2/ currStimulusLabel
 
         mTrialsManager =
             when (subject.trman_type) {
                 TEST_TRMAN_FIXED -> {
                     val trials = if (!subject.isDebug)
                                     when (subject.type) {
-                                        TEST_BISECTION_AUDIO, TEST_BISECTION_AUDIO_SUPRA,
-                                        TEST_BISECTION_TACTILE, TEST_BISECTION_TACTILE_SUPRA,
-                                        TEST_BISECTION_VISUAL, TEST_BISECTION_VISUAL_SUPRA
-                                                                -> createUnimodalTrials()
+                                        TEST_BISECTION_AUDIO,
+                                        TEST_BISECTION_TACTILE,
+                                        TEST_BISECTION_VISUAL,
+                                                                -> createUnimodalTrials(false)
+                                        TEST_BISECTION_AUDIO_SUPRA,
+                                        TEST_BISECTION_TACTILE_SUPRA,
+                                        TEST_BISECTION_VISUAL_SUPRA
+                                                                -> createUnimodalTrials(true)
                                         else                    -> createBimodalTrials(subject.type)
                                     }
                                  else createTrialsDebug()
@@ -283,7 +275,7 @@ class TestBIS(
                                 trman.getStimulus()
                                 trman
                             }
-                        else  -> throw ImageViewDefinedException("CONDITION NOT ALLOWED")
+                        else  -> throw IllegalArgumentException(ctx.getString(R.string.condition_not_allowed))
                     }
             }
 
@@ -300,8 +292,7 @@ class TestBIS(
                                 StimuliManager(
                                     AudioManager(STIM_A, audioResources[STIMULUS_DURATION_AUDIO] ?: "t1000hz_50ms.wav",  duration = STIMULUS_DURATION_AUDIO, handler = mStimuliHandler, ctx = ctx),
                                     TactileManager(vibrator, duration = STIMULUS_DURATION_TACTILE, handler = mStimuliHandler),
-                                    VisualManager(STIM_V,
-                                        mImageView!!, mDrawablesResource[1], mDrawablesResource[0], duration = STIMULUS_DURATION_VISUAL, handler = mStimuliHandler),
+                                    VisualManager(STIM_V,mImageView!!, mDrawablesResource[1], mDrawablesResource[0], duration = STIMULUS_DURATION_VISUAL, handler = mStimuliHandler),
                                     delaysAligner, ctx, mStimuliHandler)
                             else
                                 StimuliManager(
@@ -316,59 +307,63 @@ class TestBIS(
     // =============================================================================================================================
     // INIT TRIALS
     // =============================================================================================================================
-    private fun initBisectionAudio(){
-        mQuestion               = ctx.resources.getString(R.string.bisection_question_text_audio)
-        currStimulusDuration    = STIMULUS_DURATION_AUDIO
-        currStimulusLabel       = STIMULUS_TYPE_AUDIO
-        conflictType            = CONFLICT_TYPE_NONE
-    }
+    private fun initBisection(type:Int){
 
-    private fun initBisectionTactile(){
-        mQuestion               = ctx.resources.getString(R.string.bisection_question_text_tactile)
-        currStimulusDuration    = STIMULUS_DURATION_TACTILE
-        currStimulusLabel       = STIMULUS_TYPE_TACTILE
-        conflictType            = CONFLICT_TYPE_NONE
+        when (subject.type) {
+            TEST_BISECTION_AUDIO, TEST_BISECTION_AUDIO_SUPRA                    ->{
+                mQuestion               = ctx.resources.getString(R.string.bisection_question_text_audio)
+                currStimulusDuration    = STIMULUS_DURATION_AUDIO
+                currStimulusLabel       = STIMULUS_TYPE_AUDIO
+                conflictType            = CONFLICT_TYPE_NONE                
+            }
+            TEST_BISECTION_TACTILE, TEST_BISECTION_TACTILE_SUPRA                -> {
+                mQuestion               = ctx.resources.getString(R.string.bisection_question_text_tactile)
+                currStimulusDuration    = STIMULUS_DURATION_TACTILE
+                currStimulusLabel       = STIMULUS_TYPE_TACTILE
+                conflictType            = CONFLICT_TYPE_NONE
+            }
+            TEST_BISECTION_VISUAL, TEST_BISECTION_VISUAL_SUPRA                  -> {
+                mQuestion               = ctx.resources.getString(R.string.bisection_question_text_visual)
+                currStimulusDuration    = STIMULUS_DURATION_VISUAL
+                currStimulusLabel       = STIMULUS_TYPE_VISUAL
+                conflictType            = CONFLICT_TYPE_NONE
+            }
+            TEST_BISECTION_AUDIO_TACTILE, TEST_BISECTION_AUDIO_TACTILE_SUPRA    -> {
+                mQuestion               = ctx.resources.getString(R.string.bisection_question_text_mixed)
+                currStimulusDuration    = STIMULUS_DURATION_AUDIO
+                currStimulusDuration2   = STIMULUS_DURATION_TACTILE
+                currStimulusLabel       = STIMULUS_TYPE_AUDIO_TACTILE
+                conflictType            = STIMULUS_TYPE_AUDIO_TACTILE_LOG
+            }
+            TEST_BISECTION_AUDIO_VISUAL, TEST_BISECTION_AUDIO_VISUAL_SUPRA      -> {
+                mQuestion               = ctx.resources.getString(R.string.bisection_question_text_mixed)
+                currStimulusDuration    = STIMULUS_DURATION_AUDIO
+                currStimulusDuration2   = STIMULUS_DURATION_VISUAL
+                currStimulusLabel       = STIMULUS_TYPE_AUDIO_VISUAL
+                conflictType            = STIMULUS_TYPE_AUDIO_VISUAL_LOG
+            }
+            TEST_BISECTION_VISUAL_TACTILE, TEST_BISECTION_VISUAL_TACTILE_SUPRA      -> {
+                mQuestion               = ctx.resources.getString(R.string.bisection_question_text_mixed)
+                currStimulusDuration    = STIMULUS_DURATION_VISUAL
+                currStimulusDuration2   = STIMULUS_DURATION_TACTILE
+                currStimulusLabel       = STIMULUS_TYPE_VISUAL_TACTILE
+                conflictType            = STIMULUS_TYPE_VISUAL_TACTILE_LOG
+            }
+            else -> throw IllegalArgumentException(ctx.getString(R.string.condition_not_allowed))
+        }
     }
-
-    private fun initBisectionVisual(){
-        mQuestion               = ctx.resources.getString(R.string.bisection_question_text_visual)
-        currStimulusDuration    = STIMULUS_DURATION_VISUAL
-        currStimulusLabel       = STIMULUS_TYPE_VISUAL
-        conflictType            = CONFLICT_TYPE_NONE
-    }
-
-    private fun initBisectionAudioTactile(){
-        mQuestion               = ctx.resources.getString(R.string.bisection_question_text_mixed)
-        currStimulusDuration    = STIMULUS_DURATION_AUDIO
-        currStimulusDuration2   = STIMULUS_DURATION_TACTILE
-        currStimulusLabel       = STIMULUS_TYPE_AUDIO_TACTILE
-        conflictType            = STIMULUS_TYPE_AUDIO_TACTILE_LOG
-    }
-
-    private fun initBisectionAudioVisual(){
-        mQuestion               = ctx.resources.getString(R.string.bisection_question_text_mixed)
-        currStimulusDuration    = STIMULUS_DURATION_AUDIO
-        currStimulusDuration2   = STIMULUS_DURATION_VISUAL
-        currStimulusLabel       = STIMULUS_TYPE_AUDIO_VISUAL
-        conflictType            = STIMULUS_TYPE_AUDIO_VISUAL_LOG
-    }
-
-    private fun initBisectionVisualTactile(){
-        mQuestion               = ctx.resources.getString(R.string.bisection_question_text_mixed)
-        currStimulusDuration    = STIMULUS_DURATION_VISUAL
-        currStimulusDuration2   = STIMULUS_DURATION_TACTILE
-        currStimulusLabel       = STIMULUS_TYPE_VISUAL_TACTILE
-        conflictType            = STIMULUS_TYPE_VISUAL_TACTILE_LOG
-    }
-
     // =============================================================================================================================
     // CREATE TRIALS
     // =============================================================================================================================
     // 88 trials
-    private fun createUnimodalTrials():List<TrialBasic>{
+    private fun createUnimodalTrials(isSupra:Boolean=false):List<TrialBasic>{
 
         val trials:MutableList<TrialBasic> = mutableListOf()
-        for(section in trialsDefaultSchema)
+
+        val schema =    if(isSupra)     trialsUnimodalSupraSchema
+                        else            trialsUnimodalSubSchema
+
+        for(section in schema)
             for(i in 0 until section.ntrials){
                 //                      id   type       label,          corr_answ, stim_value          conflict_type     duration  duration2
                 trials.add(TrialBIS(-1, subject.type, currStimulusLabel, section.magnitude, section.isBefore, section.conflict, currStimulusDuration, mid_latency = midLatency))
@@ -404,20 +399,28 @@ class TestBIS(
 
     private fun createBimodalTrials(type:Int):List<TrialBasic>{
         val trials:MutableList<TrialBasic> = mutableListOf()
-        val schema = when(type){
-            TEST_BISECTION_AUDIO_TACTILE    -> trialsAudioTactileSchema
-            TEST_BISECTION_AUDIO_VISUAL     -> trialsAudioVisualSchema
-            else                            -> trialsVisualTactileSchema
+
+        val schema =    if(type > TEST_BISECTION_VISUAL_TACTILE)    trialsBimodalSupraSchema
+                        else                                        trialsUnimodalSubSchema
+
+        val conflict_type = when (type) {
+            TEST_BISECTION_AUDIO_TACTILE    ->  STIMULUS_TYPE_AUDIO_TACTILE_LOG
+            TEST_BISECTION_AUDIO_VISUAL     ->  STIMULUS_TYPE_AUDIO_VISUAL_LOG
+            TEST_BISECTION_VISUAL_TACTILE   ->  STIMULUS_TYPE_VISUAL_TACTILE_LOG
+            else                            ->  throw IllegalArgumentException(ctx.getString(R.string.condition_not_allowed))
         }
+        schema.map { it.conflict = conflict_type }
+
+
         bimodalStimuliDelta.map{
-            for(section in schema)
-                for(i in 0 until section.ntrials){
-                    when(section.conflict == conflictType){
-                        //                                 id   type        label,                   corr_answ, stim_value          conflict_type   duration       duration2
-                        true    -> trials.add(TrialBIS(-1, subject.type, currStimulusLabel, section.magnitude, section.isBefore, section.conflict, currStimulusDuration, currStimulusDuration2, mid_latency = midLatency, conflict_magn=it))
-                        false   -> trials.add(TrialBIS(-1, subject.type, currStimulusLabel, section.magnitude, section.isBefore, section.conflict, currStimulusDuration2, currStimulusDuration, mid_latency = midLatency, conflict_magn=it))
-                    }
+        for(section in schema)
+            for(i in 0 until section.ntrials){
+                when(section.conflict == conflictType){
+                    //                                 id   type        label,                   corr_answ, stim_value          conflict_type   duration       duration2
+                    true    -> trials.add(TrialBIS(-1, subject.type, currStimulusLabel, section.magnitude, section.isBefore, section.conflict, currStimulusDuration, currStimulusDuration2, mid_latency = midLatency, conflict_magn=it))
+                    false   -> trials.add(TrialBIS(-1, subject.type, currStimulusLabel, section.magnitude, section.isBefore, section.conflict, currStimulusDuration2, currStimulusDuration, mid_latency = midLatency, conflict_magn=it))
                 }
+            }
         }
         trials.shuffle()
         return trials
@@ -492,18 +495,18 @@ class TestBIS(
 
         mStimuliHandler.postDelayed({
             onTrialEnd()
-        }, (FIRST_STIMULUS_DELAY - time_shift + QUESTION_DELAY))
+        }, (FIRST_STIMULUS_DELAY - time_shift + questionDelay))
     }
 
     private fun deliverStimulus(trial: TrialBIS, stage:Int=0){
 
         when(trial.type) {
-            TEST_BISECTION_AUDIO            ->  mStimuliManager.deliverAStimulus()
-            TEST_BISECTION_TACTILE          ->  mStimuliManager.deliverTStimulus()
-            TEST_BISECTION_VISUAL           ->  mStimuliManager.deliverVStimulus()
-            TEST_BISECTION_AUDIO_TACTILE    ->  deliverATStimuli(trial, stage)
-            TEST_BISECTION_AUDIO_VISUAL     ->  deliverAVStimuli(trial, stage)
-            TEST_BISECTION_VISUAL_TACTILE   ->  deliverVTStimuli(trial, stage)
+            TEST_BISECTION_AUDIO,           TEST_BISECTION_AUDIO_SUPRA           ->  mStimuliManager.deliverAStimulus()
+            TEST_BISECTION_TACTILE,         TEST_BISECTION_TACTILE_SUPRA         ->  mStimuliManager.deliverTStimulus()
+            TEST_BISECTION_VISUAL,          TEST_BISECTION_VISUAL_SUPRA          ->  mStimuliManager.deliverVStimulus()
+            TEST_BISECTION_AUDIO_TACTILE,   TEST_BISECTION_AUDIO_TACTILE_SUPRA   ->  deliverATStimuli(trial, stage)
+            TEST_BISECTION_AUDIO_VISUAL,    TEST_BISECTION_AUDIO_VISUAL_SUPRA    ->  deliverAVStimuli(trial, stage)
+            TEST_BISECTION_VISUAL_TACTILE,  TEST_BISECTION_VISUAL_TACTILE_SUPRA  ->  deliverVTStimuli(trial, stage)
         }
     }
 
@@ -561,7 +564,7 @@ class TestBIS(
 
     private fun createDefaultTrials_debug(stim_type_label:String, duration:Long, duration2:Long=0L):List<TrialBasic>{
         val trials:MutableList<TrialBasic> = mutableListOf()
-        for(section in trialsDefaultSchema)
+        for(section in trialsUnimodalSubSchema)
             for(i in 0 until 1)
                 trials.add(TrialBIS(-1, subject.type, stim_type_label, section.magnitude, section.isBefore, section.conflict, duration, duration2))
 

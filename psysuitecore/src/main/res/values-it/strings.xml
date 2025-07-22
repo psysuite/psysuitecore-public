@@ -330,5 +330,6 @@
     <string name="sequence">sequenza</string>
     <string name="label_prediction_tests">Test di Predizione</string>
     <string name="label_various_tests">Test Vari</string>
+    <string name="condition_not_allowed">codice sub-test non ammesso</string>
 
 </resources>

@@ -330,5 +330,6 @@
     <string name="sequence">sequence</string>
     <string name="label_prediction_tests">Prediction Tests</string>
     <string name="label_various_tests">Various Tests</string>
+    <string name="condition_not_allowed">sub-test code not allowed</string>
 
 </resources>

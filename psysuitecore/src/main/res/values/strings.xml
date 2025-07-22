@@ -373,5 +373,6 @@
     <string name="show_result">mostra risultato</string>
     <string name="correct_answer">risposta esatta</string>
     <string name="wrong_answer">risposta sbagliata</string>
+    <string name="condition_not_allowed">codice sub-test non ammesso</string>
 
 </resources>

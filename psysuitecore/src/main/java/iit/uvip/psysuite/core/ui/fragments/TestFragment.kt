@@ -170,7 +170,14 @@ class TestFragment : BaseFragment(
                     TestBasic.TEST_BISECTION_VISUAL,
                     TestBasic.TEST_BISECTION_AUDIO_TACTILE,
                     TestBasic.TEST_BISECTION_VISUAL_TACTILE,
-                    TestBasic.TEST_BISECTION_AUDIO_VISUAL   -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager)
+                    TestBasic.TEST_BISECTION_AUDIO_VISUAL,
+                    TestBasic.TEST_BISECTION_AUDIO_SUPRA,
+                    TestBasic.TEST_BISECTION_TACTILE_SUPRA,
+                    TestBasic.TEST_BISECTION_VISUAL_SUPRA,
+                    TestBasic.TEST_BISECTION_AUDIO_TACTILE_SUPRA,
+                    TestBasic.TEST_BISECTION_VISUAL_TACTILE_SUPRA,
+                    TestBasic.TEST_BISECTION_AUDIO_VISUAL_SUPRA
+                                                            -> mTest = TestBIS(requireContext(), requireActivity(), this, mSubjectParcel!!, vibrator, binding.circleView, speechManager)
 
                     TestBasic.TEST_MUSICAL_METERS           -> mTest = TestMMD(requireContext(), requireActivity(), this, mSubjectParcel, speechManager)
 
