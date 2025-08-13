@@ -1,5 +1,7 @@
 package iit.uvip.psysuite.core.tests.tfi
 
+import iit.uvip.psysuite.core.stimuli.StimuliManager
+import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.trials.TrialBasic
 
 /*
@@ -15,6 +17,10 @@ class TrialTFI(id:Int=-1, type:Int, label:String, override var correct_answer:In
         val A: Int = 0
         val T: Int = 1
         val V: Int = 2
+        val STIM_A: Int      = StimuliManager.STIM_TYPE_A4
+        val STIM_V: Int      = StimuliManager.STIM_TYPE_V1
+        val STIM_T: Int      = StimuliManager.STIM_TYPE_T1
+
     }
     val stims:MutableList<Int> = mutableListOf(0,0,0)
 
@@ -37,35 +43,35 @@ class TrialTFI(id:Int=-1, type:Int, label:String, override var correct_answer:In
         return "${super.debugInfo()}, soa=$soa"
     }
 
-    // e.g. codes = [2,2,2]
     private fun processModalities(codes:List<String>){
+        //        modal order   :  a, t, v
+        //        number meaning:  0:never, 1:only second, 2:first & third
         // e.g.   1,2,2  =>  stims[V2T1, A1, V2T1]
         //        0,1,2  =>  stims[V2, T1, V2]
         //        1,1,2  =>  stims[V2, A1T1, V2]
 
-        //              0:a, 1:t, 2:v      never, only second, first & third
         codes.mapIndexed { modality, occurrence ->
             when(occurrence.toInt()){
                 1 -> {
                     when(modality){
-                        0 ->    stims[1] = stims[1] or TestTFI.STIM_A
-                        1 ->    stims[1] = stims[1] or TestTFI.STIM_T
-                        2 ->    stims[1] = stims[1] or TestTFI.STIM_V
+                        0 ->    stims[1] = stims[1] or STIM_A
+                        1 ->    stims[1] = stims[1] or STIM_T
+                        2 ->    stims[1] = stims[1] or STIM_V
                     }
                 }
                 2 -> {
                     when(modality){
                         0 ->    {
-                            stims[0] = stims[0] or TestTFI.STIM_A
-                            stims[2] = stims[2] or TestTFI.STIM_A
+                            stims[0] = stims[0] or STIM_A
+                            stims[2] = stims[2] or STIM_A
                         }
                         1 ->    {
-                            stims[0] = stims[0] or TestTFI.STIM_T
-                            stims[2] = stims[2] or TestTFI.STIM_T
+                            stims[0] = stims[0] or STIM_T
+                            stims[2] = stims[2] or STIM_T
                         }
                         2 ->    {
-                            stims[0] = stims[0] or TestTFI.STIM_V
-                            stims[2] = stims[2] or TestTFI.STIM_V
+                            stims[0] = stims[0] or STIM_V
+                            stims[2] = stims[2] or STIM_V
                         }
                     }
                 }

@@ -49,10 +49,6 @@ class TestFGI(ctx: Context,
 
     override var LOG_TAG: String = TestFGI::class.java.simpleName
 
-    private var STIM_A  = StimuliManager.STIM_TYPE_A2
-    private var STIM_V  = StimuliManager.STIM_TYPE_V1
-    private var STIM_AV = STIM_A or STIM_V
-
     override var mDrawablesResource: MutableList<Int> = mutableListOf(
         R.drawable.fig_fv,
         R.drawable.fig_fv_scr,
@@ -96,21 +92,21 @@ class TestFGI(ctx: Context,
     private val responseSamplingInterval:Long = 100L
 
     companion object {
-        @JvmStatic val NUM_TRIALS       = 1
+        // Overrides
         @JvmStatic val TEST_BASIC_LABEL = "FGI"
+        @JvmStatic val TRIAL_DURATION  = 60000L
 
+        // Test-specific stimulus types
         @JvmStatic val STIMULUS_TYPE_SCRAMBLED      = "_SCR"
         @JvmStatic val STIMULUS_TYPE_UNSCRAMBLED    = ""
-
-        @JvmStatic val STIMULUS_TYPE_1_LOG  = "FV"
-        @JvmStatic val STIMULUS_TYPE_2_LOG  = "YOW"
-        @JvmStatic val STIMULUS_TYPE_3_LOG  = "MW"
-
         @JvmStatic val STIMULUS_TYPE_1  = "FACCE/VASO"
         @JvmStatic val STIMULUS_TYPE_2  = "D. GIOVANE/ANZIANA"
         @JvmStatic val STIMULUS_TYPE_3  = "MUSICISTA/DONNA"
 
-        @JvmStatic val TRIAL_DURATION  = 60000L
+        // Test-specific stimulus logs
+        @JvmStatic val STIMULUS_TYPE_1_LOG  = "FV"
+        @JvmStatic val STIMULUS_TYPE_2_LOG  = "YOW"
+        @JvmStatic val STIMULUS_TYPE_3_LOG  = "MW"
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
             ConditionData("${STIMULUS_TYPE_1}${STIMULUS_TYPE_UNSCRAMBLED}" , TEST_FGI_1_UNSCRAMBLED, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_1_LOG}${STIMULUS_TYPE_UNSCRAMBLED}" , Populations.sighted_hearing_populations),
@@ -184,7 +180,7 @@ class TestFGI(ctx: Context,
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         createResultFile(TrialFGI.LOG_HEADER)
-        currVisual = VisualManager(TestTFI.STIM_V, mImageView!!, onImageRes, duration = currStimulusDuration, handler = mStimuliHandler)
+        currVisual = VisualManager(STIM_V, mImageView!!, onImageRes, duration = currStimulusDuration, handler = mStimuliHandler)
         mStimuliManager = StimuliManager(
             AudioManager(StimuliManager.STIM_TYPE_A2, "",  duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
             null,

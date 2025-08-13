@@ -24,7 +24,6 @@ import iit.uvip.psysuite.core.stimuli.TactileManager
 import iit.uvip.psysuite.core.stimuli.VibratorNotDefinedException
 import iit.uvip.psysuite.core.stimuli.VisualManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.tests.tsp.TrialTSP.Companion.LOG_HEADER
 import iit.uvip.psysuite.core.trials.FixedTrialsManager
 import iit.uvip.psysuite.core.trials.TrialBasic
 import iit.uvip.psysuite.core.ui.fragments.TestFragment
@@ -48,32 +47,23 @@ class TestTSP(ctx: Context,
     override var LOG_TAG: String = TestTSP::class.java.simpleName
 
     companion object {
+        // Overrides
         @JvmStatic val TEST_BASIC_LABEL = "TSP"
 
-        @JvmStatic val STIMULUS_DURATION_VISUAL:Long    = 50
-        @JvmStatic val STIMULUS_DURATION_TACTILE:Long   = 50
-        @JvmStatic val STIMULUS_DURATION_AUDIO:Long     = 50
-
-        @JvmStatic val STIMULUS_TYPE_V  = "V"
-        @JvmStatic val STIMULUS_TYPE_A  = "A"
-        @JvmStatic val STIMULUS_TYPE_T  = "T"
-
-        @JvmStatic val STIMULUS_ISI_SUB     = "SUB"
-        @JvmStatic val STIMULUS_ISI_SUPRA   = "SUPRA"
-
+        // Test-specific durations
         @JvmStatic val ISI_SUB   = 750L
         @JvmStatic val ISI_SUPRA = 1500L
         @JvmStatic val ISI_RND_MULT = 0.1F  // percentage of isi to randomize
         @JvmStatic val FIRST_STIMULUS_DELAY = 1000L  //
-
+        @JvmStatic val N_BLOCKS = 10  //
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
-            ConditionData("${STIMULUS_TYPE_V}_$STIMULUS_ISI_SUB",     TEST_TSP_V_SUB,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V}_${STIMULUS_ISI_SUB}" ,   Populations.sighted_populations),
-            ConditionData("${STIMULUS_TYPE_A}_$STIMULUS_ISI_SUB",     TEST_TSP_A_SUB,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_A}_${STIMULUS_ISI_SUB}" ,   Populations.hearing_populations),
-            ConditionData("${STIMULUS_TYPE_T}_$STIMULUS_ISI_SUB",     TEST_TSP_T_SUB,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_T}_${STIMULUS_ISI_SUB}" ,   Populations.all_populations),
-            ConditionData("${STIMULUS_TYPE_V}_$STIMULUS_ISI_SUPRA",   TEST_TSP_V_SUPRA,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V}_${STIMULUS_ISI_SUPRA}" , Populations.sighted_populations),
-            ConditionData("${STIMULUS_TYPE_A}_$STIMULUS_ISI_SUPRA",   TEST_TSP_A_SUPRA,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_A}_${STIMULUS_ISI_SUPRA}" , Populations.hearing_populations),
-            ConditionData("${STIMULUS_TYPE_T}_$STIMULUS_ISI_SUPRA",   TEST_TSP_T_SUPRA,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_T}_${STIMULUS_ISI_SUPRA}" , Populations.all_populations),
+            ConditionData("${STIMULUS_TYPE_VISUAL_LOG}_${STIMULUS_ISI_SUB}",     TEST_TSP_V_SUB,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_${STIMULUS_ISI_SUB}" ,   Populations.sighted_populations),
+            ConditionData("${STIMULUS_TYPE_AUDIO_LOG}_${STIMULUS_ISI_SUB}",     TEST_TSP_A_SUB,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_LOG}_${STIMULUS_ISI_SUB}" ,   Populations.hearing_populations),
+            ConditionData("${STIMULUS_TYPE_TACTILE_LOG}_${STIMULUS_ISI_SUB}",     TEST_TSP_T_SUB,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE_LOG}_${STIMULUS_ISI_SUB}" ,   Populations.all_populations),
+            ConditionData("${STIMULUS_TYPE_VISUAL_LOG}_${STIMULUS_ISI_SUPRA}",   TEST_TSP_V_SUPRA,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_${STIMULUS_ISI_SUPRA}" , Populations.sighted_populations),
+            ConditionData("${STIMULUS_TYPE_AUDIO_LOG}_${STIMULUS_ISI_SUPRA}",   TEST_TSP_A_SUPRA,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_LOG}_${STIMULUS_ISI_SUPRA}" , Populations.hearing_populations),
+            ConditionData("${STIMULUS_TYPE_TACTILE_LOG}_${STIMULUS_ISI_SUPRA}",   TEST_TSP_T_SUPRA,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE_LOG}_${STIMULUS_ISI_SUPRA}" , Populations.all_populations),
         )
 
         fun getNextTrialModes(ctx:Context):List<List<Int>> =  listOf(
@@ -88,48 +78,49 @@ class TestTSP(ctx: Context,
 
     // region: DEFINE TRIALS SCHEMA: stimulus type & delay
     private var trialsUnimodalSubSchema:List<StimuliSetTSP> = listOf(
-        StimuliSetTSP(5, 200F, true),
-        StimuliSetTSP(5, 150F, true),
-        StimuliSetTSP(5, 100F, true),
-        StimuliSetTSP(5, 50F, true),
-        StimuliSetTSP(5, 50F, false),
-        StimuliSetTSP(5, 100F, false),
-        StimuliSetTSP(5, 150F, false),
-        StimuliSetTSP(5, 200F, false)
+        StimuliSetTSP(2, 200F, true),
+        StimuliSetTSP(2, 150F, true),
+        StimuliSetTSP(2, 100F, true),
+        StimuliSetTSP(2, 50F,  true),
+        StimuliSetTSP(2, 50F,  false),
+        StimuliSetTSP(2, 100F, false),
+        StimuliSetTSP(2, 150F, false),
+        StimuliSetTSP(2, 200F, false)
     )
 
     private var trialsUnimodalSupraSchema:List<StimuliSetTSP> = listOf(
-        StimuliSetTSP(5, 400F, true),
-        StimuliSetTSP(5, 300F, true),
-        StimuliSetTSP(5, 200F, true),
-        StimuliSetTSP(5, 100F, true),
-        StimuliSetTSP(5, 100F, false),
-        StimuliSetTSP(5, 200F, false),
-        StimuliSetTSP(5, 300F, false),
-        StimuliSetTSP(5, 400F, false)
+        StimuliSetTSP(2, 400F, true),
+        StimuliSetTSP(2, 300F, true),
+        StimuliSetTSP(2, 200F, true),
+        StimuliSetTSP(2, 100F, true),
+        StimuliSetTSP(2, 100F, false),
+        StimuliSetTSP(2, 200F, false),
+        StimuliSetTSP(2, 300F, false),
+        StimuliSetTSP(2, 400F, false)
     )
     // endregion
 
-    private var STIM_V  = StimuliManager.STIM_TYPE_V1
-    private var STIM_A  = StimuliManager.STIM_TYPE_A4
-    private var STIM_T  = StimuliManager.STIM_TYPE_T1
     private val binding: FragmentTestBinding =  (hostfragment as TestFragment).binding
 
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.black_circle)
     private var currImageRes:Int        = 0
 
+    // region RESPONSE BUTTON
     private lateinit var mRespButton:Button
     private var parent_layout_width:Int         = 0
     private var parent_layout_height:Int        = 0
     private lateinit var mLayout:ConstraintLayout
     private val isLandscape: Boolean = false
+    // endregion
 
-    private var curr_trial_isi:Long             = 0L     // isi within the cue sequence and base target
+    private var curr_trial_stimvalue:Long             = 0L     // isi within the cue sequence and base target
     private var main_isi:Long                   = 0L     // isi within the cue sequence and base target
     private var nCueStimuli:Int                 = 3      // num of cue stimuli
 
+    private val isSupra: Boolean = (subject.type == TEST_TSP_V_SUPRA || subject.type == TEST_TSP_A_SUPRA || subject.type == TEST_TSP_T_SUPRA)
+
     private val trialAbortTime:Long
-        get()       = (nCueStimuli+2)*curr_trial_isi    // allowed number of ms to wait for user response. after this interval the trial ends
+        get()       = (nCueStimuli+2)*curr_trial_stimvalue    // allowed number of ms to wait for user response. after this interval the trial ends
 
     private var trialStartMs:Long               = 0L                    // trial onset
     private var trialEndMs:Long                 = trialAbortTime        // user press latency
@@ -150,19 +141,19 @@ class TestTSP(ctx: Context,
         when(subject.type){
             TEST_TSP_V_SUB, TEST_TSP_V_SUPRA    -> {
                 currStimulusDuration    = STIMULUS_DURATION_VISUAL
-                currStimulusLabel       = "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V}"
+                currStimulusLabel       = "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}"
             }
             TEST_TSP_A_SUB, TEST_TSP_A_SUPRA    -> {
                 currStimulusDuration    = STIMULUS_DURATION_AUDIO
-                currStimulusLabel       = "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_A}"
+                currStimulusLabel       = "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_LOG}"
             }
             else                                -> {
                 currStimulusDuration    = STIMULUS_DURATION_TACTILE
-                currStimulusLabel       = "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_T}"
+                currStimulusLabel       = "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE_LOG}"
             }
         }
 
-        main_isi = if(subject.type > TEST_TSP_T_SUB) ISI_SUPRA else ISI_SUB
+        main_isi = if(isSupra) ISI_SUPRA else ISI_SUB
         currImageRes            = mDrawablesResource[0]
 
         mTestLabel              = ""
@@ -196,23 +187,27 @@ class TestTSP(ctx: Context,
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
 
     }
+
     // ===================================================================================
     // region CREATE TRIALS
     // ===================================================================================
-    private fun createFixedTrials(isSupra:Boolean=false):List<TrialBasic> {
+    private fun createFixedTrials():List<TrialBasic> {
         
         val trials:MutableList<TrialBasic> = mutableListOf()
 
         val schema =    if(isSupra)     trialsUnimodalSupraSchema
         else                            trialsUnimodalSubSchema
 
-        for(section in schema)
-            for(i in 0 until section.ntrials){
-                trials.add(TrialTSP(-1, subject.type, currStimulusLabel, section.magnitude, main_isi, section.isBefore, nCueStimuli, currStimulusDuration))
-                trials.add(TrialTSP(-1, subject.type, currStimulusLabel, section.magnitude, main_isi, section.isBefore, nCueStimuli, currStimulusDuration))
-            }
+        var temp_trials:MutableList<TrialBasic> = mutableListOf()
 
-        trials.shuffle()
+        for(i in 0 until N_BLOCKS){
+            temp_trials = mutableListOf()
+            for(section in schema)
+                for(i in 0 until section.ntrials)
+                    temp_trials.add(TrialTSP(-1, subject.type, currStimulusLabel, section.magnitude, main_isi, section.isBefore, nCueStimuli, currStimulusDuration))
+            temp_trials.shuffle()
+            trials.addAll(temp_trials)
+        }
         return trials
     }
 
@@ -234,7 +229,7 @@ class TestTSP(ctx: Context,
 
         if(isRepeat)    mTrial.repetitions++
 
-        curr_trial_isi = trial.stim_value
+        curr_trial_stimvalue = trial.stim_value
 
         mStimuliHandler.postDelayed({
             trialStartMs = uptimeMillis()
@@ -244,11 +239,11 @@ class TestTSP(ctx: Context,
 
         mStimuliHandler.postDelayed({
             deliverStimulus(trial as TrialTSP)
-        }, (FIRST_STIMULUS_DELAY + curr_trial_isi))
+        }, (FIRST_STIMULUS_DELAY + curr_trial_stimvalue))
 
         mStimuliHandler.postDelayed({
             deliverStimulus(trial as TrialTSP)
-        }, (FIRST_STIMULUS_DELAY + 2*curr_trial_isi))
+        }, (FIRST_STIMULUS_DELAY + 2*curr_trial_stimvalue))
 
         mStimuliHandler.postDelayed({
             onTrialEnd()

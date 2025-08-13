@@ -27,8 +27,9 @@ class TestMMD(ctx: Context,
     override var LOG_TAG: String = TestMMD::class.java.simpleName
 
     companion object {
-        @JvmStatic val NUM_TRIALS = 18
+        // Overrides
         @JvmStatic val TEST_BASIC_LABEL = "MMD"
+        @JvmStatic val NUM_TRIALS = 18
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(ConditionData(TEST_BASIC_LABEL, TEST_MUSICAL_METERS, TEST_BASIC_LABEL, Populations.hearing_populations))
 

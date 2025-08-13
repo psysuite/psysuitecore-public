@@ -51,11 +51,14 @@ class TestAVB(ctx: Context,
     override var LOG_TAG:String = TestAVB::class.java.simpleName
 
     companion object {
-
+        // Overrides
         @JvmStatic val TEST_BASIC_LABEL         = "AVB"
+
+        // Test-specific repetitions
         @JvmStatic val NUM_REPETITIONS_INFANTS  = 3
         @JvmStatic val NUM_REPETITIONS          = 5
 
+        // Email configuration
         @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com")
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
@@ -76,11 +79,6 @@ class TestAVB(ctx: Context,
     }
 
     private var curISI: Long = 0L
-
-    // stimuli combinations
-    private val STIM_A              = StimuliManager.STIM_TYPE_A4
-    private val STIM_V              = StimuliManager.STIM_TYPE_V1
-    private val BIMODAL_CODE        = STIM_A or STIM_V
 
     private var allQuestions:MutableList<String> = mutableListOf()
     override var mDrawablesResource: MutableList<Int> = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle)
@@ -460,13 +458,13 @@ class TestAVB(ctx: Context,
 
                 // since I have to apply the possible shift, I calculate here the correction and thus call deliverShiftedStimulus for the 1st stim.
                 // for the second I call instead deliverUnBalancedStimuli
-                val corr_delays = delaysAligner.arrangeDelays(BIMODAL_CODE, 0,-1,0) //arrangeDelays(0,0,-1, subject.stimuliDelay)
+                val corr_delays = delaysAligner.arrangeDelays(STIM_AV, 0,-1,0) //arrangeDelays(0,0,-1, subject.stimuliDelay)
                 val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
 
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Triple(EVENT_STIMULI_START, null, listOf()))
                     mStimuliManager.deliverShiftedStimulus(
-                        BIMODAL_CODE,
+                        STIM_AV,
                         corr_delays.a,
                         corr_delays.t,
                         corr_delays.v
@@ -485,13 +483,13 @@ class TestAVB(ctx: Context,
         // since I have to apply the possible shift, I calculate here the correction and thus call deliverShiftedStimulus for the 1st stim.
         // to preserve the desired ISI between stimuli, I also subtract the positive shift that could be eventually imposed to the fastest modality
 
-        val corr_delays = delaysAligner.arrangeDelays(BIMODAL_CODE, 0,-1,0) //arrangeDelays(0,0,-1, subject.stimuliDelay)
+        val corr_delays = delaysAligner.arrangeDelays(STIM_AV, 0,-1,0) //arrangeDelays(0,0,-1, subject.stimuliDelay)
         val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
         // first train
         mStimuliHandler.postDelayed({
             testEvent.accept(Triple(EVENT_STIMULI_START, null, listOf()))
             mStimuliManager.deliverShiftedStimulus(
-                BIMODAL_CODE,
+                STIM_AV,
                 corr_delays.a,
                 corr_delays.t,
                 corr_delays.v
@@ -501,7 +499,7 @@ class TestAVB(ctx: Context,
         mStimuliHandler.postDelayed({
             testEvent.accept(Triple(EVENT_STIMULI_START, null, listOf()))
             mStimuliManager.deliverShiftedStimulus(
-                BIMODAL_CODE,
+                STIM_AV,
                 corr_delays.a,
                 corr_delays.t,
                 corr_delays.v
@@ -511,7 +509,7 @@ class TestAVB(ctx: Context,
         mStimuliHandler.postDelayed({
             testEvent.accept(Triple(EVENT_STIMULI_START, null, listOf()))
             mStimuliManager.deliverShiftedStimulus(
-                BIMODAL_CODE,
+                STIM_AV,
                 corr_delays.a,
                 corr_delays.t,
                 corr_delays.v

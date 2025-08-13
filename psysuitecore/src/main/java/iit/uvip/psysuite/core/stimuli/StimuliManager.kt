@@ -6,7 +6,7 @@ import android.os.Handler
 import android.util.Log
 import iit.uvip.psysuite.core.R
 import org.albaspazio.core.accessory.getOnsetDate
-import java.util.*
+import java.util.Collections
 
 
 class StimuliManager(
@@ -341,48 +341,54 @@ class StimuliManager(
     // UNIMODAL STIMULUS
     // here I give the final deliver command, latencies and delays corrections have been already defined
     // --------------------------------------------------------------------------------------------------------------
-    fun deliverUnimodalStimulus(type:Int, onEnd:() -> Unit = {}){
+    fun deliverUnimodalStimulus(type:Int, duration:Long=-1L, onEnd:() -> Unit = {}){
         when(type){
-            STIM_TYPE_A1, STIM_TYPE_A2, STIM_TYPE_A3, STIM_TYPE_A4 -> deliverAStimulus(onEnd)
-            STIM_TYPE_T1, STIM_TYPE_T2 -> deliverTStimulus(onEnd)
-            STIM_TYPE_V1, STIM_TYPE_V2 -> deliverVStimulus(onEnd)
+            STIM_TYPE_A1, STIM_TYPE_A2, STIM_TYPE_A3, STIM_TYPE_A4 -> deliverAStimulus(duration, onEnd=onEnd)
+            STIM_TYPE_T1, STIM_TYPE_T2 -> deliverTStimulus(duration, onEnd=onEnd)
+            STIM_TYPE_V1, STIM_TYPE_V2 -> deliverVStimulus(duration, onEnd=onEnd)
         }
     }
 
-    fun deliverAStimulus(onEnd:() -> Unit = {}){
+    fun deliverAStimulus(duration: Long = -1L, onEnd: () -> Unit = {}){
         try {
             if (mAudioManager == null) throw Exception("deliverAStimulus: mAudioManager is null")
             if (!mAudioManager.isValid) throw Exception("deliverAStimulus: mAudioManager is not valid")
 
+            val dur = if(duration > 0) duration else mAudioManager.duration
+
             mAudioManager.deliver()
-            mStimuliHandler.postDelayed({ onEnd() }, mAudioManager.duration)
+            mStimuliHandler.postDelayed({ onEnd() }, dur)
         }
         catch (e:Exception){
             throw Exception(e.message)
         }
     }
 
-    fun deliverTStimulus(onEnd:() -> Unit = {}){
+    fun deliverTStimulus(duration: Long = -1L, onEnd: () -> Unit = {}){
         try {
             if(mTactileManager == null)   throw Exception("deliverTStimulus: mTactileManager is null")
             if(!mTactileManager.isValid)  throw Exception("deliverTStimulus: mTactileManager is not valid")
 
+            val dur = if(duration > 0) duration else mTactileManager.duration
+
             mTactileManager.deliver()
-            mStimuliHandler.postDelayed({ onEnd() }, mTactileManager.duration)
+            mStimuliHandler.postDelayed({ onEnd() }, dur)
         }
         catch (e:Exception){
             throw Exception(e.message)
         }
     }
 
-    fun deliverVStimulus(onEnd:() -> Unit = {}){
+    fun deliverVStimulus(duration: Long = -1L, onEnd: () -> Unit = {}){
 
         try {
             if(mVisualManager == null)   throw Exception("deliverVStimulus: mVisualManager is null")
             if(!mVisualManager.isValid)  throw Exception("deliverVStimulus: mVisualManager is not valid")
 
+            val dur = if(duration > 0) duration else mVisualManager.duration
+
             mVisualManager.deliver()
-            mStimuliHandler.postDelayed({ onEnd() }, mVisualManager.duration)
+            mStimuliHandler.postDelayed({ onEnd() }, dur)
         }
         catch (e:Exception){
             throw Exception(e.message)

@@ -22,14 +22,13 @@
 
     <Button
         android:id="@+id/bt_confirm"
-        android:layout_width="328dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="168dp"
+        android:layout_width="321dp"
+        android:layout_height="120dp"
+        android:layout_marginTop="60dp"
         android:background="#8BC34A"
         android:text="@string/next"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.481"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline13" />
 

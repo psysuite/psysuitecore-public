@@ -58,11 +58,14 @@ class TestTVB(ctx: Context,
     override var LOG_TAG:String = TestTVB::class.java.simpleName
 
     companion object {
-
+        // Overrides
         @JvmStatic val TEST_BASIC_LABEL         = "TVB"
+
+        // Test-specific repetitions
         @JvmStatic val NUM_REPETITIONS_INFANTS  = 3
         @JvmStatic val NUM_REPETITIONS          = 5
 
+        // Email configuration
         @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com")
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
@@ -84,16 +87,12 @@ class TestTVB(ctx: Context,
 
     private var curISI: Long = 0L
 
-    private val STIM_T              = StimuliManager.STIM_TYPE_T1
-    private val STIM_V              = StimuliManager.STIM_TYPE_V1
-    private val BIMODAL_CODE        = STIM_T or STIM_V
-
     private var allQuestions:MutableList<String>        = mutableListOf()
     override var mDrawablesResource: MutableList<Int>   = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle)
 
     // 5   different trials
     private val lStimuli: List<StimulusATBInfants> = listOf(
-        StimulusATBInfants(BIMODAL_CODE, 0),
+        StimulusATBInfants(STIM_TV, 0),
         StimulusATBInfants(STIM_T, 1),
         StimulusATBInfants(STIM_V, 2),
         StimulusATBInfants(STIM_TYPE_TIME_T_V800, 3),
@@ -506,13 +505,13 @@ class TestTVB(ctx: Context,
 
                 // since I have to apply the possible shift, I calculate here the correction and thus call deliverShiftedStimulus for the 1st stim.
                 // for the second I call instead deliverUnBalancedStimuli
-                val corr_delays = delaysAligner.arrangeDelays(BIMODAL_CODE, -1,0,0)
+                val corr_delays = delaysAligner.arrangeDelays(STIM_TV, -1,0,0)
                 val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
 
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Triple(EVENT_STIMULI_START, null, listOf()))
                     mStimuliManager.deliverShiftedStimulus(
-                        BIMODAL_CODE,
+                        STIM_TV,
                         corr_delays.a,
                         corr_delays.t,
                         corr_delays.v
@@ -529,7 +528,7 @@ class TestTVB(ctx: Context,
     private fun firstTrain(tactile_pattern: Int) {
 
         // assuming vibro is faster than visual, I delay the former
-        var V_delay     = delaysAligner.getStimuliDelay(BIMODAL_CODE).v - delaysAligner.getStimuliDelay(BIMODAL_CODE).t
+        var V_delay     = delaysAligner.getStimuliDelay(STIM_TV).v - delaysAligner.getStimuliDelay(STIM_TV).t
         val timings = vibration_trains_timings[tactile_pattern]
 
         if(V_delay > 0) {
@@ -564,11 +563,11 @@ class TestTVB(ctx: Context,
     private fun secondTrain(type:Int){
 
         // assuming audio is faster than vibro, I delay the former
-        var A_delay    = delaysAligner.getStimuliDelay(BIMODAL_CODE).t - delaysAligner.getStimuliDelay(BIMODAL_CODE).a
+        var A_delay    = delaysAligner.getStimuliDelay(STIM_TV).t - delaysAligner.getStimuliDelay(STIM_TV).a
         if(A_delay < 0L)   A_delay = 0L    // audio delayed wrt vibro: I previoulsy delayed vibro timings and now I preserve audio
 
         when(type){
-            BIMODAL_CODE,
+            STIM_TV,
             STIM_V,
             STIM_TYPE_TIME_T_V800   -> {
                 mStimuliHandler.postDelayed({

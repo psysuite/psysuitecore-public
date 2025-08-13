@@ -39,7 +39,7 @@ class TestSample(ctx: Context, activity: Activity, hostfragment: Fragment, subje
     override var LOG_TAG:String = TestSample::class.java.simpleName
 
     companion object {
-
+        // Overrides
         @JvmStatic val TEST_BASIC_LABEL     = "SAMPLE"
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> {

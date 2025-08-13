@@ -345,7 +345,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
                                     else                                    TestBasic.TEST_SWITCH_DISABLED
 
         if(binding.spTrialManager.visibility == View.VISIBLE)
-            subject.trman_type =    if(binding.spTrialManager.selectedItemPosition == 0)  TestBasic.TEST_TRMAN_FIXED
+            subject.trman_type =    if(binding.spTrialManager.selectedItemPosition == 0)    TestBasic.TEST_TRMAN_FIXED
                                     else                                                    TestBasic.TEST_TRMAN_ADAPTIVE
 
         if(binding.swShowResult.visibility == View.VISIBLE)

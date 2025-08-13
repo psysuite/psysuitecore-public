@@ -8,7 +8,7 @@ import java.util.*
 import java.util.Collections.max
 
 import iit.uvip.psysuite.core.stimuli.TactileManager
-import iit.uvip.psysuite.core.tests.bis.TestBIS.Companion.CONFLICT_TYPE_NONE
+import iit.uvip.psysuite.core.tests.TestBasic.Companion.CONFLICT_TYPE_NONE
 import org.albaspazio.core.accessory.VibrationManager
 
 
@@ -81,6 +81,7 @@ data class Stimulus3delay(val type: Int, val a:Float, val t:Float, val v:Float)
 data class StimulusDelay (val type: Int, val magnitude:Float)
 data class StimuliSetBIS(val ntrials:Int, val magnitude:Float, val isBefore:Boolean, var conflict:String = CONFLICT_TYPE_NONE)
 data class StimuliSetTSP(val ntrials:Int, val magnitude:Float, val isBefore:Boolean)
+data class StimuliSetTIR(val ntrials:Int, val magnitude:Float, val isBefore:Boolean)
 
 
 fun VibrationManager.vibrateSingle(paramsT: TactileManager) {

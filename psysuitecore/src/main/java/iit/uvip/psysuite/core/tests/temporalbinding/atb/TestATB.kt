@@ -53,11 +53,14 @@ class TestATB(ctx: Context,
     override var LOG_TAG:String = TestATB::class.java.simpleName
 
     companion object {
-
+        // Overrides
         @JvmStatic val TEST_BASIC_LABEL         = "ATB"
+
+        // Test-specific repetitions
         @JvmStatic val NUM_REPETITIONS_INFANTS  = 3
         @JvmStatic val NUM_REPETITIONS          = 5
 
+        // Email configuration
         @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com")
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
@@ -83,8 +86,8 @@ class TestATB(ctx: Context,
     private val STIM_TYPE_TIME_A800_T   = 100
     private val STIM_TYPE_TIME_A_T800   = 101
 
-    private val UNIMODAL_AUDIO_CODE     = StimuliManager.STIM_TYPE_A4
-    private val BIMODAL_CODE            = StimuliManager.STIM_TYPE_A4T1
+    private val UNIMODAL_AUDIO_CODE     = STIM_A
+    private val BIMODAL_CODE            = STIM_A or STIM_T
 
     private var allQuestions:MutableList<String> = mutableListOf()
 

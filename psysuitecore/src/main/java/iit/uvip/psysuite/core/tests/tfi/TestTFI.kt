@@ -52,22 +52,17 @@ class TestTFI(ctx: Context,
 
     companion object {
 
+        @JvmStatic val TEST_BASIC_LABEL                 = "TFI"
+
         @JvmStatic val soa_0:Long = 30L
         @JvmStatic val soa_1:Long = 40L
         @JvmStatic val soa_2:Long = 85L
 
-        @JvmStatic val STIM_A     = StimuliManager.STIM_TYPE_A4
-        @JvmStatic val STIM_V     = StimuliManager.STIM_TYPE_V1
-        @JvmStatic val STIM_T     = StimuliManager.STIM_TYPE_T1
-        @JvmStatic val STIM_ATV   = STIM_A or STIM_T or STIM_V
-
-        @JvmStatic val TEST_BASIC_LABEL                 = "TFI"
         @JvmStatic val TEST_BASIC_TODDLERS_LABEL        = "TFI toddlers"
         @JvmStatic val TEST_BASIC_BI_LABEL              = "TFI BI"
         @JvmStatic val TEST_BASIC_AV_LABEL              = "DFI AV"
         @JvmStatic val recipients:Array<String>         = arrayOf(  "uvip.apptester@gmail.com",
                                                                     "psysuite.uvip@gmail.com")
-
         fun getConditionsInfo(ctx: Context): List<ConditionData>{
 
             return if(VibrationManager.sysHasVibrator(ctx)){
@@ -88,6 +83,10 @@ class TestTFI(ctx: Context,
         }
         fun getEmailRecipients():Array<String> = recipients
     }
+
+    val STIM_A_ = STIM_A
+    val STIM_T_ = STIM_T
+    val STIM_V_ = STIM_V
 
     // =============================================================================================================================
     // INIT

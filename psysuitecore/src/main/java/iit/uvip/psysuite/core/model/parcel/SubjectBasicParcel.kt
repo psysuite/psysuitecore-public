@@ -129,7 +129,14 @@ abstract class SubjectBasicParcel(
 
         val gender_str          =   if(gender == 0) "m"
                                     else            "f"
-        return "${label}_${age}_${gender_str}_${type_label}_$population_label"
+
+        val trmantype_str       = when (trman_type) {
+            TestBasic.TEST_TRMAN_ADAPTIVE -> "AD"
+            TestBasic.TEST_TRMAN_FIXED -> "FX"
+            else -> "MX"
+        }
+
+        return "${label}_${age}_${gender_str}_${type_label}_${trmantype_str}_$population_label"
     }
 
     // RETURNS: label_type_population(_blk)_datetime.txt

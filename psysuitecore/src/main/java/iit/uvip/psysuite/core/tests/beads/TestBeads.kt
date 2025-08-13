@@ -47,8 +47,6 @@ class TestBeads(ctx: Context,
 
     override var LOG_TAG: String = TestBeads::class.java.simpleName
 
-    private var STIM_V  = StimuliManager.STIM_TYPE_V1
-
     private val binding: FragmentTestBinding =  (hostfragment as TestFragment).binding
 
 
@@ -90,11 +88,14 @@ class TestBeads(ctx: Context,
 
 
     companion object {
-        @JvmStatic val TEST_BASIC_LABEL     = "BEADS"
+        // Overrides
+        @JvmStatic val TEST_BASIC_LABEL = "BEADS"
 
+        // Test-specific stimulus types
         @JvmStatic val STIMULUS_TYPE_1_LOG  = "LU"
         @JvmStatic val STIMULUS_TYPE_2_LOG  = "MU"
 
+        // Test-specific bead types
         @JvmStatic val BEAD_TYPE_TRUE       = "G"
         @JvmStatic val BEAD_TYPE_FALSE      = "Y"
 
@@ -142,7 +143,7 @@ class TestBeads(ctx: Context,
         if(mTestLabel.isEmpty()) showToast("Should not happen. given test code was not recognized", ctx)
 
         createResultFile(TrialBeads.LOG_HEADER)
-        currVisual      = VisualManager(TestTFI.STIM_V, mImageView!!, (mTrialsManager.mTrials[0] as TrialBeads).img_res, duration = POSITIVE_INFINITY.toLong(), handler = mStimuliHandler)
+        currVisual      = VisualManager(STIM_V, mImageView!!, (mTrialsManager.mTrials[0] as TrialBeads).img_res, duration = POSITIVE_INFINITY.toLong(), handler = mStimuliHandler)
         mStimuliManager = StimuliManager(null, null, currVisual, delaysAligner, ctx, mStimuliHandler)
 
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))

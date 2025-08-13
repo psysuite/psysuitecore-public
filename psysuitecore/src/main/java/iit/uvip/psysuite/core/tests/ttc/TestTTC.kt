@@ -65,30 +65,26 @@ class TestTTC(ctx: Context,
     private val TRIALS_BLOCK_NREP = 8
 
     companion object {
-        @JvmStatic val TEST_BASIC_LABEL     = "TTC"
+        // Overrides
+        @JvmStatic val TEST_BASIC_LABEL = "TTC"
 
-        @JvmStatic val STIMULUS_TYPE_V_LOG  = "VI"
-
+        // Test-specific motion types
         @JvmStatic val MOTION_TYPE_H_LOG    = "HO"
         @JvmStatic val MOTION_TYPE_V_LOG    = "VE"
 
+        // Test-specific factor types
         @JvmStatic val FACTOR_TYPE_FSP      = "FSPD"
         @JvmStatic val FACTOR_TYPE_VSP_VT   = "VSP_VT"
         @JvmStatic val FACTOR_TYPE_VSP_VPL  = "VSP_VPL"
 
+        // Test-specific cue types
         @JvmStatic val CUE_TYPE_DIR_LOG     = "DIR"
         @JvmStatic val CUE_TYPE_WEIGHT_LOG  = "WGTH"
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
-//            ConditionData("${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_V_LOG}",                        TEST_MOTPRE_VV,                "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_V_LOG}" , Populations.sighted_populations),
-            ConditionData("${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_FSP}",     TEST_MOTPRE_VH_FIXSPEED,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_FSP}" , Populations.sighted_populations),
-            ConditionData("${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_VSP_VT}",  TEST_MOTPRE_VH_VARSPEED_FIXVT,  "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_VSP_VT}" , Populations.sighted_populations),
-            ConditionData("${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_VSP_VPL}", TEST_MOTPRE_VH_VARSPEED_FIXVPL, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_VSP_VPL}" , Populations.sighted_populations),
-//            ConditionData("${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}_${CUE_TYPE_DIR_LOG}",    TEST_MOTPRE_VH_CUE_ARROW,      "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}_${CUE_TYPE_DIR_LOG}" , Populations.sighted_populations),
-//            ConditionData("${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}", TEST_MOTPRE_VV_CUE_ARROW,      "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_V_LOG}_${CUE_TYPE_DIR_LOG}" , Populations.sighted_populations),
-//            ConditionData("${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_V_LOG}", TEST_MOTPRE_VV_CUE_WEIGHT,     "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_V_LOG}_${CUE_TYPE_WEIGHT_LOG}" , Populations.sighted_populations),
-//            ConditionData("${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}", TEST_MOTPRE_VH,                "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}" , Populations.sighted_populations),
-//            ConditionData("${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}_${MOTION_TYPE_V_LOG}", TEST_MOTPRE_VHV,"${TEST_BASIC_LABEL}_${STIMULUS_TYPE_V_LOG}_${MOTION_TYPE_H_LOG}" , Populations.sighted_populations)
+            ConditionData("${STIMULUS_TYPE_VISUAL_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_FSP}",     TEST_MOTPRE_VH_FIXSPEED,        "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_FSP}" , Populations.sighted_populations),
+            ConditionData("${STIMULUS_TYPE_VISUAL_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_VSP_VT}",  TEST_MOTPRE_VH_VARSPEED_FIXVT,  "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_VSP_VT}" , Populations.sighted_populations),
+            ConditionData("${STIMULUS_TYPE_VISUAL_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_VSP_VPL}", TEST_MOTPRE_VH_VARSPEED_FIXVPL, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_${MOTION_TYPE_H_LOG}_${FACTOR_TYPE_VSP_VPL}" , Populations.sighted_populations)
         )
 
         fun getNextTrialModes(ctx:Context):List<List<Int>> =  listOf(
@@ -98,7 +94,6 @@ class TestTTC(ctx: Context,
         )
     }
 
-    private var STIM_V  = StimuliManager.STIM_TYPE_V1
     private val binding: FragmentTestBinding =  (hostfragment as TestFragment).binding
 
     override var mDrawablesResource: MutableList<Int> = mutableListOf(

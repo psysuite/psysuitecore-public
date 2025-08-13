@@ -64,11 +64,14 @@ class TestATVB(
     override var LOG_TAG: String = TestATVB::class.java.simpleName
 
     companion object {
-
+        // Overrides
         @JvmStatic val TEST_BASIC_LABEL     = "ATVB"
+
+        // Test-specific repetitions
         @JvmStatic val NUM_REPETITIONS      = 4
         @JvmStatic val NUM_REPETITIONS_B    = 8
 
+        // Email configuration
         @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com") // "psysuite.uvip@gmail.com",
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
@@ -87,11 +90,6 @@ class TestATVB(
 
         fun getEmailRecipients():Array<String> = recipients
     }
-
-    private val STIM_A      = StimuliManager.STIM_TYPE_A4
-    private val STIM_V      = StimuliManager.STIM_TYPE_V1
-    private val STIM_T      = StimuliManager.STIM_TYPE_T1
-    private val STIM_ATV    = (STIM_A or STIM_T or STIM_V)
 
     private var curISI: Long = 0L
 

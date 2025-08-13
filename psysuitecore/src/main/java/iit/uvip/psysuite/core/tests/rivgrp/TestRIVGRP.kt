@@ -48,9 +48,7 @@ class TestRIVGRP(ctx: Context,
 
     override var LOG_TAG: String = TestRIVGRP::class.java.simpleName
 
-    private var STIM_V  = StimuliManager.STIM_TYPE_V1
-//    private var STIM_A  = StimuliManager.STIM_TYPE_A2
-//    private var STIM_AV = STIM_A or STIM_V
+    override var STIM_A  = StimuliManager.STIM_TYPE_A2
 
     private var isRivalryFirst: Boolean = true
 
@@ -108,17 +106,18 @@ class TestRIVGRP(ctx: Context,
     private val responseSamplingInterval:Long = 100L
 
     companion object {
+        // Overrides
         @JvmStatic val TEST_BASIC_LABEL = "RIVGRP"
 
-
+        // Test-specific stimulus types
         @JvmStatic val STIMULUS_TYPE_1_LOG  = "HF"
         @JvmStatic val STIMULUS_TYPE_2_LOG  = "HC"
-
-        @JvmStatic val EFFECT_TYPE_1_LOG  = "RIV"
-        @JvmStatic val EFFECT_TYPE_2_LOG  = "GRP"
-
         @JvmStatic val STIMULUS_TYPE_1  = "HOUSE_FACE"
         @JvmStatic val STIMULUS_TYPE_2  = "HOUSE_CAR"
+
+        // Test-specific effect types
+        @JvmStatic val EFFECT_TYPE_1_LOG  = "RIV"
+        @JvmStatic val EFFECT_TYPE_2_LOG  = "GRP"
 
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
             ConditionData("${STIMULUS_TYPE_1_LOG}_${EFFECT_TYPE_1_LOG}"                      , TEST_RIVGRP_RIV_HF, "${TEST_BASIC_LABEL}_${STIMULUS_TYPE_1_LOG}_${EFFECT_TYPE_1_LOG}"                         , Populations.sighted_populations),

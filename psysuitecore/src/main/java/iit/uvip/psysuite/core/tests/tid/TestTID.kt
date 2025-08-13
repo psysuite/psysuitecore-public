@@ -58,7 +58,12 @@ class TestTID(ctx: Context,
 
     companion object {
 
+        // overrides
         @JvmStatic val TEST_BASIC_LABEL                 = "TID"
+        @JvmStatic val QUESTION_DELAY:Long              = 50L   // interval between end of last stimulus and dialog onset
+        @JvmStatic val FIRST_STIMULUS_DELAY:Long        = 1500L // ms to wait before sending the first trial
+
+
         @JvmStatic val TRAIN_LABEL                      = "TRAIN"
 
         @JvmStatic var NUM_BLOCKS                       = 2
@@ -87,15 +92,6 @@ class TestTID(ctx: Context,
 //        @JvmStatic val TEST_STIMULUS_DURATION_2_MIN = 1000
 //        @JvmStatic val TEST_STIMULUS_DURATION_2_MAX = 3000
 
-        @JvmStatic val STIMULUS_DURATION_AUDIO:Long     = 50L
-        @JvmStatic val STIMULUS_DURATION_TACTILE:Long   = 50L
-        @JvmStatic val STIMULUS_DURATION_VISUAL:Long    = 50L
-        @JvmStatic val QUESTION_DELAY:Long              = 50L   // interval between end of last stimulus and dialog onset
-        @JvmStatic val FIRST_STIMULUS_DELAY:Long        = 1500L // ms to wait before sending the first trial
-
-        @JvmStatic val STIMULUS_TYPE_AUDIO          = "A"
-        @JvmStatic val STIMULUS_TYPE_TACTILE        = "T"
-        @JvmStatic val STIMULUS_TYPE_VISUAL         = "V"
 
         @JvmStatic val AUDIO_TYPE                   = STIM_TYPE_A4
 
@@ -109,23 +105,23 @@ class TestTID(ctx: Context,
 
             return if(VibrationManager.sysHasVibrator(ctx))
                         mutableListOf(
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts"                 , TEST_TID_SHORT_AUDIO          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$sts_sh", Populations.hearing_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$sts"               , TEST_TID_SHORT_TACTILE        , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE}$sts_sh", Populations.all_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$sts"                , TEST_TID_SHORT_VISUAL         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$sts_sh", Populations.sighted_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}_$sts"  , TEST_TID_SHORT_AUDIO_TRAIN    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}$sts_sh", Populations.hearing_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_${TRAIN_LABEL}_$sts", TEST_TID_SHORT_TACTILE_TRAIN  , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE}_${TRAIN_LABEL}$sts_sh", Populations.all_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}_$sts" , TEST_TID_SHORT_VISUAL_TRAIN   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}$sts_sh", Populations.sighted_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl"                 , TEST_TID_LONG_AUDIO           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$stl_sh", Populations.hearing_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_$stl"               , TEST_TID_LONG_TACTILE         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE}$stl_sh", Populations.all_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$stl"                , TEST_TID_LONG_VISUAL          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$stl_sh", Populations.sighted_populations))
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_LOG}_$sts"                 , TEST_TID_SHORT_AUDIO          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}$sts_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE_LOG}_$sts"               , TEST_TID_SHORT_TACTILE        , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE_LOG}$sts_sh", Populations.all_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_$sts"                , TEST_TID_SHORT_VISUAL         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}$sts_sh", Populations.sighted_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_LOG}_${TRAIN_LABEL}_$sts"  , TEST_TID_SHORT_AUDIO_TRAIN    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}_${TRAIN_LABEL}$sts_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE_LOG}_${TRAIN_LABEL}_$sts", TEST_TID_SHORT_TACTILE_TRAIN  , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE_LOG}_${TRAIN_LABEL}$sts_sh", Populations.all_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_${TRAIN_LABEL}_$sts" , TEST_TID_SHORT_VISUAL_TRAIN   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}_${TRAIN_LABEL}$sts_sh", Populations.sighted_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_LOG}_$stl"                 , TEST_TID_LONG_AUDIO           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}$stl_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE_LOG}_$stl"               , TEST_TID_LONG_TACTILE         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE_LOG}$stl_sh", Populations.all_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_$stl"                , TEST_TID_LONG_VISUAL          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}$stl_sh", Populations.sighted_populations))
                     else
                 mutableListOf(
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$sts"                 , TEST_TID_SHORT_AUDIO          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$sts_sh", Populations.hearing_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$sts"                , TEST_TID_SHORT_VISUAL         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$sts_sh", Populations.sighted_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}_$sts"  , TEST_TID_SHORT_AUDIO_TRAIN    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}_${TRAIN_LABEL}$sts_sh", Populations.hearing_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}_$sts" , TEST_TID_SHORT_VISUAL_TRAIN   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}_${TRAIN_LABEL}$sts_sh", Populations.sighted_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_$stl"                 , TEST_TID_LONG_AUDIO           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO}$stl_sh", Populations.hearing_populations),
-                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_$stl"                , TEST_TID_LONG_VISUAL          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL}$stl_sh", Populations.sighted_populations))
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_LOG}_$sts"                 , TEST_TID_SHORT_AUDIO          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}$sts_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_$sts"                , TEST_TID_SHORT_VISUAL         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}$sts_sh", Populations.sighted_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_LOG}_${TRAIN_LABEL}_$sts"  , TEST_TID_SHORT_AUDIO_TRAIN    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}_${TRAIN_LABEL}$sts_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_${TRAIN_LABEL}_$sts" , TEST_TID_SHORT_VISUAL_TRAIN   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}_${TRAIN_LABEL}$sts_sh", Populations.sighted_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_LOG}_$stl"                 , TEST_TID_LONG_AUDIO           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}$stl_sh", Populations.hearing_populations),
+                            ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_LOG}_$stl"                , TEST_TID_LONG_VISUAL          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}$stl_sh", Populations.sighted_populations))
         }
 
         fun getNextTrialModes(ctx:Context):List<List<Int>>{
