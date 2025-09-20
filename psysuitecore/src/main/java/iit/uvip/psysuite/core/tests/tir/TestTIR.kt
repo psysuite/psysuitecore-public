@@ -125,7 +125,6 @@ class TestTIR(ctx: Context,
         // set question & create mTrials list
         validAnswers    = mutableListOf()
         mQuestion       = ""
-        abortMode       = TEST_ABORT_TRIALEND   // show abort button after each trial
 
         when(subject.type){
             TEST_TIR_V_SUB, TEST_TIR_V_SUPRA    -> {
@@ -164,14 +163,14 @@ class TestTIR(ctx: Context,
             TEST_TIR_V_SUB, TEST_TIR_V_SUPRA -> {
                 StimuliManager(null, null,
                     VisualManager(STIM_T, mImageView!!, currImageRes, duration = currStimulusDuration, handler = mStimuliHandler),
-                    delaysAligner, ctx, mStimuliHandler)
+                    subject.stimuliDelays, ctx, mStimuliHandler)
             }
             TEST_TIR_A_SUB, TEST_TIR_A_SUPRA -> {
                 StimuliManager(AudioManager(STIM_A, audioResources[STIMULUS_DURATION_AUDIO] ?: "t1000hz_50ms.wav",  duration = STIMULUS_DURATION_AUDIO, handler = mStimuliHandler, ctx = ctx), null,null,
-                    delaysAligner, ctx, mStimuliHandler)
+                    subject.stimuliDelays, ctx, mStimuliHandler)
             }
             else -> StimuliManager(null, TactileManager(vibrator!!, duration = STIMULUS_DURATION_TACTILE, handler = mStimuliHandler), null,
-                delaysAligner, ctx, mStimuliHandler)
+                subject.stimuliDelays, ctx, mStimuliHandler)
         }
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
     }
@@ -266,7 +265,7 @@ class TestTIR(ctx: Context,
 
     private fun onRelease(){
         trialEndMs = uptimeMillis() - trialStartMs      // behavioral result
-        onTrialEnd()
+        onStimuliEnd()
     }
 
     private fun deliverStimulus(trial: TrialTIR){
@@ -278,12 +277,13 @@ class TestTIR(ctx: Context,
     }
 
     // +500 ms
-    override fun onTrialEnd() {
+    override fun onStimuliEnd() {
         mStimuliHandler.removeCallbacksAndMessages(null)
         mLayout.removeView(mRespButton)
+        setAnswer(trialEndMs.toInt(), trialEndMs)
 
-        onAnswerGiven(trialEndMs.toInt(), trialEndMs)
-        mStimuliHandler.postDelayed({ testEvent.accept(Triple(EVENT_SHOW_ABORT, null, listOf())) }, 500L)    }
+        super.onStimuliEnd()
+    }
 
     override fun initSummary() {
         TODO("Not yet implemented")

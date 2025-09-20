@@ -34,6 +34,10 @@ class SubjectRIVGRPParcel(
     override var trman_type: Int = TestBasic.TEST_TRMAN_FIXED,
     override var showResult: Int = TestBasic.TEST_SWITCH_DISABLED,
     override var canRepeat:Int = TestBasic.TEST_SWITCH_DISABLED,
+    override var doTraining: Int = TestBasic.TEST_SWITCH_DISABLED,
+    
+    override var showTrialID: Int = TestBasic.TEST_SHOWTRIALS_NEVER,
+    override var abortMode: Int = TestBasic.TEST_ABORT_TRIALEND,
 
     var rivFirst:Boolean        = true,
     var blockDuration:Long      = 150000,
@@ -41,7 +45,7 @@ class SubjectRIVGRPParcel(
     var defaultBlocks:List<Int> = listOf(2,2,4,2,2,4),
     var totBlocks:Int           = 4
 
-) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat){
+) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode){
 
     override fun getFilesPrefix(ctx:Context):String{
 

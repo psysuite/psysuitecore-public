@@ -34,11 +34,15 @@ class SubjectTIDParcel(
     override var trman_type: Int = TestBasic.TEST_TRMAN_CHOOSE_FIXED,
     override var showResult: Int = TestBasic.TEST_SWITCH_CHOOSE_OFF,
     override var canRepeat:Int = TestBasic.TEST_SWITCH_DISABLED,
+    override var doTraining: Int = TestBasic.TEST_SWITCH_DISABLED,
+
+    override var showTrialID: Int = TestBasic.TEST_SHOWTRIALS_ALWAYS,
+    override var abortMode: Int = TestBasic.TEST_ABORT_TRIALEND,
 
     override var spinner_sel: Int = -1,
     override var spinner_data_resource: Int = -1,
     var group: Int = -1
-) : SubjectLongitParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, spinner_sel, spinner_data_resource){
+) : SubjectLongitParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode, spinner_sel, spinner_data_resource){
 
     override fun getFilesPrefix(ctx:Context):String{
 

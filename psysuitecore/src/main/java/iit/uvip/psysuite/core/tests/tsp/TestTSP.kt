@@ -33,7 +33,31 @@ import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
 
-
+/**
+ * Manages the Test of Temporal Sensitivity Perception (TSP).
+ *
+ * This test assesses the subject's ability to perceive the temporal order of stimuli.
+ * It supports visual, auditory, and tactile modalities, with options for sub-threshold
+ * and supra-threshold Inter-Stimulus Intervals (ISIs). The test presents a sequence
+ * of cue stimuli followed by a target stimulus, and the subject is expected to respond
+ * upon perceiving the target.
+ *
+ * The test configuration, including stimulus modality, ISI type (sub/supra),
+ * and debug mode, is determined by the [subject] parcel.
+ *
+ * @property LOG_TAG The log tag for this class, typically the simple name of the class.
+ * @property mDrawablesResource A list of drawable resources, initialized with a black circle for visual stimuli.
+ * @param ctx The Android [Context] for accessing resources and system services.
+ * @param activity The current [Activity] hosting the test.
+ * @param hostfragment The [Fragment] that hosts this test, typically a [TestFragment].
+ * @param subject The [SubjectBasicParcel] containing subject-specific configuration for the test.
+ * @param vibrator An optional [VibrationManager] for delivering tactile stimuli.
+ * @param mImageView An optional [ImageView] for displaying visual stimuli.
+ * @param speechManager An optional [SpeechManager] for voice-related functionalities (not directly used in core logic).
+ * @param mainView The main [View] of the test fragment.
+ * @throws ImageViewDefinedException If a visual TSP test is configured but `mImageView` is null.
+ * @throws VibratorNotDefinedException If a tactile TSP test is configured but `vibrator` is null.
+ */
 class TestTSP(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
@@ -125,6 +149,29 @@ class TestTSP(ctx: Context,
     private var trialStartMs:Long               = 0L                    // trial onset
     private var trialEndMs:Long                 = trialAbortTime        // user press latency
 
+    /**
+     * Initializes the TSP test environment.
+     *
+     * This method performs the following setup tasks:
+     * 1.  Assigns the root view from the binding to `mLayout`.
+     * 2.  Validates that `mImageView` is provided for visual tests and `vibrator` for tactile tests,
+     *     throwing [ImageViewDefinedException] or [VibratorNotDefinedException] respectively if not.
+     * 3.  Sets up basic test parameters: `validAnswers` (empty), `mQuestion` (empty),
+     * 4.  Determines `currStimulusDuration` and `currStimulusLabel` based on the [subject]'s test type
+     *     (visual, auditory, or tactile).
+     * 5.  Sets `main_isi` (Inter-Stimulus Interval) based on whether the test is sub-threshold or supra-threshold.
+     * 6.  Initializes `currImageRes` with the default drawable.
+     * 7.  Determines and sets `mTestLabel` from the condition information. Shows a toast if the test code is unrecognized.
+     * 8.  Creates trials using [createFixedTrials] or [createTrialsDebug] based on `subject.isDebug`
+     *     and initializes `mTrialsManager` with a [FixedTrialsManager].
+     * 9.  Creates the result file using [createResultFile] with the [LOG_HEADER].
+     * 10. Initializes `mStimuliManager` with the appropriate managers (Visual, Audio, or Tactile)
+     *     based on the subject's test type.
+     * 11. Emits an [EVENT_TEST_SETUP_COMPLETED] event.
+     *
+     * @throws ImageViewDefinedException If a visual TSP test is selected but `mImageView` is null.
+     * @throws VibratorNotDefinedException If a tactile TSP test is selected but `vibrator` is null.
+     */
     override fun initTest(){
 
         mLayout = binding.root
@@ -136,7 +183,6 @@ class TestTSP(ctx: Context,
         // set question & create mTrials list
         validAnswers    = mutableListOf()
         mQuestion       = ""
-        abortMode       = TEST_ABORT_TRIALEND   // show abort button after each trial
 
         when(subject.type){
             TEST_TSP_V_SUB, TEST_TSP_V_SUPRA    -> {
@@ -175,14 +221,14 @@ class TestTSP(ctx: Context,
             TEST_TSP_V_SUB, TEST_TSP_V_SUPRA -> {
                 StimuliManager(null, null,
                     VisualManager(STIM_T, mImageView!!, currImageRes, duration = currStimulusDuration, handler = mStimuliHandler),
-                    delaysAligner, ctx, mStimuliHandler)
+                    subject.stimuliDelays, ctx, mStimuliHandler)
             }
             TEST_TSP_A_SUB, TEST_TSP_A_SUPRA -> {
                 StimuliManager(AudioManager(STIM_A, audioResources[STIMULUS_DURATION_AUDIO] ?: "t1000hz_50ms.wav",  duration = STIMULUS_DURATION_AUDIO, handler = mStimuliHandler, ctx = ctx), null,null,
-                    delaysAligner, ctx, mStimuliHandler)
+                    subject.stimuliDelays, ctx, mStimuliHandler)
             }
             else -> StimuliManager(null, TactileManager(vibrator!!, duration = STIMULUS_DURATION_TACTILE, handler = mStimuliHandler), null,
-                delaysAligner, ctx, mStimuliHandler)
+                subject.stimuliDelays, ctx, mStimuliHandler)
         }
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
 
@@ -246,7 +292,7 @@ class TestTSP(ctx: Context,
         }, (FIRST_STIMULUS_DELAY + 2*curr_trial_stimvalue))
 
         mStimuliHandler.postDelayed({
-            onTrialEnd()
+            onStimuliEnd()
         }, (FIRST_STIMULUS_DELAY + trialAbortTime))
     }
 
@@ -299,16 +345,17 @@ class TestTSP(ctx: Context,
 
     private fun onPress(){
         trialEndMs = uptimeMillis() - trialStartMs      // behavioral result
-        onTrialEnd()
+        onStimuliEnd()
     }
 
     // called by button press or timeout
-    override fun onTrialEnd(){
+    override fun onStimuliEnd(){
+
         mStimuliHandler.removeCallbacksAndMessages(null)
         mLayout.removeView(mRespButton)
+        setAnswer(trialEndMs.toInt(), trialEndMs)
 
-        onAnswerGiven(trialEndMs.toInt(), trialEndMs)
-        mStimuliHandler.postDelayed({ testEvent.accept(Triple(EVENT_SHOW_ABORT, null, listOf())) }, 500L)
+        super.onStimuliEnd()
     }
 
     override fun initSummary() {}

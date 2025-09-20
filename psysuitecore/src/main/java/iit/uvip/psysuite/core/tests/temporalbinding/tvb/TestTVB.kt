@@ -45,7 +45,22 @@ import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showToast
 import kotlin.math.roundToInt
 
-
+/**
+ * Manages the Tactile-Visual Binding (TVB) test.
+ * This test assesses the temporal binding of tactile and visual stimuli by presenting them
+ * at varying offsets and asking the subject to judge their synchrony or temporal order.
+ * It supports various sub-tasks including single stimulus timing, double stimulus timing,
+ * and an infant-specific version.
+ * The test can be run in fixed or adaptive mode for trial management.
+ *
+ * @param ctx The application context.
+ * @param activity The hosting activity.
+ * @param hostfragment The hosting fragment.
+ * @param subject The subject details.
+ * @param vibrator The vibration manager for tactile stimuli.
+ * @param mImageView The ImageView for displaying visual stimuli.
+ * @param speechManager The speech manager for auditory feedback or instructions.
+ */
 class TestTVB(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
@@ -55,19 +70,41 @@ class TestTVB(ctx: Context,
               speechManager: SpeechManager?
 ) : TestBasic(ctx, activity, hostfragment, subject, vibrator, mImageView, speechManager)
 {
+    /**
+     * Tag for logging purposes, specific to this class.
+     */
     override var LOG_TAG:String = TestTVB::class.java.simpleName
 
+    /**
+     * Companion object for TestTVB, holding constants and static methods.
+     */
     companion object {
-        // Overrides
+        /**
+         * Label for this specific test, "TVB".
+         */
         @JvmStatic val TEST_BASIC_LABEL         = "TVB"
 
-        // Test-specific repetitions
+        /**
+         * Number of repetitions for the infant version of the test.
+         */
         @JvmStatic val NUM_REPETITIONS_INFANTS  = 3
+        /**
+         * Standard number of repetitions for the test.
+         */
         @JvmStatic val NUM_REPETITIONS          = 5
 
-        // Email configuration
+        /**
+         * Default email recipients for sending test results.
+         */
         @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com")
 
+        /**
+         * Provides a list of available conditions for the TVB test.
+         * Each condition has a label, an ID, a tag, and target populations.
+         *
+         * @param ctx The application context for accessing resources.
+         * @return A list of [ConditionData] objects representing the test conditions.
+         */
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
             ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_single)}" , TEST_TVB_TIME_SINGLESTIM          ,"${TEST_BASIC_LABEL}${ctx.resources.getString(R.string.atb_subtask_time_single_tag)}", Populations.sighted_populations),
             ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double)}" , TEST_TVB_TIME_DOUBLESTIM          ,"${TEST_BASIC_LABEL}${ctx.resources.getString(R.string.atb_subtask_time_double_tag)}", Populations.sighted_populations),
@@ -75,6 +112,12 @@ class TestTVB(ctx: Context,
             ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double_tod)}" , TEST_TVB_TIME_DOUBLESTIM_TOD  ,"${TEST_BASIC_LABEL}${ctx.resources.getString(R.string.atb_subtask_time_double_tod_tag)}", Populations.sighted_populations),
             ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_infants)}", TEST_ATB_TIME_INF                 ,"${TEST_BASIC_LABEL}${ctx.resources.getString(R.string.atb_subtask_time_infants_tag)}", Populations.sighted_populations))
 
+        /**
+         * Defines the available modes for advancing to the next trial for each condition.
+         *
+         * @param ctx The application context (currently unused but good practice to include).
+         * @return A list of lists, where each inner list contains allowed next trial modes for a corresponding condition.
+         */
         fun getNextTrialModes(ctx:Context):List<List<Int>> = listOf(
             listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
             listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
@@ -82,14 +125,33 @@ class TestTVB(ctx: Context,
             listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
             listOf(TEST_NEXTTRIAL_AUTO, TEST_NEXTTRIAL_BUTTON))
 
+        /**
+         * Retrieves the default email recipients for the test results.
+         *
+         * @return An array of email addresses.
+         */
         fun getEmailRecipients():Array<String> = recipients
     }
 
+    /**
+     * Current Inter-Stimulus Interval (ISI) in milliseconds.
+     */
     private var curISI: Long = 0L
 
+    /**
+     * List of questions to be asked during the test.
+     */
     private var allQuestions:MutableList<String>        = mutableListOf()
+    /**
+     * List of drawable resources used for visual stimuli.
+     * Typically includes a baseline (e.g., white circle) and an active stimulus (e.g., blue circle).
+     */
     override var mDrawablesResource: MutableList<Int>   = mutableListOf(R.drawable.white_circle, R.drawable.blue_circle)
 
+    /**
+     * List of stimuli configurations for the infant version of the TVB test.
+     * Each [StimulusATBInfants] defines the type of stimulus and its associated index.
+     */
     // 5   different trials
     private val lStimuli: List<StimulusATBInfants> = listOf(
         StimulusATBInfants(STIM_TV, 0),
@@ -99,6 +161,10 @@ class TestTVB(ctx: Context,
         StimulusATBInfants(STIM_TYPE_TIME_T800_V, 4)
     )
 
+    /**
+     * List of stimuli configurations for the unbalanced version of the TVB test.
+     * Each [StimulusDelay] defines the type of stimuli pair (e.g., Tactile then Visual) and the delay between them.
+     */
     // 26 different elements
     private val lStimuliUnBalanced: List<StimulusDelay> = listOf(
 
@@ -136,30 +202,63 @@ class TestTVB(ctx: Context,
         StimulusDelay( TYPE_V_T, unbalSD[6].first)
     )
 
+    /**
+     * Event code for the second train of stimuli (used in some TVB sub-tasks).
+     */
     private val EVENT_SECOND_TRAIN          = 1201
 
+    /**
+     * Amplitude for tactile vibration stimuli (0-255).
+     */
     private val amplitude                   = 100
 
+    /**
+     * Number of trials for adaptive test procedures.
+     */
     private val nAdaptiveTrials             = 40
+    /**
+     * Parameters for the ADO (Adaptive Design Optimization) algorithm.
+     * Includes guess rate, lapse rate, and noise percentage.
+     */
     private val adoParams                   = ADOParams(guess_rate=0.5F, lapse_rate=0.04F, noise_perc=0.1F)
+    /**
+     * Task-specific parameters for adaptive procedures, including the maximum value and number of trials.
+     */
     private val taskADAParams               = TaskADAParams(1200.0F, nAdaptiveTrials)
+    /**
+     * Wrapper for the adaptive algorithm (AdopyWrapper).
+     */
     private val adoWrapper:AdaptiveWrapper  = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
 
+    /**
+     * Stores timings for vibration trains, used in the infant version.
+     * Each LongArray represents the on/off durations for a vibration sequence.
+     */
     private var vibration_trains_timings: MutableList<LongArray>    = mutableListOf()
+    /**
+     * Stores amplitudes for vibration trains, used in the infant version.
+     * Each IntArray corresponds to the amplitudes for the timings in [vibration_trains_timings].
+     */
     private var vibration_trains_amplitudes: MutableList<IntArray>  = mutableListOf()
 
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
+    /**
+     * Initializes the TVB test based on the subject's parameters and selected sub-task.
+     * Sets up trial managers (fixed or adaptive), loads stimuli, initializes questions,
+     * and configures the [StimuliManager].
+     *
+     * @throws ImageViewDefinedException if the ImageView for visual stimuli is not provided.
+     * @throws VibratorNotDefinedException if the VibrationManager for tactile stimuli is not provided.
+     * @throws Exception if an unknown test type is specified.
+     */
     override fun initTest() {
 
         when {
             mImageView == null -> throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
             vibrator == null -> throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
         }
-        nextTrailModality   = subject.nextTrailModality
-        abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
-        showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
 
         allQuestions        = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro), ctx.resources.getString(R.string.atvb_question_equal))
         validAnswers        = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
@@ -254,10 +353,16 @@ class TestTVB(ctx: Context,
         mStimuliManager = StimuliManager(null,
             TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
             VisualManager(STIM_V, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-            delaysAligner, ctx, mStimuliHandler)
+            subject.stimuliDelays, ctx, mStimuliHandler)
 
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
     }
+    /**
+     * Initializes the timing arrays for vibration trains used in the infant version of the TVB test.
+     * Defines patterns of vibrations (on/off durations) with a constant amplitude.
+     * These arrays ([vibration_trains_timings] and [vibration_trains_amplitudes])
+     * are used by the [TactileManager] to create complex vibration sequences.
+     */
     //              _   _   _   _   _
     // 9 segments  | |_| |_| |_| |_| |
     private fun initTimeArrays() {
@@ -274,12 +379,17 @@ class TestTVB(ctx: Context,
             longArrayOf(currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration),
             longArrayOf(currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration),
             longArrayOf(currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration),
-            longArrayOf(currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration + 800L, currStimulusDuration, currStimulusDuration + 800L))
-    }
+            longArrayOf(currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration, currStimulusDuration + 800L, currStimulusDuration, currStimulusDuration + 800L))    }
 
     // =============================================================================================================================
     // CREATE TRIALS
     // =============================================================================================================================
+    /**
+     * Creates a list of trials for the infant version of the TVB test.
+     * Trials are generated based on predefined stimuli configurations ([lStimuli]) and a fixed number of repetitions.
+     *
+     * @return A list of [TrialBasic] objects specifically configured for the infant TVB sub-task.
+     */
     private fun createTrialsTimeInfants():List<TrialBasic>{
         var cnt = -1
         val trials:MutableList<TrialBasic> = mutableListOf()
@@ -301,7 +411,15 @@ class TestTVB(ctx: Context,
         return trials
     }
 
-    // [(4x2) x 6lat + 4 + 4 + 4 + 4] = 64
+    /**
+     * Creates a list of trials for the "time double" TVB sub-task (fixed trial management).
+     * This sub-task presents pairs of stimuli (TV, T-only, V-only) and various asynchronous T-V/V-T pairs.
+     * Total trials: [( (TVx2, Tx2, Vx2) + 26 asynchronous) x 2 blocks ] x NUM_REPETITIONS.
+     *
+     * @return A list of [TrialBasic] objects for the "time double" TVB sub-task.
+     */
+    // [(4x2) x 6lat + 4 + 4 + 4 + 4] = 64 -> This comment seems to describe a different calculation.
+    // The code generates (6 fixed types + 26 from lStimuliUnBalanced) * 2 inner loops * NUM_REPETITIONS
     private fun createTrialsTimeDouble():List<TrialBasic>{
         var cnt = -1
         val trials:MutableList<TrialBasic> = mutableListOf()
@@ -328,6 +446,13 @@ class TestTVB(ctx: Context,
         return trials
     }
 
+    /**
+     * Creates a list of trials for the "time single" TVB sub-task (fixed trial management).
+     * This sub-task presents synchronous TV stimuli and various asynchronous T-V/V-T pairs.
+     * Note: A comment indicates "only-A & only-T were removed". This method uses TYPE_TV and lStimuliUnBalanced.
+     *
+     * @return A list of [TrialBasic] objects for the "time single" TVB sub-task.
+     */
     // only-A & only-T were removed in single stimulus sub-task. 7/8/2020
     private fun createTrialsTimeSingle():List<TrialBasic> {
         var cnt = -1
@@ -351,7 +476,15 @@ class TestTVB(ctx: Context,
         return trials
     }
 
-    // 22 fixed + 28 adaptive
+    /**
+     * Creates a list of trials for the "adaptive double" TVB sub-task.
+     * This includes a fixed set of initial trials (synchronous TV, T-only, V-only, and fixed asynchronies)
+     * followed by a set of adaptive trials for T-V and V-T conditions.
+     * Total: 22 fixed trials + (28 T-V adaptive + 28 V-T adaptive) = 78 trials before shuffling.
+     *
+     * @return A list of [TrialBasic] objects for the "adaptive double" TVB sub-task.
+     */
+    // 22 fixed + 28 adaptive (Note: code generates 22 fixed + 28 pairs of T_V/V_T adaptive trials, so 22 + 56 = 78 total)
     private fun createTrialsAdaptiveDouble():List<TrialBasic>{
         var cnt = -1
         val trials:MutableList<TrialBasic> = mutableListOf()
@@ -393,7 +526,15 @@ class TestTVB(ctx: Context,
         return trials
     }
 
-    // 18 fixed + 32 adaptive
+    /**
+     * Creates a list of trials for the "adaptive single" TVB sub-task.
+     * This includes a fixed set of initial trials (synchronous TV and fixed asynchronies)
+     * followed by a set of adaptive trials for T-V and V-T conditions.
+     * Total: 18 fixed trials + (32 T-V adaptive + 32 V-T adaptive) = 82 trials before shuffling.
+     *
+     * @return A list of [TrialBasic] objects for the "adaptive single" TVB sub-task.
+     */
+    // 18 fixed + 32 adaptive (Note: code generates 18 fixed + 32 pairs of T_V/V_T adaptive trials, so 18 + 64 = 82 total)
     private fun createTrialsAdaptiveSingle():List<TrialBasic>{
         var cnt = -1
         val trials:MutableList<TrialBasic> = mutableListOf()
@@ -430,6 +571,12 @@ class TestTVB(ctx: Context,
         return trials
     }
 
+    /**
+     * Creates a large list of trials for debugging purposes.
+     * Consists of repeating blocks of TV, T_V (50ms), and V_T (50ms) trials.
+     *
+     * @return A list of [TrialBasic] objects for debugging.
+     */
     private fun createTrialsDebug():List<TrialBasic>{
         var cnt = -1
         val trials:MutableList<TrialBasic> = mutableListOf()
@@ -445,26 +592,11 @@ class TestTVB(ctx: Context,
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
-    override fun onNextTrial(){
-        testEvent.accept(Triple(EVENT_UPDATE_TRIAL_ID, 0L, listOf()))
-        super.onNextTrial()
-    }
-
-    // called by secondTrain
-    override fun onTrialEnd(){
-
-        mNoise?.stop()
-        mNoise?.prepare()
-
-        when (nextTrailModality) {
-            TEST_NEXTTRIAL_BUTTON       ->  testEvent.accept(Triple(EVENT_SHOW_NEXT_BUTTON, null, listOf()))
-            TEST_NEXTTRIAL_AUTO         ->  // create a ITI=2sec pause by waiting for 1sec and invoking a 1sec wait in TestFragment
-                mStimuliHandler.postDelayed({   testEvent.accept(Triple(EVENT_SHOW_ABORT, 1000L, listOf()))     }, currStimulusDuration)
-
-            TEST_NEXTTRIAL_ANSWER       ->  testEvent.accept(Triple(EVENT_GIVE_ANSWER, null, listOf()))
-        }
-    }
-
+    /**
+     * Initializes the summary object based on the current test sub-task.
+     * For TVB "time double" and "time single" tasks (including TOD versions), a [TVBUnBalancedSummary] is used.
+     * Other task types might not have a specific summary object initialized here.
+     */
     override fun initSummary(){
 
         mSummary = when (subject.type) {
@@ -479,6 +611,14 @@ class TestTVB(ctx: Context,
     // =============================================================================================================================
     // DELIVER STIMULI
     // =============================================================================================================================
+    /**
+     * Presents the stimuli for the given trial.
+     * Handles white noise, increments repetition count if it's a repeated trial,
+     * and schedules stimuli delivery based on the subject's test type (sub-task).
+     *
+     * @param trial The [TrialBasic] object containing details for the current trial.
+     * @param isRepeat True if this trial is a repetition, false otherwise.
+     */
     override fun show(trial: TrialBasic, isRepeat:Boolean){
 
         if(isRepeat)    trial.repetitions++
@@ -505,7 +645,7 @@ class TestTVB(ctx: Context,
 
                 // since I have to apply the possible shift, I calculate here the correction and thus call deliverShiftedStimulus for the 1st stim.
                 // for the second I call instead deliverUnBalancedStimuli
-                val corr_delays = delaysAligner.arrangeDelays(STIM_TV, -1,0,0)
+                val corr_delays = subject.stimuliDelays.arrangeDelays(STIM_TV, -1,0,0)
                 val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
 
                 mStimuliHandler.postDelayed({
@@ -524,11 +664,18 @@ class TestTVB(ctx: Context,
         }
     }
 
+    /**
+     * Delivers the first train of stimuli, primarily for the infant TVB sub-task.
+     * This involves a sequence of tactile vibrations based on [tactile_pattern] and corresponding visual stimuli.
+     * It accounts for potential delays between visual and tactile modalities to ensure perceived synchrony.
+     *
+     * @param tactile_pattern Index into [vibration_trains_timings] and [vibration_trains_amplitudes] to select the vibration pattern.
+     */
     // tactile are programmed once, visual are programmed with postDelayed
     private fun firstTrain(tactile_pattern: Int) {
 
         // assuming vibro is faster than visual, I delay the former
-        var V_delay     = delaysAligner.getStimuliDelay(STIM_TV).v - delaysAligner.getStimuliDelay(STIM_TV).t
+        var V_delay     = subject.stimuliDelays.getStimuliDelay(STIM_TV).v - subject.stimuliDelays.getStimuliDelay(STIM_TV).t
         val timings = vibration_trains_timings[tactile_pattern]
 
         if(V_delay > 0) {
@@ -558,12 +705,20 @@ class TestTVB(ctx: Context,
         mStimuliHandler.postDelayed({   mStimuliManager.deliverUnimodalStimulus(STIM_V)    }, 2*curISI + V_delay)
     }
 
+    /**
+     * Delivers the second train of stimuli, specifically for the infant TVB sub-task.
+     * Tactile stimuli are assumed to have been programmed by [firstTrain]. This method handles
+     * visual stimuli and trial progression events. It accounts for potential delays between
+     * audio (implicitly, though not directly used here) and tactile modalities.
+     *
+     * @param type The type of stimulus for the second train (e.g., STIM_TV, STIM_V, STIM_TYPE_TIME_T_V800).
+     */
     // only for infants subtest
     // tactile have been already programmed at the beginning of the trial => just playback audio and take care of events
     private fun secondTrain(type:Int){
 
         // assuming audio is faster than vibro, I delay the former
-        var A_delay    = delaysAligner.getStimuliDelay(STIM_TV).t - delaysAligner.getStimuliDelay(STIM_TV).a
+        var A_delay    = subject.stimuliDelays.getStimuliDelay(STIM_TV).t - subject.stimuliDelays.getStimuliDelay(STIM_TV).a
         if(A_delay < 0L)   A_delay = 0L    // audio delayed wrt vibro: I previoulsy delayed vibro timings and now I preserve audio
 
         when(type){
@@ -578,7 +733,7 @@ class TestTVB(ctx: Context,
                     mStimuliManager.deliverUnimodalStimulus(STIM_V)
                 }, 4 * curISI + A_delay)
                 mStimuliHandler.postDelayed({
-                    onTrialEnd()
+                    onStimuliEnd()
                 }, 5 * curISI + A_delay)
             }
 
@@ -587,7 +742,7 @@ class TestTVB(ctx: Context,
                     testEvent.accept(Triple(EVENT_SECOND_TRAIN, null, listOf()))
                 }, 3 * curISI)
                 mStimuliHandler.postDelayed({
-                    onTrialEnd()
+                    onStimuliEnd()
                 }, 5 * curISI)
             }
 
@@ -601,19 +756,26 @@ class TestTVB(ctx: Context,
                     testEvent.accept(Triple(EVENT_SECOND_TRAIN, null, listOf()))
                 }, (4 * curISI + 800 + A_delay))
                 mStimuliHandler.postDelayed({
-                    onTrialEnd()
+                    onStimuliEnd()
                 }, (5 * curISI + 800L + A_delay))
             }
         }
     }
-
+    /**
+     * Delivers stimuli for "unbalanced" trials (typically asynchronous T-V or V-T pairs).
+     * It determines the correct stimulus type and calculates necessary delays using [subject.stimuliDelays]
+     * based on the trial's type and stimulus value (SOA).
+     * Then, it uses [StimuliManager.deliverShiftedStimulus] to present the stimuli and schedules [onStimuliEnd].
+     *
+     * @param trial The [TrialBindingsUnBalanced] object containing details for the current trial.
+     */
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced){
 
         var type = 0
         val corr_delays: CorrectedStimuliDelay = when(trial.type) {
             TYPE_TV     -> {
                 type = mStimuliManager.typeTV
-                delaysAligner.arrangeDelays(type, -1,0, 0)
+                subject.stimuliDelays.arrangeDelays(type, -1,0, 0)
             }
             TYPE_T      -> {
                 type = mStimuliManager.typeT
@@ -625,121 +787,19 @@ class TestTVB(ctx: Context,
             }
             TYPE_T_V    -> {
                 type = mStimuliManager.typeTV
-                delaysAligner.arrangeDelays(type, -1, 0, trial.stim_value)
+                subject.stimuliDelays.arrangeDelays(type, -1, 0, trial.stim_value)
             }
             TYPE_V_T    -> {
                 type = mStimuliManager.typeTV
-                delaysAligner.arrangeDelays(type, -1, trial.stim_value,0)
+                subject.stimuliDelays.arrangeDelays(type, -1, trial.stim_value,0)
             }
             else        -> {
                 type = mStimuliManager.typeTV
                 CorrectedStimuliDelay(-1, 0, 0)
             }
         }
-        mStimuliManager.deliverShiftedStimulus(type, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
+        mStimuliManager.deliverShiftedStimulus(type, corr_delays.a, corr_delays.t, corr_delays.v){ onStimuliEnd()}
     }
     // =============================================================================================================================
 }
 
-/*
-This App perform an Audio-Tactile Binding (ATB) test:
-
-It has two versions: infant and children/adults
-
-
-1) INFANT:
-
-It has one single experimental condition composed by 24 trials (with fixed scheme!).
-Each trial consists in a pair of stimulation modalities (audio and tactle) each composed by two consecutive trains of respectively 3 and 2 either audio and/or tactile stimuli (stim duration 1sec, isi=1sec). ITI=2sec.
-
-single trial:
-       1st train    2nd train
-        ___   __    __  |  __    __
-A    __|  |__|  |__|  |_|_|  |__|  |__
-                        |
-        __    __    __  |  __    __
-T    __|  |__|  |__|  |_|_|  |__|  |__
-                        |
-                        |
-
-in the second train, one of the two modalities can be in synch with other, delayed/anticipated by 800 ms or absent
-in total, there are 5 types of stimuli
-
-CODE    #REP    TYPE
-0       6       A,T
-3       6       A
-6       6       T
-7       3       A+800,T
-8       3       A,T+800
-
-The presentation order is fixed, 3 repetitions of the following 12 trials:
-
-codes order: 0,3,7,6,3,0,8,6
-
-A,T
-A
-A+800,T
-T
-A
-A,T
-A,T+800
-T
-
-Exported Data: trial_id, type
-
-2) CHILDREN / ADULTS
-
-single trial:
-
-        __  | __
-A    __|  |_|_|  |__
-            |
-        __  |  __
-T    __|  |_|_|  |__
-            |
-
-CODE    #REP    TYPE
-0       10       A,T
-3       10       A
-6       10       T
-7       5       A+100,T
-8       5       A,T+100
-7       5       A+200,T
-8       5       A,T+200
-7       5       A+300,T
-8       5       A,T+300
-7       5       A+400,T
-8       5       A,T+400
-7       5       A+800,T
-8       5       A,T+800
-
-Tot trials = 80
-
-CODE    #REP    TYPE
-0       6       A,T
-1       3       A+200,T
-2       3       A,T+200
-3       6       A
-4       3       A+500,T
-5       3       A,T+500
-6       6       T
-7       3       A+800,T
-8       3       A,T+800
-
-7       3       A+1200,T
-8       3       A,T+1200
-
-
-A,T
-A,T+200
-A
-A+800,T
-T
-A,T+500
-A
-A+200,T
-A,T
-A,T+800
-T
-A+500,T
- */

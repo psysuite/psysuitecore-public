@@ -179,7 +179,24 @@ open class SubjectBasicDialogFragment: DialogFragment(){
                 else                             -> true
             }
         }
+        //---------------------------------------------------
+        // do training
+        //------------------------------------------------------
+        with(binding.swTraining!!){
 
+            visibility = when(subj.doTraining){
+                TestBasic.TEST_SWITCH_DISABLED,
+                TestBasic.TEST_SWITCH_ENABLED -> View.INVISIBLE
+                else                          -> View.VISIBLE
+            }
+
+            isChecked = when(subj.doTraining){
+                TestBasic.TEST_SWITCH_DISABLED,
+                TestBasic.TEST_SWITCH_CHOOSE_OFF -> false
+                else                             -> true
+            }
+        }
+        //------------------------------------------------------
         binding.txtName.requestFocus()      // subclasses may not have this UI elements (e.g. SampleDialog)
         //------------------------------------------------------
     }
@@ -342,15 +359,19 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
         if(binding.swRepeatTrial.visibility == View.VISIBLE)
             subject.canRepeat  =    if(binding.swRepeatTrial.isChecked)   TestBasic.TEST_SWITCH_ENABLED
-                                    else                                    TestBasic.TEST_SWITCH_DISABLED
+                                    else                                  TestBasic.TEST_SWITCH_DISABLED
 
         if(binding.spTrialManager.visibility == View.VISIBLE)
             subject.trman_type =    if(binding.spTrialManager.selectedItemPosition == 0)    TestBasic.TEST_TRMAN_FIXED
                                     else                                                    TestBasic.TEST_TRMAN_ADAPTIVE
 
         if(binding.swShowResult.visibility == View.VISIBLE)
-            subject.showResult =    if(binding.swShowResult.isChecked)    TestBasic.TEST_SWITCH_ENABLED
-                                    else                                    TestBasic.TEST_SWITCH_DISABLED
+            subject.showResult =    if(binding.swShowResult.isChecked)  TestBasic.TEST_SWITCH_ENABLED
+                                    else                                TestBasic.TEST_SWITCH_DISABLED
+
+        if(binding.swTraining.visibility == View.VISIBLE)
+            subject.doTraining =    if(binding.swTraining.isChecked)    TestBasic.TEST_SWITCH_ENABLED
+                                    else                                TestBasic.TEST_SWITCH_DISABLED
         return subject
     }
 

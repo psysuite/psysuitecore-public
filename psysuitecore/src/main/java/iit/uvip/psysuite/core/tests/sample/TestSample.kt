@@ -12,7 +12,6 @@ import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.stimuli.*
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.trials.TrialBasic
-import iit.uvip.psysuite.core.tests.sample.TrialSample.Companion.LOG_HEADER
 import iit.uvip.psysuite.core.trials.FixedTrialsManager
 import iit.uvip.psysuite.core.utility.ConditionData
 import org.albaspazio.core.accessory.VibrationManager
@@ -168,7 +167,7 @@ class TestSample(ctx: Context, activity: Activity, hostfragment: Fragment, subje
             else -> null
         }
 
-        mStimuliManager = StimuliManager(audioManager, tactileManager, visualManager, delaysAligner, ctx, mStimuliHandler){  testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))}
+        mStimuliManager = StimuliManager(audioManager, tactileManager, visualManager, subject.stimuliDelays, ctx, mStimuliHandler){  testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))}
     }
     // =============================================================================================================================
     // CREATE TRIALS
@@ -189,25 +188,6 @@ class TestSample(ctx: Context, activity: Activity, hostfragment: Fragment, subje
         return trials
     }
 
-    // =============================================================================================================================
-    // MANAGE TRIALS STIMULI
-    // =============================================================================================================================
-    override fun onTrialEnd() {
-
-        mNoise?.stop()
-        mNoise?.prepare()
-
-        when (nextTrailModality) {
-            TEST_NEXTTRIAL_BUTTON -> testEvent.accept(Triple(EVENT_SHOW_NEXT_BUTTON, null, listOf()))
-            TEST_NEXTTRIAL_AUTO -> {
-                // create a ITI=2sec pause by waiting for 1sec and invoking a 1sec wait in TestFragment
-                mStimuliHandler.postDelayed({
-                    testEvent.accept(Triple(EVENT_SHOW_ABORT, 1000L, listOf()))
-                }, ITI)
-            }
-        }
-    }
-
     override fun initSummary(){}
 
     // =============================================================================================================================
@@ -221,18 +201,18 @@ class TestSample(ctx: Context, activity: Activity, hostfragment: Fragment, subje
         mStimuliHandler.postDelayed({
             when(trial.type){
 
-                TEST_SAMPLE_ALIGNED ->  mStimuliManager.deliverAlignedStimulus((trial as TrialSample).source){onTrialEnd()}
+                TEST_SAMPLE_ALIGNED ->  mStimuliManager.deliverAlignedStimulus((trial as TrialSample).source){onStimuliEnd()}
 
                 TEST_SAMPLE_SHIFTED ->  {
-                    val corr_delays = delaysAligner.arrangeDelays((subject as SubjectSampleParcel).stim_sources,
+                    val corr_delays = subject.stimuliDelays.arrangeDelays((subject as SubjectSampleParcel).stim_sources,
                         ((trial as TrialSample).extraTrial as List<*>)[0] as Long,
                         (trial.extraTrial as List<*>)[1] as Long,
                         trial.extraTrial[2] as Long
                     )
 
-                    mStimuliManager.deliverShiftedStimulus(trial.source, corr_delays.a, corr_delays.t, corr_delays.v){onTrialEnd()}
+                    mStimuliManager.deliverShiftedStimulus(trial.source, corr_delays.a, corr_delays.t, corr_delays.v){onStimuliEnd()}
                 }
-                TEST_SAMPLE_PAIR    ->  mStimuliManager.deliverAlignedStimuliPair((trial as TrialSample).extraTrial as Long, trial.source){onTrialEnd()}
+                TEST_SAMPLE_PAIR    ->  mStimuliManager.deliverAlignedStimuliPair((trial as TrialSample).extraTrial as Long, trial.source){onStimuliEnd()}
             }
         }, 1000)
 

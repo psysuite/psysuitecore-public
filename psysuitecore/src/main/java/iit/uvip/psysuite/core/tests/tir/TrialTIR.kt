@@ -12,7 +12,7 @@ import iit.uvip.psysuite.core.trials.TrialBasic
 class TrialTIR (id:Int=-1, type:Int, label:String,
                 override var magnitude:Float,
                 val isBefore:Boolean,
-                isADA:Boolean=false): TrialBasic(id, type, label, isADA=false) {
+                isADA:Boolean=false): TrialBasic(id, type, label) {
 
     companion object {
         @JvmStatic val LOG_HEADER = "id\tlabel\tisi\tonset\terror\tsuccess\telapsed\tmagnitude\n"

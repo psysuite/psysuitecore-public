@@ -5,7 +5,7 @@ import iit.uvip.psysuite.core.trials.TrialBasic
 
 //                     trial_id    0-8      "none"
 class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, override var magnitude:Float, isADA:Boolean=false):
-    TrialBasic(id, type, "", isADA=isADA) {
+    TrialBasic(id, type, isADA=isADA) {
 
     companion object {
         @JvmStatic val LOG_HEADER = "id\ttype\tdelay\tanswer\tsuccess\telapsed\n"

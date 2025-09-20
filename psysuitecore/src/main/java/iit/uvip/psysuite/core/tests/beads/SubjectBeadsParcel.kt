@@ -28,15 +28,12 @@ class SubjectBeadsParcel(
     override var whitenoise: Int = TestBasic.TEST_SWITCH_DISABLED,
     override var trman_type: Int = TestBasic.TEST_TRMAN_FIXED,
     override var showResult: Int = TestBasic.TEST_SWITCH_DISABLED,
-    override var canRepeat:Int = TestBasic.TEST_SWITCH_DISABLED
-
-) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat)
-
-
-
-
-
-
+    override var canRepeat:Int = TestBasic.TEST_SWITCH_DISABLED,
+    override var doTraining: Int = TestBasic.TEST_SWITCH_DISABLED,
+    
+    override var showTrialID: Int = TestBasic.TEST_SHOWTRIALS_NEVER,
+    override var abortMode: Int = TestBasic.TEST_ABORT_TRIALEND
+) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode)
 
 
 

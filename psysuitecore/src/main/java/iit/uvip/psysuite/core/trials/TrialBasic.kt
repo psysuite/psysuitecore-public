@@ -1,6 +1,13 @@
 package iit.uvip.psysuite.core.trials
 
-open class TrialBasic(var id:Int=-1, val type:Int, protected val label:String="", open var magnitude:Float=0F, val isADA:Boolean=false) {
+open class TrialBasic(
+    var id: Int = -1,
+    val type: Int,
+    protected val label: String = "",
+    open var magnitude: Float = 0F,
+    val isADA: Boolean = false,
+    val isTraining: Boolean = false
+) {
 
     companion object {
         @JvmStatic val LOG_HEADER           = "id\tlabel\tres\tcor_ans\tuser_ans\telapsed\trep\n"

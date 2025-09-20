@@ -28,14 +28,12 @@ class SubjectTVBParcel(
     override var whitenoise: Int = TestBasic.TEST_SWITCH_CHOOSE_ON,
     override var trman_type: Int = TestBasic.TEST_TRMAN_CHOOSE_FIXED,
     override var showResult: Int = TestBasic.TEST_SWITCH_CHOOSE_OFF,
-    override var canRepeat:Int = TestBasic.TEST_SWITCH_CHOOSE_OFF
-) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat)
-
-
-
-
-
-
+    override var canRepeat:Int = TestBasic.TEST_SWITCH_DISABLED,
+    override var doTraining: Int = TestBasic.TEST_SWITCH_DISABLED,
+    
+    override var showTrialID: Int = TestBasic.TEST_SHOWTRIALS_ALWAYS,
+    override var abortMode: Int = TestBasic.TEST_ABORT_TRIALEND
+) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode)
 
 
 

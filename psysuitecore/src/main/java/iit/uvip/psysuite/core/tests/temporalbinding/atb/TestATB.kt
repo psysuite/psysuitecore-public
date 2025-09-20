@@ -42,6 +42,19 @@ import org.albaspazio.core.ui.showToast
 import kotlin.math.roundToInt
 
 
+/**
+ * Manages the Audio-Tactile Binding (ATB) test.
+ * This test investigates the temporal binding of auditory and tactile stimuli.
+ * It presents stimuli in various configurations (unimodal, bimodal, with temporal offsets)
+ * to assess perceptual synchrony and temporal order judgments.
+ *
+ * @param ctx The application context.
+ * @param activity The host activity.
+ * @param hostfragment The host fragment.
+ * @param subject The subject's basic information.
+ * @param vibrator The vibration manager for tactile stimuli.
+ * @param speechManager The speech manager for voice input/output (optional).
+ */
 class TestATB(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
@@ -50,19 +63,44 @@ class TestATB(ctx: Context,
               speechManager: SpeechManager?
 ) : TestBasic(ctx, activity, hostfragment, subject, vibrator, speechManager=speechManager)
 {
+    /**
+     * Tag for logging, typically the simple name of the class.
+     */
     override var LOG_TAG:String = TestATB::class.java.simpleName
 
+    /**
+     * Companion object for TestATB.
+     * Contains constants and static methods related to the ATB test.
+     */
     companion object {
         // Overrides
+        /**
+         * Basic label for the ATB test.
+         */
         @JvmStatic val TEST_BASIC_LABEL         = "ATB"
 
         // Test-specific repetitions
+        /**
+         * Number of repetitions for the infant version of the test.
+         */
         @JvmStatic val NUM_REPETITIONS_INFANTS  = 3
+        /**
+         * Number of repetitions for the standard version of the test.
+         */
         @JvmStatic val NUM_REPETITIONS          = 5
 
         // Email configuration
+        /**
+         * Default email recipients for test results.
+         */
         @JvmStatic val recipients:Array<String> = arrayOf("psysuite.uvip@gmail.com")
 
+        /**
+         * Provides a list of available test conditions and their metadata.
+         *
+         * @param ctx The application context.
+         * @return A list of [ConditionData] objects representing different ATB subtasks.
+         */
         fun getConditionsInfo(ctx: Context): List<ConditionData> = mutableListOf(
             ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_single)}" , TEST_ATB_TIME_SINGLESTIM          ,"${TEST_BASIC_LABEL}${ctx.resources.getString(R.string.atb_subtask_time_single_tag)}", Populations.hearing_populations),
             ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double)}" , TEST_ATB_TIME_DOUBLESTIM          ,"${TEST_BASIC_LABEL}${ctx.resources.getString(R.string.atb_subtask_time_double_tag)}", Populations.hearing_populations),
@@ -70,6 +108,12 @@ class TestATB(ctx: Context,
             ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_double_tod)}" , TEST_ATB_TIME_DOUBLESTIM_TOD  ,"${TEST_BASIC_LABEL}${ctx.resources.getString(R.string.atb_subtask_time_double_tod_tag)}", Populations.hearing_populations),
             ConditionData("$TEST_BASIC_LABEL ${ctx.resources.getString(R.string.atb_subtask_time_infants)}", TEST_ATB_TIME_INF                 ,"${TEST_BASIC_LABEL}${ctx.resources.getString(R.string.atb_subtask_time_infants_tag)}", Populations.hearing_populations))
 
+        /**
+         * Provides the available next trial modes for different ATB subtasks.
+         *
+         * @param ctx The application context.
+         * @return A list of lists, where each inner list contains allowed next trial modalities for a corresponding subtask.
+         */
         fun getNextTrialModes(ctx:Context):List<List<Int>> = listOf(
             listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
             listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
@@ -77,6 +121,11 @@ class TestATB(ctx: Context,
             listOf(TEST_NEXTTRIAL_ANSWER), //, TEST_NEXTTRIAL_VOICE_ANSWER, TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER))
             listOf(TEST_NEXTTRIAL_AUTO, TEST_NEXTTRIAL_BUTTON))
 
+        /**
+         * Retrieves the default email recipients for test results.
+         *
+         * @return An array of email addresses.
+         */
         fun getEmailRecipients():Array<String> = recipients
     }
 
@@ -151,13 +200,15 @@ class TestATB(ctx: Context,
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
+    /**
+     * Initializes the test parameters based on the subject's selected subtask.
+     * This includes setting up questions, ISI, stimulus duration, trial lists, and the stimulus manager.
+     * @throws VibratorNotDefinedException if the vibrator is not available.
+     * @throws Exception if an unrecognized test type is encountered.
+     */
     override fun initTest() {
 
         if(vibrator == null)    throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
-
-        nextTrailModality   = subject.nextTrailModality
-        abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
-        showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
 
         allQuestions        = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro), ctx.resources.getString(R.string.atvb_question_equal))
         validAnswers        = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
@@ -250,7 +301,7 @@ class TestATB(ctx: Context,
                 AudioManager(UNIMODAL_AUDIO_CODE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
                 TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
                 null,
-                delaysAligner, ctx, mStimuliHandler)
+            subject.stimuliDelays, ctx, mStimuliHandler)
 
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
     }
@@ -441,34 +492,10 @@ class TestATB(ctx: Context,
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
-    override fun onNextTrial(){
-        testEvent.accept(Triple(EVENT_UPDATE_TRIAL_ID, 0L, listOf()))
-        return super.onNextTrial()
-    }
-
-    // called by secondTrain
-    override fun onTrialEnd(){
-
-        mNoise?.stop()
-        mNoise?.prepare()
-
-        when (nextTrailModality) {
-            TEST_NEXTTRIAL_BUTTON       ->  testEvent.accept(Triple(EVENT_SHOW_NEXT_BUTTON, null, listOf()))
-            TEST_NEXTTRIAL_AUTO         ->  {
-                // create a ITI=2sec pause by waiting for 1sec and invoking a 1sec wait in TestFragment
-                mStimuliHandler.postDelayed({
-                    testEvent.accept(Triple(EVENT_SHOW_ABORT, 1000L, listOf()))
-                }, currStimulusDuration)
-            }
-            TEST_NEXTTRIAL_VOICE_ANSWER         ->  testEvent.accept(Triple(EVENT_GIVE_VOCAL_ANSWER, null, listOf()))
-            TEST_NEXTTRIAL_ANSWER               ->  testEvent.accept(Triple(EVENT_GIVE_ANSWER, null, listOf()))
-            TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER  -> {
-                                                    testEvent.accept(Triple(EVENT_GIVE_VOCAL_ANSWER, null, listOf()))
-                                                    testEvent.accept(Triple(EVENT_GIVE_ANSWER, null, listOf()))
-                                                   }
-        }
-    }
-
+    /**
+     * Initializes the summary object based on the current subject's test type.
+     * For ATB un-balanced conditions, an [ATBUnBalancedSummary] is created.
+     */
     override fun initSummary(){
 
         mSummary = when (subject.type) {
@@ -483,6 +510,13 @@ class TestATB(ctx: Context,
     // =============================================================================================================================
     // DELIVER STIMULI
     // =============================================================================================================================
+    /**
+     * Shows the stimuli for the current trial.
+     * Manages white noise presentation and schedules stimuli delivery based on the subtask type.
+     *
+     * @param trial The current [TrialBasic] to be presented.
+     * @param isRepeat True if the trial is being repeated, false otherwise.
+     */
     override fun show(trial: TrialBasic, isRepeat:Boolean){
 
         if(isRepeat)    trial.repetitions++
@@ -511,7 +545,7 @@ class TestATB(ctx: Context,
                 // for the second I call instead deliverUnBalancedStimuli
                 // to preserve the desired ISI between 1st and 2nd stimuli,
                 // I also add the shift that could be eventually imposed to the fastest modality
-                val corr_delays = delaysAligner.arrangeDelays(BIMODAL_CODE, 0,0,-1)
+                val corr_delays = subject.stimuliDelays.arrangeDelays(BIMODAL_CODE, 0,0,-1)
                 val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
 
                 mStimuliHandler.postDelayed({
@@ -529,7 +563,7 @@ class TestATB(ctx: Context,
     private fun firstTrain(tactile_pattern: Int) {
 
         // assuming audio is faster than vibro, I delay the former
-        var A_delay     = delaysAligner.getStimuliDelay(BIMODAL_CODE).t - delaysAligner.getStimuliDelay(BIMODAL_CODE).a
+        var A_delay     = subject.stimuliDelays.getStimuliDelay(BIMODAL_CODE).t - subject.stimuliDelays.getStimuliDelay(BIMODAL_CODE).a
         val timings     = vibration_trains_timings[tactile_pattern]
 
         if(A_delay < 0L){  // audio delayed wrt vibro: delay vibro timings and preserve audio onsets
@@ -560,7 +594,7 @@ class TestATB(ctx: Context,
     private fun secondTrain(type:Int){
 
         // assuming audio is faster than vibro, I delay the former
-        var A_delay    = delaysAligner.getStimuliDelay(BIMODAL_CODE).t - delaysAligner.getStimuliDelay(BIMODAL_CODE).a
+        var A_delay    = subject.stimuliDelays.getStimuliDelay(BIMODAL_CODE).t - subject.stimuliDelays.getStimuliDelay(BIMODAL_CODE).a
         if(A_delay < 0L)   A_delay = 0L    // audio delayed wrt vibro: I previoulsy delayed vibro timings and now I preserve audio
 
         when(type){
@@ -575,7 +609,7 @@ class TestATB(ctx: Context,
                     mStimuliManager.deliverUnimodalStimulus(UNIMODAL_AUDIO_CODE)
                 }, 4 * curISI + A_delay)
                 mStimuliHandler.postDelayed({
-                    onTrialEnd()
+                    onStimuliEnd()
                 }, 5 * curISI + A_delay)
             }
 
@@ -584,7 +618,7 @@ class TestATB(ctx: Context,
                     testEvent.accept(Triple(EVENT_SECOND_TRAIN, null, listOf()))
                 }, 3 * curISI)
                 mStimuliHandler.postDelayed({
-                    onTrialEnd()
+                    onStimuliEnd()
                 }, 5 * curISI)
             }
 
@@ -598,7 +632,7 @@ class TestATB(ctx: Context,
                     testEvent.accept(Triple(EVENT_SECOND_TRAIN, null, listOf()))
                 }, (4 * curISI + 800 + A_delay))
                 mStimuliHandler.postDelayed({
-                    onTrialEnd()
+                    onStimuliEnd()
                 }, (5 * curISI + 800L + A_delay))
             }
         }
@@ -610,7 +644,7 @@ class TestATB(ctx: Context,
         val corr_delays: CorrectedStimuliDelay = when(trial.type) {
             TYPE_AT     -> {
                 type = mStimuliManager.typeAT
-                delaysAligner.arrangeDelays(type, 0,0, -1)
+                subject.stimuliDelays.arrangeDelays(type, 0,0, -1)
             }
             TYPE_A      -> {
                 type = mStimuliManager.typeA
@@ -622,18 +656,18 @@ class TestATB(ctx: Context,
             }
             TYPE_A_T    -> {
                 type = mStimuliManager.typeAT
-                delaysAligner.arrangeDelays(type, 0,trial.stim_value, -1)
+                subject.stimuliDelays.arrangeDelays(type, 0,trial.stim_value, -1)
             }
             TYPE_T_A    -> {
                 type = mStimuliManager.typeAT
-                delaysAligner.arrangeDelays(type, trial.stim_value,0, -1)
+                subject.stimuliDelays.arrangeDelays(type, trial.stim_value,0, -1)
             }
             else        -> {
                 type = mStimuliManager.typeAT
                 CorrectedStimuliDelay(0, 0, -1)
             }
         }
-        mStimuliManager.deliverShiftedStimulus(type, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
+        mStimuliManager.deliverShiftedStimulus(type, corr_delays.a, corr_delays.t, corr_delays.v){ onStimuliEnd()}
     }
     // =============================================================================================================================
 }

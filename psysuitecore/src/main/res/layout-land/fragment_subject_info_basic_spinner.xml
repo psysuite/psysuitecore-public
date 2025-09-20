@@ -191,6 +191,16 @@
         app:layout_constraintTop_toTopOf="@+id/guideline20" />
 
     <Switch
+        android:id="@+id/swTraining"
+        android:layout_width="150dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginTop="50dp"
+        android:text="@string/do_training"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline20" />
+
+    <Switch
         android:id="@+id/swRepeatTrial"
         android:layout_width="150dp"
         android:layout_height="24dp"

@@ -15,7 +15,12 @@ class TrialTTC(id:Int=-1, type:Int, label:String,
                     time:Long,
                     distance:Int,
                     val minMagnitude:Float,
-                    val imageId:Int, val isHoriz:Boolean=true, val isDownRight:Boolean=true, isADA:Boolean=false): TrialBasic(id, type, label, isADA=isADA) {
+                    val imageId:Int, val isHoriz:Boolean=true, val isDownRight:Boolean=true, isADA:Boolean=false): TrialBasic(
+    id,
+    type,
+    label,
+    isADA=isADA
+) {
     var TT:Long = 0
     var VT:Long = 0
     var IT:Long = 0

@@ -15,8 +15,19 @@ import org.albaspazio.core.gestures.MyGestureDetector
 import org.albaspazio.core.speech.SpeechManager
 
 
+/**
+ * A [TwoAFCAnswerDialogFragment] subclass that allows users to answer using gestures.
+ * This fragment is designed for 2-alternative forced choice tasks where swipe gestures
+ * (up, down, tap, double-tap, long-press) are used to select an answer, confirm,
+ * hear the selected answer, or abort the test.
+ *
+ * It utilizes a [SpeechManager] for text-to-speech feedback.
+ */
 class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
 {
+    /**
+     * The logging tag for this class.
+     */
     override val LOG_TAG = AnswerGestureDialogFragment::class.java.simpleName
 
     private lateinit var binding: Fragment2afcAnswerBinding
@@ -26,6 +37,13 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
     private var isAborting:Boolean = false  // when user DT this flag is set to true, only after another DT, it aborts the test
 
     companion object {
+        /**
+         * Creates a new instance of [AnswerGestureDialogFragment].
+         *
+         * @param title The title to be displayed (not directly used in this gesture-based dialog).
+         * @param speechManager The [SpeechManager] instance for TTS feedback.
+         * @return A new instance of [AnswerGestureDialogFragment].
+         */
         fun newInstance(title: String, speechManager: SpeechManager): AnswerGestureDialogFragment {
             val frag = AnswerGestureDialogFragment()
             val args = Bundle()
@@ -41,6 +59,13 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
 //        return mView
 //    }
 
+    /**
+     * Called immediately after [.onCreateView] has returned, but before any saved state has been restored in to the view.
+     * This initializes the view binding and provides spoken instructions if it's an instruction trial.
+     *
+     * @param view The View returned by [.onCreateView].
+     * @param savedInstanceState If non-null, this fragment is being re-constructed from a previous saved state as given here.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = Fragment2afcAnswerBinding.bind(mView)
@@ -56,6 +81,10 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
                                 resources.getString(R.string.exp_intro_blind5)))
     }
 
+    /**
+     * Called when the fragment is visible to the user and actively running.
+     * This method registers gestures and hides UI elements not used in this gesture-based dialog.
+     */
     override fun onResume() {
         super.onResume()
 
@@ -75,12 +104,26 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
     }
 
     //---------------------------------------------------------------------------------------------------------------------------------------
+    /**
+     * Registers the gesture detector for the fragment's view.
+     */
     private fun registerGestures(){
 
         val detector = GestureDetectorCompat(requireContext(), MyGestureDetector(::onGestures, null))
         mView.setOnTouchListener { _, motionEvent -> detector.onTouchEvent(motionEvent) }
     }
 
+    /**
+     * Handles detected gestures.
+     *
+     * - "LP" (Long Press): Checks for abort sequence.
+     * - "SU" (Swipe Up): Selects the first answer (typically "YES").
+     * - "SD" (Swipe Down): Selects the second answer (typically "NO").
+     * - "ST" (Single Tap): Plays back the currently selected answer.
+     * - "DT" (Double Tap): Confirms the selected answer.
+     *
+     * @param gesture_label The label identifying the detected gesture.
+     */
     private fun onGestures(gesture_label: String){
 
         tts!!.stop()
@@ -97,6 +140,12 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
         }
     }
 
+    /**
+     * Selects an answer based on the gesture direction.
+     * Provides TTS feedback for the selected answer.
+     *
+     * @param up `true` if the "up" gesture was used (selects the first answer), `false` otherwise (selects the second answer).
+     */
     private fun selectAnswer(up:Boolean){
 
         selectedAnswerId =  if(up)  0
@@ -106,6 +155,11 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
         tts?.speak(resources.getString(R.string.answer_selected, selectedAnswer))
     }
 
+    /**
+     * Confirms the selected answer and sends the result back to the calling fragment/activity.
+     * Provides TTS feedback about correctness (if applicable) and proceeds to the next trial or starts the experiment.
+     * If no answer is selected, prompts the user to select one.
+     */
     override fun confirm() {
         if(selectedAnswer.isNotEmpty()){
 
@@ -130,11 +184,20 @@ class AnswerGestureDialogFragment: TwoAFCAnswerDialogFragment()
         else tts?.speak(resources.getString(R.string.select_one_answer))
     }
 
+    /**
+     * Plays back the currently selected answer using TTS.
+     * If no answer is selected, prompts the user to select one.
+     */
     private fun playbackAnswer(){
         if(selectedAnswer.isEmpty())    tts?.speak(resources.getString(R.string.select_one_answer))
         else                            tts?.speak(selectedAnswer)
     }
 
+    /**
+     * Checks if the user intends to abort the test.
+     * A first long press sets an aborting flag and warns the user.
+     * A subsequent long press will call [abort].
+     */
     private fun checkAbort(){
         if(isAborting)  abort()
         else{

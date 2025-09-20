@@ -1,3 +1,4 @@
+// GEMINI_FGI_ACTIVE_SECOND_TRY
 package iit.uvip.psysuite.core.tests.fgi
 
 import android.app.Activity
@@ -16,7 +17,6 @@ import iit.uvip.psysuite.core.stimuli.StimuliManager
 import iit.uvip.psysuite.core.stimuli.VisualManager
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.trials.TrialBasic
-import iit.uvip.psysuite.core.tests.tfi.TestTFI
 import iit.uvip.psysuite.core.utility.ConditionData
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.speech.SpeechManager
@@ -35,8 +35,11 @@ import android.widget.TextView
 import iit.uvip.psysuite.core.trials.FixedTrialsManager
 
 
-// show -> onTrialEnd -> EVENT_GIVE_ANSWER
+// show -> onStimuliEnd -> EVENT_GIVE_ANSWER
 
+/**
+* hi
+*/
 class TestFGI(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
@@ -130,11 +133,10 @@ class TestFGI(ctx: Context,
     // =============================================================================================================================
     // INIT
     // =============================================================================================================================
-    override fun initTest(){
+    override fun initTest(){ // GEMINI_FGI_MIDDLE_FILE_TEST
         // set question & create mTrials list
         validAnswers    = mutableListOf()
         mQuestion       = ""
-        abortMode       = TEST_ABORT_TRIALEND   // show abort button after each 8 trial
 
         val onImageRes:Int = when(subject.type){
             TEST_FGI_1_UNSCRAMBLED  -> {
@@ -185,7 +187,7 @@ class TestFGI(ctx: Context,
             AudioManager(StimuliManager.STIM_TYPE_A2, "",  duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
             null,
             currVisual,
-            delaysAligner, ctx, mStimuliHandler)
+            subject.stimuliDelays, ctx, mStimuliHandler)
 
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
     }
@@ -224,18 +226,18 @@ class TestFGI(ctx: Context,
 
         // if !last trial && !block end => doNextTrial
         when {
-            currTrial == (nTrials - 1) -> {
+            currTrialID == (nTrials - 1) -> {
                 saveText("", notifyDm = true)
                 testEvent.accept(Triple(EVENT_TEST_END, null, listOf()))            // END !
             }
-            mListBlocks.contains(currTrial) -> {
+            mListBlocks.contains(currTrialID) -> {
                 EVENT_BLOCK_END
             }
             else -> doNextTrial()
         }
     }
 
-    override fun onTrialEnd(){
+    override fun onStimuliEnd(){
 
         txt_left.visibility     = View.INVISIBLE
         txt_right.visibility    = View.INVISIBLE
@@ -245,7 +247,7 @@ class TestFGI(ctx: Context,
         currMP?.stop()
         currVisual?.stop()
 
-        mStimuliHandler.postDelayed({ testEvent.accept(Triple(EVENT_SHOW_NEXT_BUTTON, null, listOf())) }, 2000L)
+        super.onStimuliEnd()
     }
 
     override fun initSummary(){}
@@ -255,7 +257,7 @@ class TestFGI(ctx: Context,
     override fun show(trial: TrialBasic, isRepeat:Boolean){
 
         try {
-            mStimuliHandler.postDelayed({ onTrialEnd() }, currStimulusDuration)
+            mStimuliHandler.postDelayed({ onStimuliEnd() }, currStimulusDuration)
 
             saveText(mTrial.Log(), notifyDm = false)
 

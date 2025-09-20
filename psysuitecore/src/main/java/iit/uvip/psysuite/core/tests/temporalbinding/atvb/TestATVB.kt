@@ -264,9 +264,6 @@ class TestATVB(
             mImageView == null -> throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
             vibrator == null -> throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
         }
-        nextTrailModality   = subject.nextTrailModality
-        abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
-        showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
 
         allQuestions        = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro), ctx.resources.getString(R.string.atvb_question_equal), ctx.resources.getString(R.string.atvb_question_whichsecond))
         curISI                  = ISI           // 1000L
@@ -341,7 +338,7 @@ class TestATVB(
             AudioManager(STIM_A, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
             TactileManager(vibrator!!, duration = currStimulusDuration, handler = mStimuliHandler),
             VisualManager(STIM_V, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-            delaysAligner, ctx, mStimuliHandler)
+            subject.stimuliDelays, ctx, mStimuliHandler)
 
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
     }
@@ -491,26 +488,6 @@ class TestATVB(
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
-    // called by secondTrain
-    override fun onTrialEnd() {
-
-        mNoise?.stop()
-        mNoise?.prepare()
-
-        when (nextTrailModality) {
-            TEST_NEXTTRIAL_BUTTON       ->  testEvent.accept(Triple(EVENT_SHOW_NEXT_BUTTON, null, listOf()))
-            TEST_NEXTTRIAL_AUTO         ->  // create a ITI=2sec pause by waiting for 1sec and invoking a 1sec wait in TestFragment
-                                            mStimuliHandler.postDelayed({   testEvent.accept(Triple(EVENT_SHOW_ABORT, 1000L, listOf()))     }, currStimulusDuration)
-
-            TEST_NEXTTRIAL_ANSWER       ->  testEvent.accept(Triple(EVENT_GIVE_ANSWER, null, listOf()))
-        }
-    }
-
-    override fun onNextTrial(){
-        testEvent.accept(Triple(EVENT_UPDATE_TRIAL_ID, 0L, listOf()))
-        super.onNextTrial()
-    }
-
     override fun initSummary(){
 
         mSummary = when (subject.type) {
@@ -528,10 +505,6 @@ class TestATVB(
     // get new trial info. start noise. schedule stimulations
     override fun show(trial: TrialBasic, isRepeat: Boolean) {
 
-        // TODO: to remove
-//        if(subject.type == TEST_ATVB_TIME_S_BAL || subject.type == TEST_ATVB_TIME_S_BAL2)
-//            testEvent.accept(Triple(EVENT_SHOW_DEBUGINFO, getDebugInfo()))
-
         if (isRepeat) trial.repetitions++
 
         mNoise?.start()
@@ -548,7 +521,7 @@ class TestATVB(
             TEST_ATVB_TIME_D_UNBAL -> {
                 // to align trimodal stimuli, I have to delay the fastest modality by time_shift ms.
                 // Thus I anticipate all main onsets by the same ms
-                val corr_delays = delaysAligner.arrangeDelays(STIM_ATV)
+                val corr_delays = subject.stimuliDelays.arrangeDelays(STIM_ATV)
                 val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
 
                 mStimuliHandler.postDelayed({
@@ -565,11 +538,11 @@ class TestATVB(
 
             TEST_ATVB_TIME_S_BAL,TEST_ATVB_TIME_S_BAL2 -> {
 
-                val corr_delays = delaysAligner.arrangeDelays(STIM_ATV, (trial as TrialBindings3latencies).a, trial.t, trial.v)
+                val corr_delays = subject.stimuliDelays.arrangeDelays(STIM_ATV, (trial as TrialBindings3latencies).a, trial.t, trial.v)
 
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Triple(EVENT_STIMULI_START, null, listOf()))
-                    mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
+                    mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v){ onStimuliEnd()}
                 }, WN_FIRSTSTIM_INTERVAL)
             }
 
@@ -580,7 +553,7 @@ class TestATVB(
 //                    deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, corr_delays.a, corr_delays.t, corr_delays.v) // simult
 //                }, WN_FIRSTSTIM_INTERVAL)
 //                mStimuliHandler.postDelayed({
-//                    deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, (trial as TrialBindings3latencies).a, trial.t, trial.v){ onTrialEnd()}
+//                    deliverShiftedStimulus(TRIMODAL_AUDIO_CODE, (trial as TrialBindings3latencies).a, trial.t, trial.v){ onStimuliEnd()}
 //                }, (WN_FIRSTSTIM_INTERVAL + currStimulusDuration + curISI - corr_delays.shift))
 //            }
         }
@@ -589,16 +562,16 @@ class TestATVB(
     private fun deliverUnBalancedStimuli(trial:TrialBindingsUnBalanced){
 
         val corr_delays: CorrectedStimuliDelay = when(trial.type){
-            TYPE_ATV    ->  delaysAligner.arrangeDelays(STIM_ATV)
-            TYPE_A_TV   ->  delaysAligner.arrangeDelays(STIM_ATV, 0, trial.stim_value, trial.stim_value)
-            TYPE_TV_A   ->  delaysAligner.arrangeDelays(STIM_ATV, trial.stim_value,0,0)
-            TYPE_T_AV   ->  delaysAligner.arrangeDelays(STIM_ATV, trial.stim_value,0, trial.stim_value)
-            TYPE_AV_T   ->  delaysAligner.arrangeDelays(STIM_ATV, 0, trial.stim_value,0)
-            TYPE_V_AT   ->  delaysAligner.arrangeDelays(STIM_ATV, trial.stim_value, trial.stim_value,0)
-            TYPE_AT_V   ->  delaysAligner.arrangeDelays(STIM_ATV, 0,0, trial.stim_value)
-            else        ->  delaysAligner.arrangeDelays(STIM_ATV)
+            TYPE_ATV    ->  subject.stimuliDelays.arrangeDelays(STIM_ATV)
+            TYPE_A_TV   ->  subject.stimuliDelays.arrangeDelays(STIM_ATV, 0, trial.stim_value, trial.stim_value)
+            TYPE_TV_A   ->  subject.stimuliDelays.arrangeDelays(STIM_ATV, trial.stim_value,0,0)
+            TYPE_T_AV   ->  subject.stimuliDelays.arrangeDelays(STIM_ATV, trial.stim_value,0, trial.stim_value)
+            TYPE_AV_T   ->  subject.stimuliDelays.arrangeDelays(STIM_ATV, 0, trial.stim_value,0)
+            TYPE_V_AT   ->  subject.stimuliDelays.arrangeDelays(STIM_ATV, trial.stim_value, trial.stim_value,0)
+            TYPE_AT_V   ->  subject.stimuliDelays.arrangeDelays(STIM_ATV, 0,0, trial.stim_value)
+            else        ->  subject.stimuliDelays.arrangeDelays(STIM_ATV)
         }
-        mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v){ onTrialEnd()}
+        mStimuliManager.deliverShiftedStimulus(STIM_ATV, corr_delays.a, corr_delays.t, corr_delays.v){ onStimuliEnd()}
     }
     // =============================================================================================================================
     // DEBUG

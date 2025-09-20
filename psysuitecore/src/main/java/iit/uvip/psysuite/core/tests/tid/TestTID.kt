@@ -34,7 +34,7 @@ import org.albaspazio.core.ui.showToast
 // TRIAL:
 //    FIRST_STIMULUS_DELAY=1500--------s1------delta1------s2-----ISI=1000ms-----s3------delta2-------s4-----QUESTION_DELAY=1500ms------domanda
 
-// show -> onTrialEnd -> EVENT_GIVE_ANSWER
+// show -> onStimuliEnd -> EVENT_GIVE_ANSWER
 
 class TestTID(ctx: Context,
               activity: Activity,
@@ -166,9 +166,6 @@ class TestTID(ctx: Context,
             mImageView == null  -> throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
             vibrator == null    -> throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
         }
-        nextTrailModality   = subject.nextTrailModality
-        abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
-        showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
 
         mQuestion           = ctx.resources.getString(R.string.tid_question_text)
         validAnswers        = mutableListOf(ctx.resources.getString(R.string.tid_rb1_text), ctx.resources.getString(R.string.tid_rb2_text))
@@ -180,8 +177,6 @@ class TestTID(ctx: Context,
         }
 
         // set values according to chosen latency
-
-
         when(subject.type){
             TEST_TID_LONG_AUDIO, TEST_TID_LONG_TACTILE, TEST_TID_LONG_VISUAL  -> {
                 currISI             = ISI_LONG
@@ -237,13 +232,13 @@ class TestTID(ctx: Context,
                                     AudioManager(AUDIO_TYPE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
                                     TactileManager(vibrator, duration = currStimulusDuration, handler = mStimuliHandler),
                                     VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-                                    delaysAligner, ctx, mStimuliHandler)
+                                    subject.stimuliDelays, ctx, mStimuliHandler)
                             else
                                 StimuliManager(
                                     AudioManager(AUDIO_TYPE, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
                                     null,
                                     VisualManager(STIM_TYPE_V1, mImageView!!, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-                                    delaysAligner, ctx, mStimuliHandler)
+                                    subject.stimuliDelays, ctx, mStimuliHandler)
 
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
     }
@@ -356,6 +351,7 @@ class TestTID(ctx: Context,
     // PAIR2:          FIRST_STIMULUS_DELAY + duration + mTrial.delta1 + duration + ISI
     // QUESTION:    FIRST_STIMULUS_DELAY + duration + mTrial.delta1 + duration + ISI + duration + mTrial.delta2 + duration + QUESTION_DELAY
     override fun show(trial: TrialBasic, isRepeat:Boolean){
+
         mNoise?.start()
         // PAIR 1
         mStimuliHandler.postDelayed({
@@ -370,7 +366,7 @@ class TestTID(ctx: Context,
 
         // send stimuli-end event
         mStimuliHandler.postDelayed({
-            onTrialEnd()
+            onStimuliEnd()
         }, FIRST_STIMULUS_DELAY + currStimulusDuration + trial.delta1 + currStimulusDuration + currISI + currStimulusDuration + trial.delta2 + currStimulusDuration + QUESTION_DELAY)
     }
 
@@ -380,37 +376,6 @@ class TestTID(ctx: Context,
             TEST_TID_SHORT_AUDIO, TEST_TID_LONG_AUDIO, TEST_TID_SHORT_AUDIO_TRAIN       -> mStimuliManager.deliverAlignedStimuliPair(delta, AUDIO_TYPE)
             TEST_TID_SHORT_TACTILE, TEST_TID_LONG_TACTILE, TEST_TID_SHORT_TACTILE_TRAIN -> mStimuliManager.deliverAlignedStimuliPair(delta, STIM_TYPE_T1)
             TEST_TID_SHORT_VISUAL, TEST_TID_LONG_VISUAL, TEST_TID_SHORT_VISUAL_TRAIN    -> mStimuliManager.deliverAlignedStimuliPair(delta, STIM_TYPE_V1)
-        }
-    }
-
-    // =============================================================================================================================
-    // MANAGE TRIALS END
-    // =============================================================================================================================
-    // I have to transform result in string to results in 0 or 1
-    override fun onNextTrial(){
-        testEvent.accept(Triple(EVENT_UPDATE_TRIAL_ID, 0L, listOf()))
-        super.onNextTrial()
-    }
-
-    override fun onTrialEnd() {
-
-        mNoise?.stop()
-        mNoise?.prepare()
-
-        when (nextTrailModality) {
-            TEST_NEXTTRIAL_VOICE_ANSWER         ->  testEvent.accept(Triple(EVENT_GIVE_VOCAL_ANSWER, null, listOf()))
-            TEST_NEXTTRIAL_ANSWER               ->  testEvent.accept(Triple(EVENT_GIVE_ANSWER, null, listOf()))
-            TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER  -> {
-                testEvent.accept(Triple(EVENT_GIVE_VOCAL_ANSWER, null, listOf()))
-                testEvent.accept(Triple(EVENT_GIVE_ANSWER, null, listOf()))
-            }
-
-            TEST_NEXTTRIAL_AUTO         -> {
-                // create a ITI=2sec pause by waiting for 1sec and invoking a 1sec wait in TestFragment
-                mStimuliHandler.postDelayed({
-                    testEvent.accept(Triple(EVENT_SHOW_ABORT, 1000L, listOf()))
-                }, 1000L)
-            }
         }
     }
 

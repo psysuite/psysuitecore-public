@@ -21,14 +21,37 @@ import org.albaspazio.core.accessory.getDateString
 import org.albaspazio.core.accessory.getFullDateString
 import org.albaspazio.core.filesystem.*
 
-/*
-base class for all Subjects information
-This class manage simple subjects that participate in tests with only one condition.
-
- created one parcel for each test,
- initializing all the options presently
- particularly: classes, nextTrailModality, showFeedback, canRepeat, showResult, whitenoise
-*/
+/**
+ * Abstract base class for subject configurations, implementing [Parcelable] for easy transport.
+ * This class manages common subject information and test parameters.
+ * It provides functionality for:
+ * - Storing basic subject demographics (label, age, gender, population).
+ * - Holding test-specific parameters (type, block, debug status, device info, stimuli delays, trial progression modalities).
+ * - Generating standardized file names for subject data, results, and summaries.
+ * - Saving and loading subject configurations to/from JSON files.
+ * - Validating subject information.
+ *
+ * Subclasses are created for each specific test, initializing options like `classes`,
+ * `nextTrailModality`, `whitenoise`, etc., as needed.
+ *
+ * @param classes List of class names, typically used for reflection or identification. Used to find companion object methods.
+ * @param label A descriptive label or identifier for the subject (e.g., name or code). Defaults to an empty string.
+ * @param age The age of the subject. Defaults to -1 (unknown).
+ * @param gender The gender of the subject (e.g., 0 for male, 1 for female). Defaults to -1 (unknown).
+ * @param population The population group the subject belongs to (e.g., [Populations.POPULATION_TD]). Defaults to [Populations.POPULATION_TD].
+ * @param type An integer code representing the specific type of test or configuration. Defaults to -1.
+ * @param block The current block number in a series of tests. Defaults to -1.
+ * @param isDebug Flag indicating if the test is running in debug mode. Defaults to `false`.
+ * @param device Information about the device running the test. Defaults to `null`.
+ * @param vercode Version code of the application or test suite. Defaults to -1.
+ * @param stimuliDelays Configuration for aligning stimuli delays. Defaults to a new [DelaysAligner] instance.
+ * @param nextTrailModality How the test proceeds to the next trial (e.g., [TestBasic.TEST_NEXTTRIAL_NOCHOOSE]). Defaults to [TEST_NEXTTRIAL_NOCHOOSE].
+ * @param whitenoise Configuration for white noise during the test (e.g., [TestBasic.TEST_SWITCH_CHOOSE_ON]). Defaults to [TestBasic.TEST_SWITCH_CHOOSE_ON].
+ * @param trman_type Trial management type (e.g., [TestBasic.TEST_TRMAN_FIXED]). Defaults to [TestBasic.TEST_TRMAN_FIXED].
+ * @param showResult Configuration for showing results after a trial/test. Defaults to [TestBasic.TEST_SWITCH_DISABLED].
+ * @param canRepeat Configuration for allowing trial repetition. Defaults to [TestBasic.TEST_SWITCH_CHOOSE_OFF].
+ * @param doTraining Configuration for enabling a training phase. Defaults to [TestBasic.TEST_SWITCH_DISABLED].
+ */
 abstract class SubjectBasicParcel(
     open var classes: List<String> = listOf(),
     open var label: String = "",
@@ -47,16 +70,29 @@ abstract class SubjectBasicParcel(
     open var whitenoise: Int    = TestBasic.TEST_SWITCH_CHOOSE_ON,
     open var trman_type: Int    = TestBasic.TEST_TRMAN_FIXED,
     open var showResult: Int    = TestBasic.TEST_SWITCH_DISABLED,
-    open var canRepeat:Int      = TestBasic.TEST_SWITCH_CHOOSE_OFF
+    open var canRepeat:Int      = TestBasic.TEST_SWITCH_CHOOSE_OFF,
+    open var doTraining: Int    = TestBasic.TEST_SWITCH_DISABLED,
+    
+    open var showTrialID: Int = TestBasic.TEST_SHOWTRIALS_NEVER,
+    open var abortMode: Int = TestBasic.TEST_ABORT_TRIALEND
 ) : Parcelable {
 
+    /** The name of the file where this subject's data is stored. Not included in Parcelization. */
     @IgnoredOnParcel var subjectFileName:String = ""
 
     companion object  {
+        /** Default filename for the current subject's data before specific naming is applied. */
         @JvmStatic val CURR_SUBJ_FILE:String = "curr_subject"
 
+        /** Error code indicating that the subject information is incomplete for saving. */
         @JvmStatic val ERROR_SUBJECT_INCOMPLETE:Int = 2
 
+        /**
+         * Validates the subject's label and age.
+         * @param lab The subject's label (name/code).
+         * @param ag The subject's age as a string.
+         * @return A string containing error messages if validation fails, or an empty string if valid.
+         */
         fun validate(lab: String, ag: String):String{
             var res = ""
             if (lab.isBlank()) res = res + "\n" + "il nome è vuoto"
@@ -70,6 +106,11 @@ abstract class SubjectBasicParcel(
         }
     }
 
+    /**
+     * Loads subject data from the default [CURR_SUBJ_FILE] if it exists.
+     * If the file exists and is valid JSON for this subject type, it updates the current instance with loaded data.
+     * @return The loaded [SubjectBasicParcel] instance, or the current instance if loading fails or file doesn't exist.
+     */
     open fun loadSubject(): SubjectBasicParcel {
         val subj = existFile(CURR_SUBJ_FILE + TestBasic.SUBJFILE_EXTENSION)
         if (subj.first) {
@@ -83,9 +124,17 @@ abstract class SubjectBasicParcel(
         return this
     }
 
+    /** Indicates if the subject belongs to a visually impaired population. */
     val isBlindUser:Boolean = Populations.vi_populations.getIds().contains(population)
+    /** Indicates if the subject belongs to an auditory impaired population. */
     val isDeafUser:Boolean  = Populations.ai_populations.getIds().contains(population)
 
+    /**
+     * Parses JSON text and converts it to a [SubjectBasicParcel] instance of the current object's type.
+     * @param jsontext The JSON string to parse.
+     * @return A [SubjectBasicParcel] instance populated from the JSON text.
+     * @throws com.squareup.moshi.JsonDataException if the JSON is malformed or doesn't match the expected structure.
+     */
     private fun loadJsonText(jsontext: String): SubjectBasicParcel {
 
         val moshi           = Moshi.Builder().build()
@@ -93,9 +142,12 @@ abstract class SubjectBasicParcel(
         return jsonAdapter.fromJson(jsontext)!!
     }
 
-    // return   : -1 no file exist
-    //          :  0 only one result file exist
-    //          :  1-based last block file  (if it finds lab_type_2.txt => return 3)
+    /**
+     * Checks if a subject file matching the current subject's prefix exists and determines the last block number.
+     * @param ctx Android [Context] for accessing application-specific information if needed by underlying file operations.
+     * @return -1 if no subject file exists, 0 if a base subject file (without block number) exists,
+     *         or N (1-based) representing the next block number if block files (e.g., prefix_blkN-1.json) exist.
+     */
     open fun existSubjectFile(ctx: Context):Int{
         val prefix = getFilesPrefix(ctx)
         return  if(existFileStartingWith(prefix, allowedext = listOf(".json")))
@@ -104,7 +156,14 @@ abstract class SubjectBasicParcel(
                         -1
     }
 
-    // returns 0 if no old blocks exist, otherwise last block+1
+    /**
+     * Finds the last valid block number for a given file prefix by inspecting filenames.
+     * For example, if files `prefix_blk0.json` and `prefix_blk1.json` exist, it returns 2 (for the next block).
+     * If only `prefix.json` or no block files exist, it returns 0.
+     * @param prefix The file prefix to search for.
+     * @param allowedext List of allowed file extensions. Defaults to empty list (any extension).
+     * @return The next block number (0-based if no blocks, N if last block was N-1).
+     */
     private fun getLastValidBlock(prefix: String, allowedext: List<String> = listOf()):Int{
         val list = getFileList(allowedext = allowedext, contains = prefix)
         var blk = -1
@@ -118,8 +177,14 @@ abstract class SubjectBasicParcel(
     // =============================================================================================================
     // RETURNS FILES NAME
     // =============================================================================================================
-    // used by the following three methods to compose subject files
-    // RETURNS: "${label}_${age}_${gender}_${type_label}_$population_label"
+
+    /**
+     * Generates a standardized prefix for filenames associated with this subject and test configuration.
+     * The prefix typically includes subject label, age, gender, test type label, trial management type, and population label.
+     * Example: "JohnDoe_25_m_VisualTest_FX_TD"
+     * @param ctx Android [Context], used to retrieve condition information via reflection based on `classes[0]`.
+     * @return A string representing the file prefix.
+     */
     open fun getFilesPrefix(ctx: Context):String {
 
         val ci                  = getCompanionObjectMethod(classes[0], "getConditionsInfo")
@@ -133,13 +198,20 @@ abstract class SubjectBasicParcel(
         val trmantype_str       = when (trman_type) {
             TestBasic.TEST_TRMAN_ADAPTIVE -> "AD"
             TestBasic.TEST_TRMAN_FIXED -> "FX"
-            else -> "MX"
+            else -> "MX" // Mixed
         }
 
         return "${label}_${age}_${gender_str}_${type_label}_${trmantype_str}_$population_label"
     }
 
-    // RETURNS: label_type_population(_blk)_datetime.txt
+    /**
+     * Composes a filename for storing test results.
+     * The filename includes the prefix from [getFilesPrefix], the current full date and time, an optional block indicator, and a standard results extension.
+     * Example: "JohnDoe_25_m_VisualTest_FX_TD_YYYYMMDDHHMMSS_blk1.txt"
+     * @param ctx Android [Context] passed to [getFilesPrefix].
+     * @param blk Optional block number. If > -1, "_blkX" is appended. Defaults to -1 (no block indicator).
+     * @return The composed results filename.
+     */
     open fun composeResultFileName(ctx: Context, blk: Int = -1):String{
 
         val blkstr =    if(blk > -1)    "_blk$blk"
@@ -147,7 +219,14 @@ abstract class SubjectBasicParcel(
         return "${getFilesPrefix(ctx)}_${getFullDateString()}${blkstr}${TestBasic.RES_EXTENSION}"
     }
 
-    // RETURNS: label_type_population(_blk)_datetime.txt
+    /**
+     * Composes a filename for storing test summaries.
+     * Similar to [composeResultFileName] but includes "_summary" in the name.
+     * Example: "JohnDoe_25_m_VisualTest_FX_TD_YYYYMMDDHHMMSS_summary_blk1.txt"
+     * @param ctx Android [Context] passed to [getFilesPrefix].
+     * @param blk Optional block number. If > -1, "_blkX" is appended. Defaults to -1 (no block indicator).
+     * @return The composed summary filename.
+     */
     open fun composeSummaryFileName(ctx: Context, blk: Int = -1):String{
 
         val blkstr =    if(blk > -1)    "_blk$blk"
@@ -155,7 +234,15 @@ abstract class SubjectBasicParcel(
         return "${getFilesPrefix(ctx)}_${getFullDateString()}_summary${blkstr}${TestBasic.RES_EXTENSION}"
     }
 
-    // RETURNS: label_type_population(_blk)_date.json
+    /**
+     * Composes a filename for storing the subject's configuration data (JSON).
+     * The filename includes the prefix from [getFilesPrefix], the current date, an optional block indicator, and a standard subject file extension.
+     * Returns an empty string if the subject label or type is not set.
+     * Example: "JohnDoe_25_m_VisualTest_FX_TD_YYYYMMDD_blk1.json"
+     * @param ctx Android [Context] passed to [getFilesPrefix].
+     * @param blk Optional block number. If > -1, "_blkX" is appended. Defaults to -1 (no block indicator).
+     * @return The composed subject data filename, or an empty string if essential info is missing.
+     */
     open fun composeSubjectFileName(ctx: Context, blk: Int = -1):String{
         if(label.isBlank() || type == -1)   return ""
 
@@ -164,12 +251,23 @@ abstract class SubjectBasicParcel(
         return "${getFilesPrefix(ctx)}_${getDateString()}${blkstr}${TestBasic.SUBJFILE_EXTENSION}"
     }
 
-    // RETURNS: filename or "" if file does not exist
+    /**
+     * Gets the absolute file path for the currently set [subjectFileName].
+     * @return The absolute path as a string, or an empty string if [subjectFileName] is not set or the file doesn't exist.
+     */
     fun getAbsoluteSubjectFilePath():String = getAbsoluteFilePath(subjectFileName).second   // is "" if file was not present
 
     // =============================================================================================================
     // WRITE
     // =============================================================================================================
+    /**
+     * Writes the current subject configuration to a JSON file.
+     * The filename is generated by [composeSubjectFileName] (without block info initially).
+     * The [subjectFileName] property is updated with the name of the created file.
+     * @param context Android [Context] used for file operations and by [composeSubjectFileName].
+     * @return 0 on successful save, or [ERROR_SUBJECT_INCOMPLETE] if essential information (label, type) is missing.
+     * @throws Exception if JSON serialization or file writing fails.
+     */
     open fun writeJson(context: Context):Int{
 
         val moshi       = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
@@ -183,11 +281,11 @@ abstract class SubjectBasicParcel(
                         saveText(context, subjectFileName, jsonAdapter.toJson(this), forceOld = true)        // var jsontext = context!!.resources.openRawResource(R.raw.script_001).bufferedReader().use { it.readText() }
                         0
                     }
-        }
-        catch (e: Exception){
-            e.printStackTrace()
-            throw(e)
-        }
+                }
+                catch (e: Exception){
+                    e.printStackTrace()
+                    throw(e)
+                }
     }
     // =============================================================================================================
 }

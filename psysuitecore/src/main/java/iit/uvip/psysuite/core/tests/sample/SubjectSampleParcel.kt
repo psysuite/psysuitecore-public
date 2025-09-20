@@ -35,7 +35,10 @@ open class SubjectSampleParcel(
     override var trman_type: Int = TestBasic.TEST_TRMAN_FIXED,
     override var showResult: Int = TestBasic.TEST_SWITCH_DISABLED,
     override var canRepeat:Int = TestBasic.TEST_SWITCH_DISABLED,
-
+    override var doTraining: Int = TestBasic.TEST_SWITCH_DISABLED,
+    
+    override var showTrialID: Int = TestBasic.TEST_SHOWTRIALS_NEVER,
+    override var abortMode: Int = TestBasic.TEST_ABORT_TRIALEND,
 
     var stim_sources:Int = 0,       // according to modalities selection
 
@@ -55,14 +58,7 @@ open class SubjectSampleParcel(
 
     var repetitions:Int = 1,
     var iti:Long = 1000
-
-) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat)
-
-
-
-
-
-
+) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode)
 
 
 

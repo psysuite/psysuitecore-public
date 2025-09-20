@@ -18,7 +18,8 @@ import iit.uvip.psysuite.python.SPython
 //          1- get = retrieve the dynamic value
 //          2- set = set subject's answer
 //
-open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper: AdaptiveWrapper):TrialsManager(TestBasic.TEST_TRMAN_ADAPTIVE, trials) {
+open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper: AdaptiveWrapper, training_trials:MutableList<TrialBasic> = mutableListOf<TrialBasic>())
+            :TrialsManager(TestBasic.TEST_TRMAN_ADAPTIVE, trials, training_trials) {
 
     private val sPy:SPython = SPython.getInstance(null)     // singleton already initialized in TestFragment, here I dont'need a Context
     private val wrapperClass:PyObject
@@ -52,10 +53,13 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
      * @return The updated trial with a new stimulus value.
      */
     override fun getNewTrial(): TrialBasic {
-        val prev_resp = mTrial.user_answer
-        val prev_succ = mTrial.success
 
-        currTrial++
+        currTrialID++
+
+        val prev_resp = mPrevTrial?.user_answer ?: -1
+        val prev_succ = mPrevTrial?.success ?: true
+
+
         val newvalue = getStimulus()
         Log.d("QUEST_VALUE", "${newvalue} , prev resp: $prev_resp , prev succ: $prev_succ")
 

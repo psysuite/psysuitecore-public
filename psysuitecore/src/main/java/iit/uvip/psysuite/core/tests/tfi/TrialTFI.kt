@@ -1,7 +1,6 @@
 package iit.uvip.psysuite.core.tests.tfi
 
 import iit.uvip.psysuite.core.stimuli.StimuliManager
-import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.trials.TrialBasic
 
 /*
@@ -10,7 +9,7 @@ import iit.uvip.psysuite.core.trials.TrialBasic
 */
 
 class TrialTFI(id:Int=-1, type:Int, label:String, override var correct_answer:Int=-1, val soa:Long, val valid_answers:List<String>)
-    : TrialBasic(id,type,label){
+    : TrialBasic(id, type, label){
 
     companion object {
         @JvmStatic val LOG_HEADER           = "id\tla                                                                                                                                                                                      bel\tsoa\tres\tcor_ans\tuser_ans\telapsed\n"

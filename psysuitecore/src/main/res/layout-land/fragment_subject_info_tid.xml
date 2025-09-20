@@ -12,7 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_end="263dp" />
+        app:layout_constraintGuide_end="289dp" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline19"
@@ -187,6 +187,16 @@
         android:layout_height="24dp"
         android:layout_marginStart="100dp"
         android:text="@string/interactivity"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline20" />
+
+    <Switch
+        android:id="@+id/swTraining"
+        android:layout_width="150dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="100dp"
+        android:layout_marginTop="48dp"
+        android:text="@string/do_training"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline20" />
 

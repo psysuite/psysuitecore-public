@@ -35,8 +35,28 @@ import java.util.concurrent.TimeUnit
 import kotlin.math.round
 
 
-// show -> onTrialEnd -> EVENT_GIVE_ANSWER
+// show -> onStimuliEnd -> EVENT_GIVE_ANSWER
 
+/**
+ * Manages the Time-To-Contact (TTC) test.
+ * This test typically assesses an observer's ability to judge when a moving object,
+ * which may become occluded or change speed, would have collided with a target or boundary.
+ * It involves presenting visual stimuli (e.g., a moving shape) and requiring the user
+ * to respond at the perceived moment of collision.
+ *
+ * This implementation supports various motion types (horizontal, vertical), factor types
+ * (fixed speed, variable speed with fixed visible time, variable speed with fixed visible path length),
+ * and cue types (direction, weight). It can run in fixed or adaptive trial modes.
+ *
+ * @param ctx The application context.
+ * @param activity The hosting activity.
+ * @param hostfragment The hosting fragment, expected to be a [TestFragment] to access its binding and scenario view.
+ * @param subject The subject details parcel.
+ * @param vibrator An optional [VibrationManager] (not directly used in this specific test logic but available from [TestBasic]).
+ * @param mImageView An optional [ImageView] for displaying visual stimuli (used for the moving target).
+ * @param speechManager An optional [SpeechManager] (not directly used in this specific test logic but available from [TestBasic]).
+ * @param mainView The main view of the test, used for UI manipulation and potentially drawing the scenario.
+ */
 class TestTTC(ctx: Context,
               activity: Activity,
               hostfragment: Fragment,
@@ -192,7 +212,6 @@ class TestTTC(ctx: Context,
         // set question & create mTrials list
         validAnswers    = mutableListOf()
         mQuestion       = ""
-        abortMode       = TEST_ABORT_TRIALEND   // show abort button after each trial
 
         currStimulusDuration    = POSITIVE_INFINITY.toLong()
         currImageRes            = mDrawablesResource[0]
@@ -235,7 +254,7 @@ class TestTTC(ctx: Context,
 
         mStimuliManager = StimuliManager(null, null,
                                         VisualManager(STIM_V, mImageView!!, currImageRes, duration = currStimulusDuration, handler = mStimuliHandler),
-                                        delaysAligner, ctx, mStimuliHandler)
+                                        subject.stimuliDelays, ctx, mStimuliHandler)
 
         mScenario = ScenarioView(ctx, null).apply {
             binding.root.addView(this)
@@ -774,20 +793,14 @@ class TestTTC(ctx: Context,
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
-    override fun onNextTrial(){
-        testEvent.accept(Triple(EVENT_UPDATE_TRIAL_ID, 0L, listOf()))
-        return super.onNextTrial()
-    }
-
-    override fun onTrialEnd(){
+    override fun onStimuliEnd(){
 
         stopPolling()
-        onAnswerGiven(trialEndMs.toInt(), trialEndMs)
-
+        setAnswer(trialEndMs.toInt(), trialEndMs)
         mStimuliHandler.removeCallbacksAndMessages(null)
         mScenario.clearScenario()
 
-        mStimuliHandler.postDelayed({ testEvent.accept(Triple(EVENT_SHOW_ABORT, null, listOf())) }, 500L)
+        super.onStimuliEnd()
     }
 
     override fun initSummary(){}
@@ -817,7 +830,7 @@ class TestTTC(ctx: Context,
             },  trial.stim_value + waitInterval)   // hide target
 
             mStimuliHandler.postDelayed({ stopPolling() },          fixedDuration + waitInterval)   // when movement duration is reached => stop moving
-            mStimuliHandler.postDelayed({ onTrialEnd() },           trialAbortTime + waitInterval)     // when max time is reached => force trial end
+            mStimuliHandler.postDelayed({ onStimuliEnd() },           trialAbortTime + waitInterval)     // when max time is reached => force trial end
         }
         catch(e:Exception){
             e.printStackTrace()
@@ -826,7 +839,7 @@ class TestTTC(ctx: Context,
 
     private fun onPress(){
         trialEndMs = uptimeMillis() - trialStartMs      // behavioral result
-        onTrialEnd()
+        onStimuliEnd()
     }
 
     private fun startPolling(iti: Long){

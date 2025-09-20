@@ -1,55 +1,84 @@
 package iit.uvip.psysuite.core.trials
 
-
 /*
 type:
 - 0:    predetermined trials
 - 1:    quest trials
 - ?:    other type of adaptative algorithms
+@ init: checks if training trials are available, otherwise use test trials
  */
 
-abstract class TrialsManager(val type:Int = 0, val mTrials:MutableList<TrialBasic>) {
+abstract class TrialsManager(
+    val type: Int = 0, 
+    private val testTrials: MutableList<TrialBasic>,
+    private val trainingTrials: MutableList<TrialBasic> = mutableListOf()
+) {
 
     companion object {
         val ADAPTIVE_VALUE:Float = -99999999.9F
     }
 
+    var currTrialID: Int = -1
+    var isTrainingPhase: Boolean = false
+
+    private var currentTrialsList: MutableList<TrialBasic> = mutableListOf()
+
+    val nTrials: Int
+        get() = currentTrialsList.size
+
+    var mTrial: TrialBasic
+        get() = currentTrialsList[currTrialID]
+        set(value) {
+            currentTrialsList[currTrialID] = value
+        }
+
+    val mPrevTrial: TrialBasic?
+        get() = if (currTrialID == 0) null
+                else currentTrialsList[currTrialID - 1]
+
     init {
-        if(mTrials.isEmpty())
-            throw Exception("ERROR in TrialsManager. given trials list is empty")
+        if (testTrials.isEmpty())
+            throw Exception("ERROR in TrialsManager. Test trials list is empty")
+
+        // Initialize with training trials if available, otherwise set test trials
+        if (trainingTrials.isEmpty())   setTest()
+        else                            setTraining()
+    }
+
+    fun setTraining() {
+        isTrainingPhase     = true
+        currentTrialsList   = trainingTrials
+        resetTrials()
+    }
+
+    fun setTest() {
+        isTrainingPhase     = false
+        currentTrialsList   = testTrials
+        resetTrials()
+    }
+
+    fun resetTrials() {
+        currTrialID = -1
         setTrialsID()
     }
 
-    var currTrial:Int = 0
+    val isLastTrainingTrial:Boolean
+        get() = (currTrialID == currentTrialsList.size - 1) && isTrainingPhase
 
-    val prevTrial:Int
-        get() = (currTrial - 1).coerceAtLeast(0)
-
-    val nTrials:Int
-        get() = mTrials.size
-
-    open var mTrial:TrialBasic
-        get() = mTrials[currTrial]
-        set(value) {
-            mTrials[currTrial] = value
-        }
-
-    open val mPrevTrial:TrialBasic?
-        get() = if(currTrial == 0)  null
-                else                mTrials[currTrial - 1]
+    protected fun setTrialsID() {
+        currentTrialsList.forEachIndexed { index, trial -> trial.id = index }
+    }
 
     // used in Adaptive managers to set the first value
-    open fun getStimulus():Long{
+    open fun getStimulus():Long {
         return mTrial.stim_value
     }
 
-    open fun setResponse(result:Int, elapsedms:Long, extra_text:String=""){
+    open fun setResponse(result:Int, elapsedms:Long, extra_text:String = "") {
         mTrial.setResponse(result, elapsedms, mPrevTrial, extra_text)
     }
 
-    protected fun setTrialsID(){  mTrials.mapIndexed { index, trialBasic -> trialBasic.id = index } }
-
-    abstract fun getNewTrial():Any
+    abstract fun getNewTrial():TrialBasic
 
 }
 

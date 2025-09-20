@@ -98,11 +98,6 @@ class TestTFI(ctx: Context,
         if(vibrator == null && (subject.type == TEST_TFI || subject.type == TEST_TFI_TODDLERS))
             throw VibratorNotDefinedException("VIBRATOR_NOT_DEFINED")
 
-
-        nextTrailModality   = subject.nextTrailModality
-        abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
-        showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
-
         createResultFile(TrialTFI.LOG_HEADER)
         initSummary()
 
@@ -167,13 +162,13 @@ class TestTFI(ctx: Context,
                                     AudioManager(STIM_A, audioResources[currStimulusDuration] ?: "t1000hz_7ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
                                     TactileManager(vibrator, duration = STIM_DURATION_TACTILE, handler = mStimuliHandler),
                                     VisualManager(STIM_V, mImageView, mDrawablesResource[onImage], duration = currStimulusDuration, handler = mStimuliHandler),
-                                    delaysAligner, ctx, mStimuliHandler)
+                                    subject.stimuliDelays, ctx, mStimuliHandler)
                             else
                                 StimuliManager(
                                     AudioManager(STIM_A, audioResources[currStimulusDuration] ?: "t1000hz_7ms.wav",  duration = currStimulusDuration, handler = mStimuliHandler, ctx = ctx),
                                     null,
                                     VisualManager(STIM_V, mImageView, mDrawablesResource[onImage], duration = currStimulusDuration, handler = mStimuliHandler),
-                                    delaysAligner, ctx, mStimuliHandler)
+                                    subject.stimuliDelays, ctx, mStimuliHandler)
 
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
     }
@@ -341,25 +336,6 @@ class TestTFI(ctx: Context,
     // =============================================================================================================================
     // MANAGE TRIALS STIMULI
     // =============================================================================================================================
-    override fun onTrialEnd() {
-
-        mNoise?.stop()
-        mNoise?.prepare()
-
-        when (nextTrailModality) {
-            TEST_NEXTTRIAL_VOICE_ANSWER         ->  testEvent.accept(Triple(EVENT_GIVE_VOCAL_ANSWER, null, listOf()))
-            TEST_NEXTTRIAL_ANSWER               ->  testEvent.accept(Triple(EVENT_GIVE_ANSWER, null, listOf()))
-            TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER  -> {
-                                                    testEvent.accept(Triple(EVENT_GIVE_VOCAL_ANSWER, null, listOf()))
-                                                    testEvent.accept(Triple(EVENT_GIVE_ANSWER, null, listOf()))
-                                                   }
-        }
-    }
-
-    override fun onNextTrial(){
-        testEvent.accept(Triple(EVENT_UPDATE_TRIAL_ID, 0L, listOf()))
-        super.onNextTrial()
-    }
 
     override fun initSummary() {
         mSummary = when(subject.type)
@@ -381,7 +357,7 @@ class TestTFI(ctx: Context,
         val onset2      =  WN_PRESTIM_INTERVAL + 2*trial.soa
         val onsetEnd    =  WN_PRESTIM_INTERVAL + 2*trial.soa + currStimulusDuration + WN_POSTTSTIM_INTERVAL
 
-        val corr_delays = delaysAligner.arrangeDelays(STIM_ATV, 0,0, 0)
+        val corr_delays = subject.stimuliDelays.arrangeDelays(STIM_ATV, 0,0, 0)
 
         Log.d("TFI show1", "---------------------Trial type ${trial.correct_answer}, @ $onset0 | $onset1 | $onset2 | $onsetEnd")
 //        Log.d("TFI show2", "delays ${corr_delays.a} | ${corr_delays.t} | ${corr_delays.v}")
@@ -395,6 +371,6 @@ class TestTFI(ctx: Context,
             if(trial.stims[2] > 0)
                 mStimuliHandler.postDelayed({   mStimuliManager.deliverShiftedStimulus(trial.stims[2], corr_delays.a, corr_delays.t, corr_delays.v, 3) }, onset2)
 
-            mStimuliHandler.postDelayed({   onTrialEnd()    }, onsetEnd)
+            mStimuliHandler.postDelayed({   onStimuliEnd()    }, onsetEnd)
     }
 }

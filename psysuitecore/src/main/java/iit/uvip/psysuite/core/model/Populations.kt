@@ -2,6 +2,11 @@ package iit.uvip.psysuite.core.model
 
 import iit.uvip.psysuite.core.utility.IdLabelData
 
+/**
+ * Defines constants and collections related to different subject populations.
+ * This class primarily uses a companion object to provide static access to population identifiers
+ * and pre-defined lists of populations grouped by certain characteristics (e.g., sighted, hearing).
+ */
 class Populations {
 
     companion object{
@@ -9,24 +14,41 @@ class Populations {
         //-----------------------------------------------------------------------------------------
         // POPULATIONS
         //-----------------------------------------------------------------------------------------
+        /** Identifier for Typically Developing population. */
         @JvmStatic val POPULATION_TD                    = 0
 
+        /** Identifier for Congenitally Blind population. */
         @JvmStatic val POPULATION_CB                    = 10
+        /** Identifier for Late Blind population. */
         @JvmStatic val POPULATION_LB                    = 11
+        /** Identifier for Congenital Low Vision population. */
         @JvmStatic val POPULATION_CLV                   = 12
+        /** Identifier for Late Low Vision population. */
         @JvmStatic val POPULATION_LLV                   = 13
 
+        /** Identifier for Congenitally Deaf population. */
         @JvmStatic val POPULATION_CD                    = 20
+        /** Identifier for Late Deaf population. */
         @JvmStatic val POPULATION_LD                    = 21
+        /** Identifier for Congenital Auditory Impairment (Cochlear Implant) population. */
         @JvmStatic val POPULATION_CAI                   = 22
+        /** Identifier for Late Auditory Impairment (Cochlear Implant) population. */
         @JvmStatic val POPULATION_LAI                   = 23
 
+        /** Identifier for Attention Deficit Hyperactivity Disorder population. */
         @JvmStatic val POPULATION_ADHD                  = 30
 
+        /** Identifier for Schizophrenia population. */
         @JvmStatic val POPULATION_SK                    = 40
+        /** Identifier for Bipolar Disorder population. */
         @JvmStatic val POPULATION_BD                    = 41
+        /** Identifier for Borderline Personality Disorder population. */
         @JvmStatic val POPULATION_BL                    = 42
 
+        /** 
+         * List of all defined subject populations.
+         * Each entry is an [IdLabelData] object containing a label and its corresponding integer ID.
+         */
         @JvmStatic val all_populations:List<IdLabelData> = listOf(
             IdLabelData("TD",   POPULATION_TD),
             IdLabelData("ADHD", POPULATION_ADHD),
@@ -46,6 +68,9 @@ class Populations {
 
         )
 
+        /**
+         * List of populations that are typically sighted and hearing.
+         */
         @JvmStatic val sighted_hearing_populations:List<IdLabelData> = listOf(
             IdLabelData("TD",   POPULATION_TD),
             IdLabelData("ADHD", POPULATION_ADHD),
@@ -54,7 +79,9 @@ class Populations {
             IdLabelData("BL",   POPULATION_BL)
         )
 
-        // can do visual tasks
+        /** 
+         * List of populations that are sighted and can perform visual tasks.
+         */
         @JvmStatic val sighted_populations:List<IdLabelData> = listOf(
             IdLabelData("TD",   POPULATION_TD),
             IdLabelData("ADHD", POPULATION_ADHD),
@@ -68,7 +95,9 @@ class Populations {
             IdLabelData("LAI",  POPULATION_LAI)
         )
 
-        // can do acoustic tasks
+        /** 
+         * List of populations that are hearing and can perform acoustic tasks.
+         */
         @JvmStatic val hearing_populations:List<IdLabelData> = listOf(
             IdLabelData("TD",   POPULATION_TD),
             IdLabelData("ADHD", POPULATION_ADHD),
@@ -83,7 +112,9 @@ class Populations {
 
         )
 
-        // cannot do visual tasks
+        /** 
+         * List of populations with visual impairments (cannot perform visual tasks reliably).
+         */
         @JvmStatic val vi_populations:List<IdLabelData> = listOf(
             IdLabelData("CB",   POPULATION_CB),
             IdLabelData("LB",   POPULATION_LB),
@@ -91,7 +122,9 @@ class Populations {
             IdLabelData("LLV",  POPULATION_LLV)
         )
 
-        // cannot do acoustic tasks
+        /** 
+         * List of populations with auditory impairments (cannot perform acoustic tasks reliably).
+         */
         @JvmStatic val ai_populations:List<IdLabelData> = listOf(
             IdLabelData("CD",   POPULATION_CD),
             IdLabelData("LD",   POPULATION_LD),

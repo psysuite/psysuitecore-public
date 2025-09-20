@@ -3,7 +3,11 @@ package iit.uvip.psysuite.core.tests.sample
 import iit.uvip.psysuite.core.trials.TrialBasic
 
 
-class TrialSample(id:Int=-1, type:Int, label:String, val source:Int, val extraTrial:Any?): TrialBasic(id,type,label){
+class TrialSample(id:Int=-1, type:Int, label:String, val source:Int, val extraTrial:Any?): TrialBasic(
+    id,
+    type,
+    label
+){
 
     companion object {
         @JvmStatic val LOG_HEADER           = "id\tlabel\tlat\tconflict\tres\tcor_ans\tuser_ans\telapsed\trep\n"

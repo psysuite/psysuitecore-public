@@ -134,10 +134,6 @@ class TestAVB(ctx: Context,
 
         if (mImageView == null) throw ImageViewDefinedException("IMAGE_VIEW_NOT_DEFINED")
 
-        nextTrailModality   = subject.nextTrailModality
-        abortMode           = TEST_ABORT_TRIALEND       // abort @ trial end
-        showTrialsID        = TEST_SHOWTRIALS_ALWAYS    // trial id always shown
-
         allQuestions        = mutableListOf(ctx.resources.getString(R.string.atvb_question_synchro), ctx.resources.getString(R.string.atvb_question_equal))
         validAnswers        = mutableListOf(ctx.resources.getString(R.string.yes), ctx.resources.getString(R.string.no))
 
@@ -229,7 +225,7 @@ class TestAVB(ctx: Context,
             AudioManager(STIM_A, audioResources[currStimulusDuration] ?: "t1000hz_50ms.wav", duration = currStimulusDuration, ctx = ctx, handler = mStimuliHandler),
             null,
             VisualManager(STIM_V, mImageView, mDrawablesResource[1], duration = currStimulusDuration, handler = mStimuliHandler),
-            delaysAligner, ctx, mStimuliHandler)
+            subject.stimuliDelays, ctx, mStimuliHandler)
 
         testEvent.accept(Triple(EVENT_TEST_SETUP_COMPLETED, null, listOf()))
     }
@@ -399,28 +395,7 @@ class TestAVB(ctx: Context,
         }
         return trials
     }
-    // =============================================================================================================================
-    // MANAGE TRIALS STIMULI
-    // =============================================================================================================================
-    override fun onNextTrial(){
-        testEvent.accept(Triple(EVENT_UPDATE_TRIAL_ID, 0L, listOf()))
-        super.onNextTrial()
-    }
 
-    // called by secondTrain
-    override fun onTrialEnd(){
-
-        mNoise?.stop()
-        mNoise?.prepare()
-
-        when (nextTrailModality) {
-            TEST_NEXTTRIAL_BUTTON       ->  testEvent.accept(Triple(EVENT_SHOW_NEXT_BUTTON, null, listOf()))
-            TEST_NEXTTRIAL_AUTO         ->  // create a ITI=2sec pause by waiting for 1sec and invoking a 1sec wait in TestFragment
-                mStimuliHandler.postDelayed({   testEvent.accept(Triple(EVENT_SHOW_ABORT, 1000L, listOf()))     }, currStimulusDuration)
-
-            TEST_NEXTTRIAL_ANSWER       ->  testEvent.accept(Triple(EVENT_GIVE_ANSWER, null, listOf()))
-        }
-    }
 
     override fun initSummary(){
 
@@ -450,7 +425,7 @@ class TestAVB(ctx: Context,
             TEST_AVB_TIME_SINGLESTIM_TOD -> {
                 mStimuliHandler.postDelayed({
                     testEvent.accept(Triple(EVENT_STIMULI_START, null, listOf()))
-                    deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced){ onTrialEnd() }
+                    deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced){ onStimuliEnd() }
                 }, WN_FIRSTSTIM_INTERVAL)
             }
             TEST_AVB_TIME_DOUBLESTIM,
@@ -458,7 +433,7 @@ class TestAVB(ctx: Context,
 
                 // since I have to apply the possible shift, I calculate here the correction and thus call deliverShiftedStimulus for the 1st stim.
                 // for the second I call instead deliverUnBalancedStimuli
-                val corr_delays = delaysAligner.arrangeDelays(STIM_AV, 0,-1,0) //arrangeDelays(0,0,-1, subject.stimuliDelay)
+                val corr_delays = subject.stimuliDelays.arrangeDelays(STIM_AV, 0,-1,0) //arrangeDelays(0,0,-1, subject.stimuliDelay)
                 val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
 
                 mStimuliHandler.postDelayed({
@@ -471,7 +446,7 @@ class TestAVB(ctx: Context,
                     ) // simult
                 }, shift)
                 mStimuliHandler.postDelayed({
-                    deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced){ onTrialEnd() }
+                    deliverUnBalancedStimuli(trial as TrialBindingsUnBalanced){ onStimuliEnd() }
                 }, shift + curISI)     // to preserve the desired ISI between 1st and 2nd stimuli,
                                                                                                     // I also add the shift that could be eventually imposed to the fastest modality
             }
@@ -483,7 +458,7 @@ class TestAVB(ctx: Context,
         // since I have to apply the possible shift, I calculate here the correction and thus call deliverShiftedStimulus for the 1st stim.
         // to preserve the desired ISI between stimuli, I also subtract the positive shift that could be eventually imposed to the fastest modality
 
-        val corr_delays = delaysAligner.arrangeDelays(STIM_AV, 0,-1,0) //arrangeDelays(0,0,-1, subject.stimuliDelay)
+        val corr_delays = subject.stimuliDelays.arrangeDelays(STIM_AV, 0,-1,0) //arrangeDelays(0,0,-1, subject.stimuliDelay)
         val shift       = WN_FIRSTSTIM_INTERVAL - corr_delays.shift
         // first train
         mStimuliHandler.postDelayed({
@@ -526,7 +501,7 @@ class TestAVB(ctx: Context,
         }, shift + 4*curISI)
 
         mStimuliHandler.postDelayed({
-            onTrialEnd()
+            onStimuliEnd()
         }, shift + 5*curISI)
     }
 
@@ -536,7 +511,7 @@ class TestAVB(ctx: Context,
         val corr_delays: CorrectedStimuliDelay = when(trial.type) {
             TYPE_AV     -> {
                 type = mStimuliManager.typeAV
-                delaysAligner.arrangeDelays(type, 0,-1, 0)
+                subject.stimuliDelays.arrangeDelays(type, 0,-1, 0)
             }
             TYPE_A      -> {
                 type = mStimuliManager.typeA
@@ -548,11 +523,11 @@ class TestAVB(ctx: Context,
             }
             TYPE_A_V    -> {
                 type = mStimuliManager.typeAV
-                delaysAligner.arrangeDelays(type, 0,-1, trial.stim_value)
+                subject.stimuliDelays.arrangeDelays(type, 0,-1, trial.stim_value)
             }
             TYPE_V_A    -> {
                 type = mStimuliManager.typeAV
-                delaysAligner.arrangeDelays(type, trial.stim_value,-1, 0)
+                subject.stimuliDelays.arrangeDelays(type, trial.stim_value,-1, 0)
             }
             else        -> {
                 type = mStimuliManager.typeAV

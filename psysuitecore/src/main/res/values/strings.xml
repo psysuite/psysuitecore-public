@@ -16,11 +16,15 @@
     <string name="keep">mantieni</string>
     <string name="continue_txt">prosegui</string>
     <string name="restart">ricomincia</string>
+    <string name="start_test">incomincia il test</string>
+    <string name="restart_training">ripeti il training</string>
     <string name="stop">STOP</string>
     <string name="cancel">cancella</string>
     <string name="continue_label">CONTINUA</string>
     <string name="block_ended">Questa parte del test è terminata\nVuoi continuare o interrompere per poi proseguire un\'altra volta?</string>
+    <string name="training_ended">Il training è terminato\nVuoi ripeterlo o iniziare il test?</string>
     <string name="block_ended_blind">Questa parte del test è terminata...Chiedi assistenza per continuare</string>
+    <string name="training_ended_blind">La parte di training è terminata...Chiedi assistenza per continuare</string>
     <string name="test_ended">Il Test è terminato...grazie per aver partecipato</string>
     <string name="test_want2abort">Sei sicuro di voler realmente interrompere il test?</string>
     <string name="test_aborted">Hai deciso di interrompere il test. Vuoi cancellare i risultati fin qui scritti\n o li vuoi mantenere?</string>
@@ -58,6 +62,7 @@
     <string name="resource_name">nome</string>
     <string name="interactivity">interattivo</string>
     <string name="trials_management">gestione trials</string>
+    <string name="do_training" translatable="false">training</string>
 
     <string name="time">tempo</string>
     <string name="frequency">frequenza</string>
@@ -376,5 +381,6 @@
     <string name="correct_answer">risposta esatta</string>
     <string name="wrong_answer">risposta sbagliata</string>
     <string name="condition_not_allowed">codice sub-test non ammesso</string>
+    <string name="error_test_code_not_recognized">Test non riconosciuto</string>
 
 </resources>

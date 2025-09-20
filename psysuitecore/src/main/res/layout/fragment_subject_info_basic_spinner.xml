@@ -96,6 +96,16 @@
         app:layout_constraintTop_toTopOf="@+id/guideline15" />
 
     <Switch
+        android:id="@+id/swTraining"
+        android:layout_width="150dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="220dp"
+        android:text="@string/do_training"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/guideline15" />
+
+    <Switch
         android:id="@+id/swWhiteNoise"
         android:layout_width="150dp"
         android:layout_height="24dp"
@@ -119,7 +129,7 @@
         android:id="@+id/spinner"
         android:layout_width="150dp"
         android:layout_height="28dp"
-        android:layout_marginTop="216dp"
+        android:layout_marginTop="265dp"
         android:layout_marginEnd="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline15" />
@@ -129,7 +139,7 @@
         android:layout_width="150dp"
         android:layout_height="24dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="220dp"
+        android:layout_marginTop="265dp"
         android:text="TEXT"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/guideline15" />
@@ -190,7 +200,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_begin="479dp" />
+        app:layout_constraintGuide_begin="586dp" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline15"
