@@ -31,6 +31,8 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
         val taskparams_dict     = sPy.class2dict(adaptiveWrapper.params)
 
         wrapperClass            = sPy.instanciate(adaptiveWrapper.module, adaptiveWrapper.classname, adaptparams_dict, taskparams_dict)
+        wrapperClass.callAttr("get").toFloat()  // to init the model, in case of mixed design,
+                                                // if the first trial is not adaptative, when i set its result it gives an error
     }
 
         /**
@@ -42,7 +44,6 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
      */
     override fun setResponse(result: Int, elapsedms: Long, extra_text: String) {
         mTrial.setResponse(result, elapsedms, mPrevTrial, extra_text)
-//        if (mTrial.isADA)
         wrapperClass.callAttr("set", mTrial.success, mTrial.magnitude)
     }
 

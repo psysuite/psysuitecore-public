@@ -315,9 +315,7 @@ class TestATVB(
                     TEST_ATVB_TIME_D_BAL        -> createTrialsAdaptiveBalanced()
                     else                        -> throw Exception("ERROR in TEST ATVB")
                 }
-                val trman = AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
-                trman.getStimulus()
-                trman
+                AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
             }
         initSummary()
 

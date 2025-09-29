@@ -251,6 +251,7 @@ class TestBIS(
     private val nBlocks                     = 10     // I present N_BLOCKS * 2 * 10 conditions = 200 trials
 
     // region adaptive setup
+    private val nAdaptiveTrials             = 40
     private val nTotalAdaptiveTrials        = 200
     private val nFixedInAdaptiveTrials      = 20
     private val nAT_range_sub               = 400F
@@ -336,9 +337,7 @@ class TestBIS(
                         TEST_BISECTION_AUDIO, TEST_BISECTION_TACTILE, TEST_BISECTION_VISUAL,
                         TEST_BISECTION_AUDIO_SUPRA, TEST_BISECTION_TACTILE_SUPRA, TEST_BISECTION_VISUAL_SUPRA -> {
                             val trials = createTrialsAdaptive()
-                            val trman = AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper, training_trials)
-                            trman.getStimulus()
-                            trman
+                            AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper, training_trials)
                         }
                         else -> throw IllegalArgumentException(ctx.getString(R.string.condition_not_allowed))
                     }
@@ -444,6 +443,29 @@ class TestBIS(
     }
 
     private fun createTrialsAdaptive():List<TrialBasic>{
+        var cnt = -1
+        val trials: MutableList<TrialBasic> = mutableListOf()
+        for (i in 0 until (nAdaptiveTrials-10)/2){
+            trials.add(TrialBIS(++cnt, subject.type, STIMULUS_TYPE_AUDIO, TrialsManager.ADAPTIVE_VALUE, true , CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, isADA=true))
+            trials.add(TrialBIS(++cnt, subject.type, STIMULUS_TYPE_AUDIO, TrialsManager.ADAPTIVE_VALUE, false, CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, isADA=true))
+        }
+
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 300F, true, conflictType, currStimulusDuration, currStimulusDuration2))
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 200F, true, conflictType, currStimulusDuration, currStimulusDuration2))
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 100F, true, conflictType, currStimulusDuration, currStimulusDuration2))
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 50F , true, conflictType, currStimulusDuration, currStimulusDuration2))
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 15F , true, conflictType, currStimulusDuration, currStimulusDuration2))
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 15F , false, conflictType, currStimulusDuration, currStimulusDuration2))
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 50F , false, conflictType, currStimulusDuration, currStimulusDuration2))
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 100F, false, conflictType, currStimulusDuration, currStimulusDuration2))
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 200F, false, conflictType, currStimulusDuration, currStimulusDuration2))
+        trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 300F, false, conflictType, currStimulusDuration, currStimulusDuration2))
+
+        trials.shuffle()
+        return trials
+    }
+
+    private fun createTrialsAdaptive2():List<TrialBasic>{
 
         val schema =    if(isSupra)     trialsUnimodalSupraSchema
                         else            trialsUnimodalSubSchema

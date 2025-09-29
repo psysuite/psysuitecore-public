@@ -338,10 +338,8 @@ class TestTVB(ctx: Context,
                     TEST_TVB_TIME_SINGLESTIM    -> createTrialsAdaptiveSingle()
                     else                        -> throw Exception("ERROR in TEST AVB")
                 }
-                val trman = AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
-                trman.getStimulus()
-                trman
-            }            
+                AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
+            }
 
 
         mTestLabel = ""

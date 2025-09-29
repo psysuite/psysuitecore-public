@@ -285,9 +285,7 @@ class TestATB(ctx: Context,
                     TEST_ATB_TIME_SINGLESTIM    -> createTrialsAdaptiveSingle()
                     else                        -> throw Exception("ERROR in TEST ATB")
                 }
-                val trman = AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
-                trman.getStimulus()
-                trman
+                AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
             }
         mTestLabel = ""
         getConditionsInfo(ctx).map {

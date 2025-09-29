@@ -468,15 +468,23 @@ class TestFragment : BaseFragment(
     private fun setupFragmentResultListener() {
         // Listener for answer results
         parentFragmentManager.setFragmentResultListener(TRG_REQ_CODE_ANSWER.toString(), viewLifecycleOwner) { requestKey, result ->
-            when (result.getInt(EVENT_ANSWER_CODE, 0)) {
-                TestBasic.EVENT_ANSWER_GIVEN -> {
-                    val res         = result.getInt(EVENT_ANSWER_RESULT, -1)
-                    val elapsedTime = result.getLong(EVENT_TIME_TO_ANSWER, -1)
-                    val result_extra= result.getString(EVENT_ANSWER_RESULT_EXTRA) ?: ""
-                    onAnswerGiven(res, elapsedTime, result_extra)
+
+            try {
+                when (result.getInt(EVENT_ANSWER_CODE, 0)) {
+                    TestBasic.EVENT_ANSWER_GIVEN -> {
+                        val res         = result.getInt(EVENT_ANSWER_RESULT, -1)
+                        val elapsedTime = result.getLong(EVENT_TIME_TO_ANSWER, -1)
+                        val result_extra= result.getString(EVENT_ANSWER_RESULT_EXTRA) ?: ""
+                        onAnswerGiven(res, elapsedTime, result_extra)
+                    }
+                    TestBasic.EVENT_TRIAL_REPEAT -> mTest.repeatTrial()
+                    TestBasic.EVENT_TRIAL_ABORT -> onAskIfAbortTest()
                 }
-                TestBasic.EVENT_TRIAL_REPEAT -> mTest.repeatTrial()
-                TestBasic.EVENT_TRIAL_ABORT -> onAskIfAbortTest()
+            }
+            catch (e: Exception) {
+                Log.e("TestFragment", e.message.toString())
+                showAlert(requireActivity(), resources.getString(R.string.critical_error), resources.getString(R.string.contact_developer))
+                requireView().findNavController().popBackStack()
             }
         }
 

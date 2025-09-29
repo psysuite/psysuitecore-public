@@ -213,9 +213,7 @@ class TestTID(ctx: Context,
                 else -> {
                     adoWrapper  = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
                     val trials = createQuestTrials(currStimulusDuration)
-                    val trman = AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
-                    trman.getStimulus()
-                    trman
+                    AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
                 }
             }
 
