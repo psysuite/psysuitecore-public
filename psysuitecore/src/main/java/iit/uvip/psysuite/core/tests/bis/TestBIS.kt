@@ -336,7 +336,7 @@ class TestBIS(
                     when (subject.type) {
                         TEST_BISECTION_AUDIO, TEST_BISECTION_TACTILE, TEST_BISECTION_VISUAL,
                         TEST_BISECTION_AUDIO_SUPRA, TEST_BISECTION_TACTILE_SUPRA, TEST_BISECTION_VISUAL_SUPRA -> {
-                            val trials = createTrialsAdaptive()
+                            val trials = createTrialsAdaptive2()
                             AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper, training_trials)
                         }
                         else -> throw IllegalArgumentException(ctx.getString(R.string.condition_not_allowed))

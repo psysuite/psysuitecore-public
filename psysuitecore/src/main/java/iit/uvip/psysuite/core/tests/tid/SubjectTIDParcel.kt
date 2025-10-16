@@ -42,8 +42,9 @@ class SubjectTIDParcel(
     override var spinner_sel: Int = -1,
     override var spinner_label: String = "session",
     override var spinner_data_resource: Int = -1,
+    override var date: String = "",
     var group: Int = -1
-) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode, spinner_sel, spinner_label, spinner_data_resource){
+) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode, spinner_sel, spinner_label, spinner_data_resource, date){
 
     override fun getFilesPrefix(ctx:Context):String{
 

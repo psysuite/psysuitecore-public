@@ -55,6 +55,7 @@ import org.albaspazio.core.filesystem.*
  * @param spinner_sel The currently selected item's index in the spinner. Set to -1000 for non-longitudinal tests. Defaults to -1000.
  * @param spinner_label The label associated with the current spinner selection. Defaults to "session".
  * @param spinner_data_resource The resource ID for the data populating the spinner (e.g., a string array). Defaults to -1.
+ * @param date The creation/modification date in ISO 8601 format (yyyy-MM-dd HH:mm:ss). Set automatically in writeJson(). Defaults to empty string.
  */
 abstract class SubjectBasicParcel(
     open var classes: List<String> = listOf(),
@@ -82,7 +83,8 @@ abstract class SubjectBasicParcel(
 
     open var spinner_sel: Int = -1000,
     open var spinner_label: String = "session",
-    open var spinner_data_resource: Int = -1
+    open var spinner_data_resource: Int = -1,
+    open var date: String = ""
 ) : Parcelable {
 
     /** The name of the file where this subject's data is stored. Not included in Parcelization. */
@@ -282,6 +284,9 @@ abstract class SubjectBasicParcel(
         val jsonAdapter = moshi.adapter(this.javaClass)
 
         return try {
+                    // Set current date in ISO 8601 format
+                    date = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
+                    
                     // want to create subject file always without block info, I want to add block info only renaming it after a block stop
                     subjectFileName = composeSubjectFileName(context)
                     if(subjectFileName.isEmpty())   ERROR_SUBJECT_INCOMPLETE
