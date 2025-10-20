@@ -2,9 +2,9 @@ package iit.uvip.psysuite.core.trials
 
 import android.util.Log
 import com.chaquo.python.PyObject
-import iit.uvip.psysuite.adaptive.AdaptiveWrapper
+import org.albaspazio.psysuite.adaptive.AdaptiveWrapper
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.python.SPython
+import org.albaspazio.psysuite.python.SPython
 
 
 // this class manages adaptive tasks

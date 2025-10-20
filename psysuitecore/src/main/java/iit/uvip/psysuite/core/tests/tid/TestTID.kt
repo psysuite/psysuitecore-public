@@ -5,9 +5,9 @@ import android.content.Context
 import android.view.View
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
-import iit.uvip.psysuite.adaptive.AdaptiveWrapper
-import iit.uvip.psysuite.adaptive.TaskADAParams
-import iit.uvip.psysuite.adaptive.ado.ADOParams
+import org.albaspazio.psysuite.adaptive.AdaptiveWrapper
+import org.albaspazio.psysuite.adaptive.TaskADAParams
+import org.albaspazio.psysuite.adaptive.ado.ADOParams
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.model.Populations
 import iit.uvip.psysuite.core.stimuli.AudioManager

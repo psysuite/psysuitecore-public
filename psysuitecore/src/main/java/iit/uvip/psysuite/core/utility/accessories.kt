@@ -1,7 +1,6 @@
 package iit.uvip.psysuite.core.utility
 
 import android.os.Parcelable
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 

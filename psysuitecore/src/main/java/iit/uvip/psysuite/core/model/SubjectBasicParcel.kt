@@ -1,37 +1,44 @@
-package iit.uvip.psysuite.core.model.parcel
+package iit.uvip.psysuite.core.model
 
 import android.content.Context
 import android.os.Parcelable
-import kotlinx.parcelize.IgnoredOnParcel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-
-import iit.uvip.psysuite.core.model.Populations
+import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.stimuli.DelaysAligner
 import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_NO_LONGITUDINAL
 import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.getIds
 import iit.uvip.psysuite.core.utility.getLabelLog
-
+import kotlinx.parcelize.IgnoredOnParcel
 import org.albaspazio.core.accessory.Device
 import org.albaspazio.core.accessory.getCompanionObjectMethod
 import org.albaspazio.core.accessory.getDateString
 import org.albaspazio.core.accessory.getFullDateString
-import org.albaspazio.core.filesystem.*
+import org.albaspazio.core.filesystem.existFile
+import org.albaspazio.core.filesystem.existFileStartingWith
+import org.albaspazio.core.filesystem.getAbsoluteFilePath
+import org.albaspazio.core.filesystem.getFileList
+import org.albaspazio.core.filesystem.readText
+import org.albaspazio.core.filesystem.saveText
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 
 /**
- * Abstract base class for subject configurations, implementing [Parcelable] for easy transport.
+ * Abstract base class for subject configurations, implementing [android.os.Parcelable] for easy transport.
  * This class manages common subject information and test parameters.
  * It provides functionality for:
  * - Storing basic subject demographics (label, age, gender, population).
  * - Holding test-specific parameters (type, block, debug status, device info, stimuli delays, trial progression modalities).
- * - Supporting longitudinal tests with session/spinner selection (when spinner_sel != -1000).
+ * - Supporting longitudinal tests with session/spinner selection (when session_spsel != TEST_NO_LONGITUDINAL).
  * - Generating standardized file names for subject data, results, and summaries.
  * - Saving and loading subject configurations to/from JSON files.
  * - Validating subject information.
  *
- * All tests are intrinsically longitudinal. For non-longitudinal tests, set spinner_sel = -1000
+ * All tests are intrinsically longitudinal. For non-longitudinal tests, set session_spsel = TEST_NO_LONGITUDINAL
  * to hide the longitudinal UI elements and ignore session functionality.
  *
  * @param classes List of class names, typically used for reflection or identification. Used to find companion object methods.
@@ -44,18 +51,18 @@ import java.util.UUID
  * @param isDebug Flag indicating if the test is running in debug mode. Defaults to `false`.
  * @param device Information about the device running the test. Defaults to `null`.
  * @param vercode Version code of the application or test suite. Defaults to -1.
- * @param stimuliDelays Configuration for aligning stimuli delays. Defaults to a new [DelaysAligner] instance.
- * @param nextTrailModality How the test proceeds to the next trial (e.g., [TestBasic.TEST_NEXTTRIAL_AUTO]). Defaults to [TEST_NEXTTRIAL_AUTO].
- * @param whitenoise Configuration for white noise during the test (e.g., [TestBasic.TEST_SWITCH_CHOOSE_ON]). Defaults to [TestBasic.TEST_SWITCH_CHOOSE_ON].
- * @param trman_type Trial management type (e.g., [TestBasic.TEST_TRMAN_FIXED]). Defaults to [TestBasic.TEST_TRMAN_FIXED].
- * @param showResult Configuration for showing results after a trial/test. Defaults to [TestBasic.TEST_SWITCH_DISABLED].
- * @param canRepeat Configuration for allowing trial repetition. Defaults to [TestBasic.TEST_SWITCH_CHOOSE_OFF].
- * @param doTraining Configuration for enabling a training phase. Defaults to [TestBasic.TEST_SWITCH_DISABLED].
- * @param showTrialID Configuration for showing trial IDs. Defaults to [TestBasic.TEST_SHOWTRIALS_NEVER].
- * @param abortMode Configuration for aborting the test. Defaults to [TestBasic.TEST_ABORT_TRIALEND].
- * @param spinner_sel The currently selected item's index in the spinner. Set to -1000 for non-longitudinal tests. Defaults to -1000.
+ * @param stimuliDelays Configuration for aligning stimuli delays. Defaults to a new [iit.uvip.psysuite.core.stimuli.DelaysAligner] instance.
+ * @param nextTrailModality How the test proceeds to the next trial (e.g., [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_NEXTTRIAL_AUTO]). Defaults to [TEST_NEXTTRIAL_AUTO].
+ * @param whitenoise Configuration for white noise during the test (e.g., [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_SWITCH_CHOOSE_ON]). Defaults to [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_SWITCH_CHOOSE_ON].
+ * @param trman_type Trial management type (e.g., [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_TRMAN_FIXED]). Defaults to [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_TRMAN_FIXED].
+ * @param showResult Configuration for showing results after a trial/test. Defaults to [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_SWITCH_DISABLED].
+ * @param canRepeat Configuration for allowing trial repetition. Defaults to [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_SWITCH_CHOOSE_OFF].
+ * @param doTraining Configuration for enabling a training phase. Defaults to [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_SWITCH_DISABLED].
+ * @param showTrialID Configuration for showing trial IDs. Defaults to [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_SHOWTRIALS_NEVER].
+ * @param abortMode Configuration for aborting the test. Defaults to [iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_ABORT_TRIALEND].
+ * @param session_spsel The currently selected item's index in the spinner. Set to TEST_NO_LONGITUDINAL for non-longitudinal tests. Defaults to TEST_NO_LONGITUDINAL.
  * @param spinner_label The label associated with the current spinner selection. Defaults to "session".
- * @param spinner_data_resource The resource ID for the data populating the spinner (e.g., a string array). Defaults to -1.
+ * @param session_spdatares The resource ID for the data populating the spinner (e.g., a string array). Defaults to -1.
  * @param date The creation/modification date in ISO 8601 format (yyyy-MM-dd HH:mm:ss). Set automatically in writeJson(). Defaults to empty string.
  * @param expUniqueId A unique identifier for the experiment instance, generated automatically in writeJson(). Defaults to empty string.
  */
@@ -73,25 +80,28 @@ abstract class SubjectBasicParcel(
     open var vercode: Int = -1,
     open var stimuliDelays: DelaysAligner = DelaysAligner(),
 
-    open var nextTrailModality: Int = TestBasic.TEST_NEXTTRIAL_AUTO,
-    open var whitenoise: Int    = TestBasic.TEST_SWITCH_CHOOSE_ON,
-    open var trman_type: Int    = TestBasic.TEST_TRMAN_FIXED,
-    open var showResult: Int    = TestBasic.TEST_SWITCH_DISABLED,
-    open var canRepeat:Int      = TestBasic.TEST_SWITCH_CHOOSE_OFF,
-    open var doTraining: Int    = TestBasic.TEST_SWITCH_DISABLED,
-    
-    open var showTrialID: Int = TestBasic.TEST_SHOWTRIALS_NEVER,
-    open var abortMode: Int = TestBasic.TEST_ABORT_TRIALEND,
+    open var nextTrailModality: Int = TestBasic.Companion.TEST_NEXTTRIAL_AUTO,
+    open var whitenoise: Int    = TestBasic.Companion.TEST_SWITCH_CHOOSE_ON,
+    open var trman_type: Int    = TestBasic.Companion.TEST_TRMAN_FIXED,
+    open var showResult: Int    = TestBasic.Companion.TEST_SWITCH_DISABLED,
+    open var canRepeat:Int      = TestBasic.Companion.TEST_SWITCH_CHOOSE_OFF,
+    open var doTraining: Int    = TestBasic.Companion.TEST_SWITCH_DISABLED,
 
-    open var spinner_sel: Int = -1000,
-    open var spinner_label: String = "session",
-    open var spinner_data_resource: Int = -1,
+    open var showTrialID: Int = TestBasic.Companion.TEST_SHOWTRIALS_NEVER,
+    open var abortMode: Int = TestBasic.Companion.TEST_ABORT_TRIALEND,
+
+    open var session_spsel: Int = TestBasic.Companion.TEST_NO_LONGITUDINAL,
+    open var session_spdatares: Int = R.array.sessions_array,
     open var date: String = "",
     open var expUniqueId: String = ""
 ) : Parcelable {
 
+    var session: String = ""
+
     /** The name of the file where this subject's data is stored. Not included in Parcelization. */
-    @IgnoredOnParcel var subjectFileName:String = ""
+    @IgnoredOnParcel
+    var subjectFileName:String = ""
+
 
     companion object  {
         /** Default filename for the current subject's data before specific naming is applied. */
@@ -120,14 +130,21 @@ abstract class SubjectBasicParcel(
     }
 
     /**
+     * Indicates whether this test configuration uses longitudinal functionality.
+     * Returns true if session_spsel != TEST_NO_LONGITUDINAL, false otherwise.
+     */
+    val isLongitudinal: Boolean
+        get() = session_spsel != TEST_NO_LONGITUDINAL
+
+    /**
      * Loads subject data from the default [CURR_SUBJ_FILE] if it exists.
      * If the file exists and is valid JSON for this subject type, it updates the current instance with loaded data.
      * @return The loaded [SubjectBasicParcel] instance, or the current instance if loading fails or file doesn't exist.
      */
     open fun loadSubject(): SubjectBasicParcel {
-        val subj = existFile(CURR_SUBJ_FILE + TestBasic.SUBJFILE_EXTENSION)
+        val subj = existFile(CURR_SUBJ_FILE + TestBasic.Companion.SUBJFILE_EXTENSION)
         if (subj.first) {
-            val jsontext = readText(CURR_SUBJ_FILE + TestBasic.SUBJFILE_EXTENSION)
+            val jsontext = readText(CURR_SUBJ_FILE + TestBasic.Companion.SUBJFILE_EXTENSION)
             return try {
                 loadJsonText(jsontext)
             } catch (e: Exception) {
@@ -157,7 +174,7 @@ abstract class SubjectBasicParcel(
 
     /**
      * Checks if a subject file matching the current subject's prefix exists and determines the last block number.
-     * @param ctx Android [Context] for accessing application-specific information if needed by underlying file operations.
+     * @param ctx Android [android.content.Context] for accessing application-specific information if needed by underlying file operations.
      * @return -1 if no subject file exists, 0 if a base subject file (without block number) exists,
      *         or N (1-based) representing the next block number if block files (e.g., prefix_blkN-1.json) exist.
      */
@@ -209,8 +226,8 @@ abstract class SubjectBasicParcel(
                                     else            "f"
 
         val trmantype_str       = when (trman_type) {
-            TestBasic.TEST_TRMAN_ADAPTIVE -> "AD"
-            TestBasic.TEST_TRMAN_FIXED -> "FX"
+            TestBasic.Companion.TEST_TRMAN_ADAPTIVE -> "AD"
+            TestBasic.Companion.TEST_TRMAN_FIXED -> "FX"
             else -> "MX" // Mixed
         }
 
@@ -229,7 +246,7 @@ abstract class SubjectBasicParcel(
 
         val blkstr =    if(blk > -1)    "_blk$blk"
                         else           ""
-        return "${getFilesPrefix(ctx)}_${getFullDateString()}${blkstr}${TestBasic.RES_EXTENSION}"
+        return "${getFilesPrefix(ctx)}_${getFullDateString()}${blkstr}${TestBasic.Companion.RES_EXTENSION}"
     }
 
     /**
@@ -244,7 +261,7 @@ abstract class SubjectBasicParcel(
 
         val blkstr =    if(blk > -1)    "_blk$blk"
                         else           ""
-        return "${getFilesPrefix(ctx)}_${getFullDateString()}_summary${blkstr}${TestBasic.RES_EXTENSION}"
+        return "${getFilesPrefix(ctx)}_${getFullDateString()}_summary${blkstr}${TestBasic.Companion.RES_EXTENSION}"
     }
 
     /**
@@ -261,7 +278,7 @@ abstract class SubjectBasicParcel(
 
         val blkstr =    if(blk > -1)    "_blk$blk"
                         else           ""
-        return "${getFilesPrefix(ctx)}_${getDateString()}${blkstr}${TestBasic.SUBJFILE_EXTENSION}"
+        return "${getFilesPrefix(ctx)}_${getDateString()}${blkstr}${TestBasic.Companion.SUBJFILE_EXTENSION}"
     }
 
     /**
@@ -288,16 +305,21 @@ abstract class SubjectBasicParcel(
 
         return try {
                     // Set current date in ISO 8601 format
-                    date = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date())
-                    
+                    date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+
                     // Set unique experiment ID
                     expUniqueId = "${classes[0].substringAfterLast(".")}${System.currentTimeMillis()}_${UUID.randomUUID().toString().substring(0, 8)}"
-                    
+
                     // want to create subject file always without block info, I want to add block info only renaming it after a block stop
                     subjectFileName = composeSubjectFileName(context)
                     if(subjectFileName.isEmpty())   ERROR_SUBJECT_INCOMPLETE
                     else {
-                        saveText(context, subjectFileName, jsonAdapter.toJson(this), forceOld = true)        // var jsontext = context!!.resources.openRawResource(R.raw.script_001).bufferedReader().use { it.readText() }
+                        saveText(
+                            context,
+                            subjectFileName,
+                            jsonAdapter.toJson(this),
+                            forceOld = true
+                        )        // var jsontext = context!!.resources.openRawResource(R.raw.script_001).bufferedReader().use { it.readText() }
                         0
                     }
                 }
@@ -307,33 +329,4 @@ abstract class SubjectBasicParcel(
                 }
     }
     // =============================================================================================================
-
-    /**
-     * The currently selected session number (0-indexed).
-     * This is an alias for `spinner_sel`.
-     * Only meaningful when spinner_sel != -1000 (longitudinal tests).
-     */
-    var session: Int
-        get() = spinner_sel
-        set(value) {
-            spinner_sel = value
-        }
-
-    /**
-     * The resource ID for the array that defines the available test sessions (e.g., a string array from resources).
-     * This is an alias for `spinner_data_resource`.
-     * Only meaningful when spinner_sel != -1000 (longitudinal tests).
-     */
-    var test_sessions_array: Int
-        get() = spinner_data_resource
-        set(value) {
-            spinner_data_resource = value
-        }
-
-    /**
-     * Indicates whether this test configuration uses longitudinal functionality.
-     * Returns true if spinner_sel != -1000, false otherwise.
-     */
-    val isLongitudinal: Boolean
-        get() = spinner_sel != -1000
 }

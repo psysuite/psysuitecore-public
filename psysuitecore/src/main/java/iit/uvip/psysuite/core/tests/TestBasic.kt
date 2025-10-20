@@ -14,7 +14,7 @@ import androidx.fragment.app.Fragment
 import com.jakewharton.rxrelay2.PublishRelay
 
 import iit.uvip.psysuite.core.R
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.model.summary.Summary
 import iit.uvip.psysuite.core.stimuli.StimuliManager
 import iit.uvip.psysuite.core.trials.TrialBasic
@@ -296,6 +296,10 @@ abstract class TestBasic(protected val ctx: Context,
 
         // endregion
         //-----------------------------------------------------------------------------------------
+
+        /** Constant used in SubjectBasicParcel to indicate that test is not longitudinal. session = 1 is automatically assigned. */
+        @JvmStatic val TEST_NO_LONGITUDINAL            = -1000
+        @JvmStatic val TEST_LONGITUDINAL_TOBESELECTED  = -1
 
         // --------------------------------------------------------------------------------------------
         // region ---- USER MODIFIED, between-trial, BEHAVIOUR ----

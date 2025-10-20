@@ -8,7 +8,7 @@ import android.widget.AdapterView
 
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.databinding.FragmentSubjectInfoBasicRivgrpBinding
-import iit.uvip.psysuite.core.ui.subjects_dialog.SubjectBasicDialogFragment
+import iit.uvip.psysuite.core.ui.SubjectBasicDialogFragment
 
 
 class SubjectRIVGRPDialogFragment : SubjectBasicDialogFragment(), AdapterView.OnItemSelectedListener

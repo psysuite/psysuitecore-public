@@ -7,12 +7,12 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.databinding.FragmentSubjectInfoBasicBinding
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_ATB_TIME_INF
 import iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_AVB_TIME_INF
 import iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_TVB_TIME_INF
-import iit.uvip.psysuite.core.ui.subjects_dialog.SubjectBasicDialogFragment
+import iit.uvip.psysuite.core.ui.SubjectBasicDialogFragment
 import iit.uvip.psysuite.core.utility.ConditionData
 
 // add whitenoise check button

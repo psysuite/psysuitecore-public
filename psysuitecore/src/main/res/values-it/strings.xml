@@ -100,6 +100,30 @@
 
     <string name="session">sessione</string>
 
+    <string-array name="prepost_sessions3_array">
+        <item>seleziona...</item>
+        <item>pre test</item>
+        <item>session 1</item>
+        <item>session 2</item>
+        <item>session 3</item>
+        <item>post test</item>
+    </string-array>
+
+    <string-array name="sessions_array">
+        <item>seleziona...</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
+
+
     <string name="empty_subject_parcel">SOGGETTO E\' VUOTO</string>
     <string name="critical_error">ERRORE IRRECUPERABILE</string>
     <string name="restart_app_suggestion">E\' consigliabile riavviare l\'app</string>
@@ -226,14 +250,6 @@
     <string name="tid_start_training_text">INIZIA TRAINING</string>
 
     <!-- BISECTION -->
-
-    <string-array name="bis_sessions_array">
-        <item>pre test</item>
-        <item>session 1</item>
-        <item>session 2</item>
-        <item>session 3</item>
-        <item>post test</item>
-    </string-array>
 
     <string name="bisection_question_text_audio">Il secondo suono era più vicino al primo o al terzo?</string>
     <string name="bisection_question_text_visual">La luce gialla era più vicina alla verde o alla rossa?</string>

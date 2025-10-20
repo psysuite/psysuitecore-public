@@ -10,10 +10,10 @@ import android.widget.ArrayAdapter
 import androidx.fragment.app.DialogFragment
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.databinding.FragmentSubjectInfoSampleBinding
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.StimuliManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.ui.subjects_dialog.SubjectBasicDialogFragment
+import iit.uvip.psysuite.core.ui.SubjectBasicDialogFragment
 import iit.uvip.psysuite.core.utility.ConditionData
 import org.albaspazio.core.accessory.getCompanionObjectMethod
 import org.albaspazio.core.ui.show2ChoisesDialog

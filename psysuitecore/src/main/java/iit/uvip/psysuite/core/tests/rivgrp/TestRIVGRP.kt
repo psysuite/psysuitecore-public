@@ -15,7 +15,7 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.model.Populations
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.StimuliManager
 import iit.uvip.psysuite.core.stimuli.VisualManager
 import iit.uvip.psysuite.core.tests.TestBasic
@@ -674,7 +674,7 @@ class TestRIVGRP(ctx: Context,
                         getPressedButton(event)
                     }
                     MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> { // Handle cancel as well
-                        -1000 // Sentinel value indicating no press or end of press
+                        TEST_NO_LONGITUDINAL // Sentinel value indicating no press or end of press
                     }
                     else -> pressPosition // Keep current position for other actions
                 }

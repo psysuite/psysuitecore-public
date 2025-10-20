@@ -3,11 +3,8 @@ package iit.uvip.psysuite.core.tests.tid
 import iit.uvip.psysuite.core.trials.TrialBasic
 
 
-class TrialTID(id:Int=-1, type:Int, val block:Int, val group:Int, val session:Int, val refdelta:Float, override var magnitude:Float, val ref_first:Boolean, val isBefore:Boolean, val duration:Long, val answers:List<String>, isADA:Boolean=false): TrialBasic(
-    id,
-    type,
-    isADA=isADA
-){
+class TrialTID(id:Int=-1, type:Int, val block:Int, val group:Int, val session:String, val refdelta:Float, override var magnitude:Float, val ref_first:Boolean, val isBefore:Boolean, val duration:Long, val answers:List<String>, isADA:Boolean=false, isTraining:Boolean=false):
+    TrialBasic(id, type, isADA=isADA, isTraining = isTraining){
 
     var delta1:Long = 0L
     var delta2:Long = 0L

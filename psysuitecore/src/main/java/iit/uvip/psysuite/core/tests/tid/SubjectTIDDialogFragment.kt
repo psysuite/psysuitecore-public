@@ -9,7 +9,7 @@ import android.widget.ArrayAdapter
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.databinding.FragmentSubjectInfoTidBinding
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.ui.subjects_dialog.SubjectBasicDialogFragment
+import iit.uvip.psysuite.core.ui.SubjectBasicDialogFragment
 import iit.uvip.psysuite.core.utility.ConditionData
 
 class SubjectTIDDialogFragment : SubjectBasicDialogFragment(), AdapterView.OnItemSelectedListener
@@ -32,7 +32,7 @@ class SubjectTIDDialogFragment : SubjectBasicDialogFragment(), AdapterView.OnIte
     override fun initData() {
         super.initData()
 
-        binding.spinner.onItemSelectedListener = this
+        binding.sessionSpinner.onItemSelectedListener = this
         binding.spGroup.onItemSelectedListener = this
         //------------------------------------------------------
         // GROUPS <=> mTaskCodes
@@ -73,7 +73,7 @@ class SubjectTIDDialogFragment : SubjectBasicDialogFragment(), AdapterView.OnIte
         // when selecting training sessions => selCondition = selGroup (and condition spinner gets disabled)
 
         // check session change
-        when(binding.spinner.selectedItemPosition){
+        when(binding.sessionSpinner.selectedItemPosition){
             in 2..6   -> {
                         setConditions(listOf(mTaskCodeLabels[binding.spGroup.selectedItemPosition])) // make condition spinner GONE
                         binding.spCondition.isEnabled = false
@@ -97,22 +97,22 @@ class SubjectTIDDialogFragment : SubjectBasicDialogFragment(), AdapterView.OnIte
 
     override fun checkData():List<String>{
         val errors = super.checkData() as MutableList<String>
-        if(binding.spinner.selectedItemPosition == 0)   errors.add(resources.getString(R.string.select_session))
+        if(binding.sessionSpinner.selectedItemPosition == 0)   errors.add(resources.getString(R.string.select_session))
         return errors
     }
 
     override fun clear() {
         super.clear()
-        binding.spinner.setSelection(0)
+        binding.sessionSpinner.setSelection(0)
     }
 
     override fun updateSubject(): SubjectTIDParcel{
         subject  = super.updateSubject()
 
         (subject as SubjectTIDParcel).group     = mTaskCodeLabels[binding.spGroup.selectedItemPosition].id
-        (subject as SubjectTIDParcel).session   = binding.spinner.selectedItemPosition - 1
+        (subject as SubjectTIDParcel).session   = (binding.sessionSpinner.selectedItemPosition - 1).toString()
 
-        subject.type = if(binding.spinner.selectedItemPosition in 2..6){
+        subject.type = if(binding.sessionSpinner.selectedItemPosition in 2..6){
                                 subject.showResult = TestBasic.TEST_SWITCH_ENABLED
                                 mTaskCodeLabels[binding.spGroup.selectedItemPosition].id
                        }

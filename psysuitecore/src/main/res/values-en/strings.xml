@@ -101,6 +101,31 @@
 
     <string name="session">session</string>
 
+    <string-array name="prepost_sessions3_array">
+        <item>select...</item>
+        <item>pre test</item>
+        <item>session 1</item>
+        <item>session 2</item>
+        <item>session 3</item>
+        <item>post test</item>
+    </string-array>
+
+    <string-array name="sessions_array">
+        <item>select...</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
+
+
+
     <string name="empty_subject_parcel">THE SUBJECT IS EMPTY</string>
     <string name="critical_error">NOT RECOVERABLE ERROR</string>
     <string name="restart_app_suggestion">It is advisable to restart the App</string>
@@ -205,14 +230,14 @@
     <string name="tid_select_training_first_modality">Select an option for the starting training modality</string>
 
     <string-array name="tid_sessions_array">
-        <item>seleziona...</item>
-        <item>test iniziale</item>
-        <item>sessione 1</item>
-        <item>sessione 2</item>
-        <item>sessione 3</item>
-        <item>sessione 4</item>
-        <item>sessione 5</item>
-        <item>test finale</item>
+        <item>select...</item>
+        <item>baseline test</item>
+        <item>session 1</item>
+        <item>session 2</item>
+        <item>session 3</item>
+        <item>session 4</item>
+        <item>session 5</item>
+        <item>final test</item>
     </string-array>
 
 
@@ -228,14 +253,6 @@
 
     <!-- BISECTION -->
     <string name="start_bisection">MULTIMODAL BISECTION</string>
-
-    <string-array name="bis_sessions_array">
-        <item>pre test</item>
-        <item>session 1</item>
-        <item>session 2</item>
-        <item>session 3</item>
-        <item>post test</item>
-    </string-array>
 
     <string name="bisection_question_text_audio">Was the second sound closer to the first or the third one?</string>
     <string name="bisection_question_text_visual">Was the yellow light closer to the green or the red one?</string>

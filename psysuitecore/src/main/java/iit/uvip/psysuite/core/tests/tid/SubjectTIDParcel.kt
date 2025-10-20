@@ -1,8 +1,9 @@
 package iit.uvip.psysuite.core.tests.tid
 
 import android.content.Context
+import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.model.Populations
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.DelaysAligner
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.utility.ConditionData
@@ -39,13 +40,12 @@ class SubjectTIDParcel(
     override var showTrialID: Int = TestBasic.TEST_SHOWTRIALS_ALWAYS,
     override var abortMode: Int = TestBasic.TEST_ABORT_TRIALEND,
 
-    override var spinner_sel: Int = -1,
-    override var spinner_label: String = "session",
-    override var spinner_data_resource: Int = -1,
+    override var session_spsel: Int = -1,
+    override var session_spdatares: Int = R.array.tid_sessions_array,
     override var date: String = "",
     override var expUniqueId: String = "",
     var group: Int = -1
-) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode, spinner_sel, spinner_label, spinner_data_resource, date, expUniqueId){
+) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode, session_spsel, session_spdatares, date, expUniqueId){
 
     override fun getFilesPrefix(ctx:Context):String{
 
@@ -56,7 +56,7 @@ class SubjectTIDParcel(
     }
 
     override fun composeSubjectFileName(ctx: Context, blk:Int):String{
-        if(label.isBlank() || group == -1 || type == -1 || session == -1)   return ""
+        if(label.isBlank() || group == -1 || type == -1 || session == "")   return ""
 
         val blkstr =    if(blk > -1)    "_blk$blk"
                         else           ""

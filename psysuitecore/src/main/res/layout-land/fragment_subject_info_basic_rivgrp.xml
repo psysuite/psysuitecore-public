@@ -202,7 +202,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline23" />
 
     <TextView
-        android:id="@+id/labSpinner"
+        android:id="@+id/labSession"
         android:layout_width="130dp"
         android:layout_height="24dp"
         android:layout_marginStart="100dp"
@@ -212,7 +212,7 @@
         app:layout_constraintTop_toTopOf="@+id/guideline15" />
 
     <Spinner
-        android:id="@+id/spinner"
+        android:id="@+id/session_spinner"
         android:layout_width="150dp"
         android:layout_height="28dp"
         android:layout_marginTop="45dp"

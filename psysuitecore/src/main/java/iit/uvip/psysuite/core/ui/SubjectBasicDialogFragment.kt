@@ -1,4 +1,4 @@
-package iit.uvip.psysuite.core.ui.subjects_dialog
+package iit.uvip.psysuite.core.ui
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,25 +7,27 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.databinding.FragmentSubjectInfoBasicBinding
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.tests.TestBasic
+import iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_NO_LONGITUDINAL
 import iit.uvip.psysuite.core.utility.ConditionData
 import iit.uvip.psysuite.core.utility.IdLabelData
 import org.albaspazio.core.accessory.getCompanionObjectMethod
 import org.albaspazio.core.filesystem.deleteFilesStartingWith
 import org.albaspazio.core.ui.show2ChoisesDialog
 import org.albaspazio.core.ui.showAlert
-import androidx.core.view.isVisible
+import kotlin.properties.Delegates
 
 open class SubjectBasicDialogFragment: DialogFragment(){
 
     open val LOG_TAG: String = SubjectBasicDialogFragment::class.java.simpleName
 
     private lateinit var binding: FragmentSubjectInfoBasicBinding
-    protected lateinit var mView:View
+    protected lateinit var mView: View
 
     private var allowedPopulations:List<IdLabelData> = listOf()
     private var nPopulations: Int = 0
@@ -39,8 +41,8 @@ open class SubjectBasicDialogFragment: DialogFragment(){
     protected lateinit var subject: SubjectBasicParcel
 
     // Longitudinal functionality
+    private var sessionsData:Array<String> = emptyArray()
     private var nSpinnerItems: Int = 0
-    private var selSpinnerItem: Int = -1
 
     companion object {
         @JvmStatic val EVENT_SUBJECT:String = "subject"
@@ -59,7 +61,11 @@ open class SubjectBasicDialogFragment: DialogFragment(){
     protected open fun initData() {
         val subj: SubjectBasicParcel? = arguments?.getParcelable(EVENT_SUBJECT)
         if (subj == null) {
-            showAlert(requireActivity(), resources.getString(R.string.critical_error),"${resources.getString(R.string.empty_subject_parcel)}\n${resources.getString(R.string.restart_app_suggestion)}")
+            showAlert(
+                requireActivity(),
+                resources.getString(R.string.critical_error),
+                "${resources.getString(R.string.empty_subject_parcel)}\n${resources.getString(R.string.restart_app_suggestion)}"
+            )
             dismiss()
             return
         } else subject = subj
@@ -93,22 +99,26 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         //------------------------------------------------------
         with(binding.spTrialManager){
 
-            if(subj.trman_type == TestBasic.TEST_TRMAN_ADAPTIVE || subj.trman_type == TestBasic.TEST_TRMAN_FIXED)
+            if(subj.trman_type == TestBasic.Companion.TEST_TRMAN_ADAPTIVE || subj.trman_type == TestBasic.Companion.TEST_TRMAN_FIXED)
                 visibility                          = View.INVISIBLE
             else{
                 // is TEST_TRMAN_CHOOSE_FIXED or TEST_TRMAN_CHOOSE_ADAPTIVE
                 visibility                          = View.VISIBLE
                 val trial_managers                  = resources.getStringArray(R.array.trial_manager_types)
-                val adapter                         = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, trial_managers)
+                val adapter                         = ArrayAdapter(
+                    requireContext(),
+                    android.R.layout.simple_spinner_dropdown_item,
+                    trial_managers
+                )
                 binding.spTrialManager.adapter    = adapter
-                if(subj.trman_type == TestBasic.TEST_TRMAN_CHOOSE_FIXED)
+                if(subj.trman_type == TestBasic.Companion.TEST_TRMAN_CHOOSE_FIXED)
                         setSelection(0)
                 else    setSelection(1)
             }
         }
 
         with(binding.labTrialManager){
-            visibility =    if(subj.trman_type == TestBasic.TEST_TRMAN_ADAPTIVE || subj.trman_type == TestBasic.TEST_TRMAN_FIXED)   View.INVISIBLE
+            visibility =    if(subj.trman_type == TestBasic.Companion.TEST_TRMAN_ADAPTIVE || subj.trman_type == TestBasic.Companion.TEST_TRMAN_FIXED)   View.INVISIBLE
                             else                                                                                                    View.VISIBLE
         }
 
@@ -127,19 +137,19 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
         when (subject.nextTrailModality) {
 
-            TestBasic.TEST_NEXTTRIAL_BUTTON -> {
+            TestBasic.Companion.TEST_NEXTTRIAL_BUTTON -> {
                 binding.swInteractive.visibility   = View.VISIBLE
                 binding.swInteractive.isChecked = true
             }
-            TestBasic.TEST_NEXTTRIAL_AUTO -> {
+            TestBasic.Companion.TEST_NEXTTRIAL_AUTO -> {
                 binding.swInteractive.visibility   = View.GONE
                 binding.swInteractive.isChecked = false
             }
-            TestBasic.TEST_NEXTTRIAL_NOCHOOSE,
-            TestBasic.TEST_NEXTTRIAL_AUTO,
-            TestBasic.TEST_NEXTTRIAL_VOICE_ANSWER,
-            TestBasic.TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER,
-            TestBasic.TEST_NEXTTRIAL_ANSWER -> binding.swInteractive.visibility   = View.GONE
+            TestBasic.Companion.TEST_NEXTTRIAL_NOCHOOSE,
+            TestBasic.Companion.TEST_NEXTTRIAL_AUTO,
+            TestBasic.Companion.TEST_NEXTTRIAL_VOICE_ANSWER,
+            TestBasic.Companion.TEST_NEXTTRIAL_VOICE_NORMAL_ANSWER,
+            TestBasic.Companion.TEST_NEXTTRIAL_ANSWER -> binding.swInteractive.visibility   = View.GONE
         }
         //------------------------------------------------------
         // noise visibility (switch)
@@ -147,65 +157,65 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         with(binding.swWhiteNoise){
 
             visibility = when(subj.whitenoise){
-                TestBasic.TEST_SWITCH_DISABLED,
-                TestBasic.TEST_SWITCH_ENABLED -> View.INVISIBLE
+                TestBasic.Companion.TEST_SWITCH_DISABLED,
+                TestBasic.Companion.TEST_SWITCH_ENABLED -> View.INVISIBLE
                 else                          -> View.VISIBLE
             }
 
             isChecked = when(subj.whitenoise){
-                TestBasic.TEST_SWITCH_DISABLED,
-                TestBasic.TEST_SWITCH_CHOOSE_OFF -> false
+                TestBasic.Companion.TEST_SWITCH_DISABLED,
+                TestBasic.Companion.TEST_SWITCH_CHOOSE_OFF -> false
                 else                             -> true
             }
         }
         //------------------------------------------------------
         // can repeat trial (switch)
         //------------------------------------------------------
-        with(binding.swRepeatTrial!!){
+        with(binding.swRepeatTrial){
 
             visibility = when(subj.canRepeat){
-                TestBasic.TEST_SWITCH_DISABLED,
-                TestBasic.TEST_SWITCH_ENABLED -> View.INVISIBLE
+                TestBasic.Companion.TEST_SWITCH_DISABLED,
+                TestBasic.Companion.TEST_SWITCH_ENABLED -> View.INVISIBLE
                 else                          -> View.VISIBLE
             }
 
             isChecked = when(subj.canRepeat){
-                TestBasic.TEST_SWITCH_DISABLED,
-                TestBasic.TEST_SWITCH_CHOOSE_OFF -> false
+                TestBasic.Companion.TEST_SWITCH_DISABLED,
+                TestBasic.Companion.TEST_SWITCH_CHOOSE_OFF -> false
                 else                             -> true
             }
         }
         //------------------------------------------------------
         // show result (switch)
         //------------------------------------------------------
-        with(binding.swShowResult!!){
+        with(binding.swShowResult){
 
             visibility = when(subj.showResult){
-                TestBasic.TEST_SWITCH_DISABLED,
-                TestBasic.TEST_SWITCH_ENABLED -> View.INVISIBLE
+                TestBasic.Companion.TEST_SWITCH_DISABLED,
+                TestBasic.Companion.TEST_SWITCH_ENABLED -> View.INVISIBLE
                 else                          -> View.VISIBLE
             }
 
             isChecked = when(subj.showResult){
-                TestBasic.TEST_SWITCH_DISABLED,
-                TestBasic.TEST_SWITCH_CHOOSE_OFF -> false
+                TestBasic.Companion.TEST_SWITCH_DISABLED,
+                TestBasic.Companion.TEST_SWITCH_CHOOSE_OFF -> false
                 else                             -> true
             }
         }
         //---------------------------------------------------
         // do training (switch)
         //------------------------------------------------------
-        with(binding.swTraining!!){
+        with(binding.swTraining){
 
             visibility = when(subj.doTraining){
-                TestBasic.TEST_SWITCH_DISABLED,
-                TestBasic.TEST_SWITCH_ENABLED -> View.INVISIBLE
+                TestBasic.Companion.TEST_SWITCH_DISABLED,
+                TestBasic.Companion.TEST_SWITCH_ENABLED -> View.INVISIBLE
                 else                          -> View.VISIBLE
             }
 
             isChecked = when(subj.doTraining){
-                TestBasic.TEST_SWITCH_DISABLED,
-                TestBasic.TEST_SWITCH_CHOOSE_OFF -> false
+                TestBasic.Companion.TEST_SWITCH_DISABLED,
+                TestBasic.Companion.TEST_SWITCH_CHOOSE_OFF -> false
                 else                             -> true
             }
         }
@@ -228,15 +238,16 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
         binding.swInteractive.setOnCheckedChangeListener { _, b ->
             subject.nextTrailModality = when (b) {
-                true -> TestBasic.TEST_NEXTTRIAL_BUTTON
-                false -> TestBasic.TEST_NEXTTRIAL_AUTO
+                true -> TestBasic.Companion.TEST_NEXTTRIAL_BUTTON
+                false -> TestBasic.Companion.TEST_NEXTTRIAL_AUTO
             }
         }
     }
 
     protected fun setConditions(tc:List<ConditionData>){
 
-        val adapter: ArrayAdapter<ConditionData> = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tc)
+        val adapter: ArrayAdapter<ConditionData> =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, tc)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spCondition.adapter = adapter
         nConditions         = adapter.count
@@ -278,7 +289,11 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         allowedPopulations  = mTaskCodeLabels[pop_index].allowedPopulations
         nPopulations        = allowedPopulations.size
 
-        val adapter: ArrayAdapter<IdLabelData> = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, allowedPopulations)
+        val adapter: ArrayAdapter<IdLabelData> = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            allowedPopulations
+        )
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spPopulation.adapter = adapter
 
@@ -293,45 +308,43 @@ open class SubjectBasicDialogFragment: DialogFragment(){
     protected open fun setTrialManager(selManager:Any){}
 
     private fun setLongitudinalSpinner(){
-        // Show/hide longitudinal spinner based on spinner_sel value
-        val isLongitudinal = subject.spinner_sel != -1000
-        
-        // Use safe calls since these elements might not exist in all layouts
-        binding.labSpinner?.visibility = if(isLongitudinal) View.VISIBLE else View.GONE
-        binding.spinner?.visibility = if(isLongitudinal) View.VISIBLE else View.GONE
-        
-        if(isLongitudinal && binding.spinner != null && binding.labSpinner != null) {
-            // Set spinner label
-            binding.labSpinner?.let { it.text = subject.spinner_label }
-            
+
+        if(!subject.isLongitudinal){
+            binding.labSession.visibility       =  View.GONE
+            binding.sessionSpinner.visibility   =  View.GONE
+            subject.session                     = "1"
+
+        }else{
+            binding.labSession.visibility   =  View.VISIBLE
+            binding.sessionSpinner.visibility      =  View.VISIBLE
+
             // Set up spinner data if resource is provided
-            if(subject.spinner_data_resource != -1) {
-                val spinnerData = resources.getStringArray(subject.spinner_data_resource)
-                val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, spinnerData)
+            if(subject.session_spdatares != -1) {
+                sessionsData = resources.getStringArray(subject.session_spdatares)
+                val adapter = ArrayAdapter(
+                    requireContext(),
+                    android.R.layout.simple_spinner_dropdown_item,
+                    sessionsData
+                )
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                binding.spinner?.let { spinner ->
+                binding.sessionSpinner.let { spinner ->
                     spinner.adapter = adapter
                     nSpinnerItems = adapter.count
-                    
+
+                    if(subject.session_spsel == nSpinnerItems){
+                        subject.session_spsel = nSpinnerItems -1
+                        // TODO send an alert, should never happen
+                    }
                     // Set selection
-                    if(subject.spinner_sel >= 0 && subject.spinner_sel < nSpinnerItems) {
-                        spinner.setSelection(subject.spinner_sel, false)
-                        selSpinnerItem = subject.spinner_sel
-                    } else {
-                        selSpinnerItem = 0
-                        spinner.setSelection(selSpinnerItem)
-                    }
-                    
-                    spinner.onItemSelectedListener = object: AdapterView.OnItemSelectedListener{
-                        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-                            selSpinnerItem = position
-                        }
-                        override fun onNothingSelected(parent: AdapterView<*>?) {}
-                    }
+                    if(subject.session_spsel == TestBasic.Companion.TEST_LONGITUDINAL_TOBESELECTED)
+                        binding.sessionSpinner.setSelection(0)
+                    else
+                        binding.sessionSpinner.setSelection(subject.session_spsel, false)
                 }
             }
         }
     }
+
     //------------------------------------------------------------------------------------
     // UI presses
     //------------------------------------------------------------------------------------
@@ -339,7 +352,11 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         val errors = checkData()
         if(errors.isNotEmpty()){
             val str_errors = errors.joinToString("\n")
-            showAlert(requireActivity(),resources.getString(R.string.warning), resources.getString(R.string.subject_info_notcorrected, str_errors))
+            showAlert(
+                requireActivity(),
+                resources.getString(R.string.warning),
+                resources.getString(R.string.subject_info_notcorrected, str_errors)
+            )
         }
         else {
             // data are valid => create subject object
@@ -360,18 +377,15 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         binding.txtAge.setText("")
         binding.radioGroupGender.clearCheck()
 
-        if (subject.nextTrailModality == TestBasic.TEST_NEXTTRIAL_AUTO || subject.nextTrailModality == TestBasic.TEST_NEXTTRIAL_BUTTON) {
+        if (subject.nextTrailModality == TestBasic.Companion.TEST_NEXTTRIAL_AUTO || subject.nextTrailModality == TestBasic.Companion.TEST_NEXTTRIAL_BUTTON) {
             binding.swInteractive.isChecked    = false
-            subject.nextTrailModality   = TestBasic.TEST_NEXTTRIAL_AUTO
+            subject.nextTrailModality   = TestBasic.Companion.TEST_NEXTTRIAL_AUTO
         }
 
         binding.swWhiteNoise.isChecked = true
 
         // Clear longitudinal spinner if visible
-        if(subject.spinner_sel != -1000 && binding.spinner?.visibility == View.VISIBLE) {
-            binding.spinner?.setSelection(-1)
-            selSpinnerItem = -1
-        }
+        if(subject.session_spsel != TEST_NO_LONGITUDINAL) binding.sessionSpinner.setSelection(0)
     }
 
     //------------------------------------------------------------------------------------
@@ -381,22 +395,26 @@ open class SubjectBasicDialogFragment: DialogFragment(){
     protected open fun checkData():List<String>{
         val errors = mutableListOf<String>()
 
-        if(SubjectBasicParcel.validate(binding.txtName.text.toString(), binding.txtAge.text.toString()).isNotBlank())
-                                                                    errors.add(" - " + resources.getString(R.string.select_subject_info))
+        if(SubjectBasicParcel.Companion.validate(binding.txtName.text.toString(), binding.txtAge.text.toString()).isNotBlank())
+                                                                    errors.add(" - " + resources.getString(
+                                                                        R.string.select_subject_info))
 
-        if(binding.radioGroupGender.checkedRadioButtonId == -1)     errors.add(" - " + resources.getString(R.string.select_gender))
-        if(binding.spCondition.selectedItemPosition == -1)          errors.add(" - " + resources.getString(R.string.select_condition))
-        if(binding.spPopulation.selectedItemPosition == -1)         errors.add(" - " + resources.getString(R.string.select_population))
-        
+        if(binding.radioGroupGender.checkedRadioButtonId == -1)     errors.add(" - " + resources.getString(
+            R.string.select_gender))
+        if(binding.spCondition.selectedItemPosition == -1)          errors.add(" - " + resources.getString(
+            R.string.select_condition))
+        if(binding.spPopulation.selectedItemPosition == -1)         errors.add(" - " + resources.getString(
+            R.string.select_population))
+
         // Validate longitudinal spinner if visible
-        if(subject.spinner_sel != -1000 && binding.spinner?.visibility == View.VISIBLE && binding.spinner?.selectedItemPosition == -1)
-            errors.add(" - " + "Select ${subject.spinner_label}")
+        if(subject.isLongitudinal && binding.sessionSpinner.selectedItemPosition == 0)
+            errors.add(" - " + "Select session")
 
         return errors
     }
 
     // subject has been already validated
-    protected open fun updateSubject(): SubjectBasicParcel{
+    protected open fun updateSubject(): SubjectBasicParcel {
         val gender:Int              = binding.radioGroupGender.indexOfChild(binding.radioGroupGender.findViewById(
             binding.radioGroupGender.checkedRadioButtonId))
 
@@ -408,38 +426,38 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         subject.gender              = gender
 
         // only If user can select interaction modality, update his/her selection
-        if (subject.nextTrailModality != TestBasic.TEST_NEXTTRIAL_NOCHOOSE &&
-            subject.nextTrailModality != TestBasic.TEST_NEXTTRIAL_ANSWER &&
-            subject.nextTrailModality != TestBasic.TEST_NEXTTRIAL_VOICE_ANSWER
+        if (subject.nextTrailModality != TestBasic.Companion.TEST_NEXTTRIAL_NOCHOOSE &&
+            subject.nextTrailModality != TestBasic.Companion.TEST_NEXTTRIAL_ANSWER &&
+            subject.nextTrailModality != TestBasic.Companion.TEST_NEXTTRIAL_VOICE_ANSWER
         ) {
             subject.nextTrailModality = when (binding.swInteractive.isChecked) {
-                true ->     TestBasic.TEST_NEXTTRIAL_BUTTON
-                false ->    TestBasic.TEST_NEXTTRIAL_AUTO
+                true ->     TestBasic.Companion.TEST_NEXTTRIAL_BUTTON
+                false ->    TestBasic.Companion.TEST_NEXTTRIAL_AUTO
             }
         }
         if(binding.swWhiteNoise.isVisible)
-            subject.whitenoise =    if(binding.swWhiteNoise.isChecked)      TestBasic.TEST_SWITCH_ENABLED
-                                    else                                    TestBasic.TEST_SWITCH_DISABLED
+            subject.whitenoise =    if(binding.swWhiteNoise.isChecked)      TestBasic.Companion.TEST_SWITCH_ENABLED
+                                    else                                    TestBasic.Companion.TEST_SWITCH_DISABLED
 
         if(binding.swRepeatTrial.isVisible)
-            subject.canRepeat  =    if(binding.swRepeatTrial.isChecked)   TestBasic.TEST_SWITCH_ENABLED
-                                    else                                  TestBasic.TEST_SWITCH_DISABLED
+            subject.canRepeat  =    if(binding.swRepeatTrial.isChecked)   TestBasic.Companion.TEST_SWITCH_ENABLED
+                                    else                                  TestBasic.Companion.TEST_SWITCH_DISABLED
 
         if(binding.spTrialManager.isVisible)
-            subject.trman_type =    if(binding.spTrialManager.selectedItemPosition == 0)    TestBasic.TEST_TRMAN_FIXED
-                                    else                                                    TestBasic.TEST_TRMAN_ADAPTIVE
+            subject.trman_type =    if(binding.spTrialManager.selectedItemPosition == 0)    TestBasic.Companion.TEST_TRMAN_FIXED
+                                    else                                                    TestBasic.Companion.TEST_TRMAN_ADAPTIVE
 
         if(binding.swShowResult.isVisible)
-            subject.showResult =    if(binding.swShowResult.isChecked)  TestBasic.TEST_SWITCH_ENABLED
-                                    else                                TestBasic.TEST_SWITCH_DISABLED
+            subject.showResult =    if(binding.swShowResult.isChecked)  TestBasic.Companion.TEST_SWITCH_ENABLED
+                                    else                                TestBasic.Companion.TEST_SWITCH_DISABLED
 
         if(binding.swTraining.isVisible)
-            subject.doTraining =    if(binding.swTraining.isChecked)    TestBasic.TEST_SWITCH_ENABLED
-                                    else                                TestBasic.TEST_SWITCH_DISABLED
+            subject.doTraining =    if(binding.swTraining.isChecked)    TestBasic.Companion.TEST_SWITCH_ENABLED
+                                    else                                TestBasic.Companion.TEST_SWITCH_DISABLED
 
         // Update longitudinal spinner selection if visible
-        if(subject.spinner_sel != -1000 && binding.spinner?.visibility == View.VISIBLE)
-            subject.spinner_sel = selSpinnerItem
+        if(subject.isLongitudinal)
+            subject.session = sessionsData[binding.sessionSpinner.selectedItemPosition]
 
         return subject
     }
@@ -455,28 +473,38 @@ open class SubjectBasicDialogFragment: DialogFragment(){
                 sendResult(subject)
             }
             0  -> { // exist only one same subjects file. overwrite it and continue with presently filled subject or don't do anything
-                show2ChoisesDialog(requireActivity(), resources.getString(R.string.warning), resources.getString(R.string.subject_present), resources.getString(R.string.yes), resources.getString(R.string.no),
-                {   // ok press, update subject, then continue
-                    subject = subj
-                    sendResult(subject)
-                },
-                {   // cancel press. stop. let user change data
-                    binding.txtName.requestFocus()
-                })
+                show2ChoisesDialog(
+                    requireActivity(),
+                    resources.getString(R.string.warning),
+                    resources.getString(R.string.subject_present),
+                    resources.getString(R.string.yes),
+                    resources.getString(R.string.no),
+                    {   // ok press, update subject, then continue
+                        subject = subj
+                        sendResult(subject)
+                    },
+                    {   // cancel press. stop. let user change data
+                        binding.txtName.requestFocus()
+                    })
             }
             else -> {  // exist at least n-block files.
                         // 1-based last block file  (if it finds lab_type_blk2.txt => return 3)
-                show2ChoisesDialog(requireActivity(), resources.getString(R.string.warning), resources.getString(R.string.subject_block_present), resources.getString(R.string.continue_txt), resources.getString(R.string.restart),
-                { // ok press, continue next block
-                    subject         = subj
-                    subject.block   = nextblock     // this is the only case where block is != -1
-                    sendResult(subject)
-                },
-                { // cancel press. DELETE all previous files !!! and continue with presently filled subject
-                    deleteFilesStartingWith(subject.getFilesPrefix(requireContext()))
-                    subject = subj
-                    sendResult(subject)
-                })
+                show2ChoisesDialog(
+                    requireActivity(),
+                    resources.getString(R.string.warning),
+                    resources.getString(R.string.subject_block_present),
+                    resources.getString(R.string.continue_txt),
+                    resources.getString(R.string.restart),
+                    { // ok press, continue next block
+                        subject = subj
+                        subject.block = nextblock     // this is the only case where block is != -1
+                        sendResult(subject)
+                    },
+                    { // cancel press. DELETE all previous files !!! and continue with presently filled subject
+                        deleteFilesStartingWith(subject.getFilesPrefix(requireContext()))
+                        subject = subj
+                        sendResult(subject)
+                    })
             }
         }
     }

@@ -1,11 +1,12 @@
 package iit.uvip.psysuite.core.tests.sample
 
 import iit.uvip.psysuite.core.model.Populations
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.DelaysAligner
 import iit.uvip.psysuite.core.tests.TestBasic
 import kotlinx.parcelize.Parcelize
 import org.albaspazio.core.accessory.Device
+import iit.uvip.psysuite.core.R
 
 
 /*
@@ -59,12 +60,11 @@ open class SubjectSampleParcel(
     var repetitions:Int = 1,
     var iti:Long = 1000,
 
-    override var spinner_sel: Int = -1000,
-    override var spinner_label: String = "session",
-    override var spinner_data_resource: Int = -1,
+    override var session_spsel: Int = TestBasic.Companion.TEST_NO_LONGITUDINAL,
+    override var session_spdatares: Int = R.array.sessions_array,
     override var date: String = "",
     override var expUniqueId: String = ""
-) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode, spinner_sel, spinner_label, spinner_data_resource, date, expUniqueId)
+) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode, session_spsel, session_spdatares, date, expUniqueId)
 
 
 

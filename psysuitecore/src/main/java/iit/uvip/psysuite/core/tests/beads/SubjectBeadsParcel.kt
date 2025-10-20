@@ -1,7 +1,8 @@
 package iit.uvip.psysuite.core.tests.beads
 
+import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.model.Populations
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.DelaysAligner
 import iit.uvip.psysuite.core.tests.TestBasic
 import kotlinx.android.parcel.Parcelize
@@ -34,9 +35,8 @@ class SubjectBeadsParcel(
     override var showTrialID: Int = TestBasic.TEST_SHOWTRIALS_NEVER,
     override var abortMode: Int = TestBasic.TEST_ABORT_TRIALEND,
 
-    override var spinner_sel: Int = -1000,
-    override var spinner_label: String = "session",
-    override var spinner_data_resource: Int = -1,
+    override var session_spsel: Int = TestBasic.Companion.TEST_NO_LONGITUDINAL,
+    override var session_spdatares: Int = R.array.sessions_array,
     override var date: String = "",
     override var expUniqueId: String = ""
 ) : SubjectBasicParcel(
@@ -59,9 +59,8 @@ class SubjectBeadsParcel(
     doTraining = doTraining,
     showTrialID = showTrialID,
     abortMode = abortMode,
-    spinner_sel = spinner_sel,
-    spinner_label = spinner_label,
-    spinner_data_resource = spinner_data_resource,
+    session_spsel = session_spsel,
+    session_spdatares = session_spdatares,
     date = date,
     expUniqueId = expUniqueId
 )

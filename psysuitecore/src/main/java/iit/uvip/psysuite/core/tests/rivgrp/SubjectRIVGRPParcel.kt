@@ -2,7 +2,7 @@ package iit.uvip.psysuite.core.tests.rivgrp
 
 import android.content.Context
 import iit.uvip.psysuite.core.model.Populations
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.stimuli.DelaysAligner
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.tests.TestBasic.Companion.TEST_RIVGRP_RIVGRP_HC
@@ -12,6 +12,7 @@ import iit.uvip.psysuite.core.utility.getLabelLog
 import kotlinx.parcelize.Parcelize
 import org.albaspazio.core.accessory.Device
 import org.albaspazio.core.accessory.getCompanionObjectMethod
+import iit.uvip.psysuite.core.R
 
 // session
 @Parcelize
@@ -45,13 +46,12 @@ class SubjectRIVGRPParcel(
     var defaultBlocks:List<Int> = listOf(2,2,4,2,2,4),
     var totBlocks:Int           = 4,
 
-    override var spinner_sel: Int = -1000,
-    override var spinner_label: String = "session",
-    override var spinner_data_resource: Int = -1,
+    override var session_spsel: Int = TestBasic.Companion.TEST_NO_LONGITUDINAL,
+    override var session_spdatares: Int = R.array.sessions_array,
     override var date: String = "",
     override var expUniqueId: String = ""
 
-) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode, spinner_sel, spinner_label, spinner_data_resource, date, expUniqueId){
+) : SubjectBasicParcel(classes, label, age, gender, population, type, block, isDebug, device, vercode, stimuliDelays, nextTrailModality, whitenoise, trman_type, showResult, canRepeat, doTraining, showTrialID, abortMode, session_spsel, session_spdatares, date, expUniqueId){
 
     override fun getFilesPrefix(ctx:Context):String{
 

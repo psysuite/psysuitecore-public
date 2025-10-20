@@ -14,7 +14,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.navigation.findNavController
 import iit.uvip.psysuite.core.R
 import iit.uvip.psysuite.core.databinding.FragmentTestBinding
-import iit.uvip.psysuite.core.model.parcel.SubjectBasicParcel
+import iit.uvip.psysuite.core.model.SubjectBasicParcel
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.utility.TestResult
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -62,7 +62,7 @@ class TestFragment : BaseFragment(
     val binding get() = _binding!!
 
     private lateinit var mTest: TestBasic
-    private lateinit var mSubjectParcel:SubjectBasicParcel
+    private lateinit var mSubjectParcel: SubjectBasicParcel
 
     override val LOG_TAG                            = TestFragment::class.java.simpleName
     private val ANSWER_DIALOG_TAG                   = "ANSWER_DIALOG_TAG"
