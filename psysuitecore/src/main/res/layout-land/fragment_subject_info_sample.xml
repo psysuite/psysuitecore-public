@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.fragments.answers.TwoAFCAnswerDialogFragment"
+    android:fitsSystemWindows="true">
+
+    <ScrollView
+        android:id="@+id/svSamples"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout_editor_absoluteX="1dp"
+        tools:layout_editor_absoluteY="1dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/vSamples"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="0dp"
+            android:paddingRight="0dp"
+            android:scrollbars="vertical">
+
+
+            <EditText
+                android:id="@+id/etVisualDrawableOff"
+                android:layout_width="32dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="16dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="0"
+                app:layout_constraintStart_toEndOf="@+id/etVisualDrawableOn"
+                app:layout_constraintTop_toTopOf="@+id/guideline" />
+
+            <EditText
+                android:id="@+id/etVisualDrawableOn"
+                android:layout_width="32dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="16dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="1"
+                app:layout_constraintStart_toEndOf="@+id/spVisual"
+                app:layout_constraintTop_toTopOf="@+id/guideline" />
+
+            <TextView
+                android:id="@+id/labSourceSubType"
+                android:layout_width="60dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/type"
+                app:layout_constraintStart_toEndOf="@+id/labDuration"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+            <TextView
+                android:id="@+id/labDuration"
+                android:layout_width="60dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/duration"
+                app:layout_constraintStart_toEndOf="@+id/labSource"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+
+            <TextView
+                android:id="@+id/labSource"
+                android:layout_width="68dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="44dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/source"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+            <EditText
+                android:id="@+id/etRepetitionNum"
+                android:layout_width="49dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="0dp"
+                android:ems="10"
+                android:inputType="number"
+                app:layout_constraintStart_toEndOf="@+id/labRepNum"
+                app:layout_constraintTop_toTopOf="@+id/guideline3" />
+
+            <Button
+                android:id="@+id/bt_confirm"
+                style="@style/Base.Widget.AppCompat.Button.Colored"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                android:background="@color/design_default_color_secondary_variant"
+                android:text="@string/start"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline10"
+                app:srcCompat="@drawable/green_tick" />
+
+            <Button
+                android:id="@+id/bt_cancel"
+                style="@style/Base.Widget.AppCompat.Button.Colored"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/design_default_color_error"
+                android:text="@string/cancel"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline10"
+                app:srcCompat="@android:drawable/ic_menu_revert" />
+
+            <Spinner
+                android:id="@+id/spCondition"
+                android:layout_width="220dp"
+                android:layout_height="32dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                app:layout_constraintStart_toEndOf="@+id/labCondition2"
+                app:layout_constraintTop_toTopOf="@+id/guideline2" />
+
+            <EditText
+                android:id="@+id/etPairStimDistance"
+                android:layout_width="60dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="36dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="20"
+                app:layout_constraintStart_toEndOf="@+id/labPairDistance2"
+                app:layout_constraintTop_toTopOf="@+id/guideline2" />
+
+            <TextView
+                android:id="@+id/labShiftedTactile"
+                android:layout_width="19dp"
+                android:layout_height="23dp"
+                android:layout_marginStart="48dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/tactile_short"
+                app:layout_constraintStart_toEndOf="@+id/labShiftedVisual"
+                app:layout_constraintTop_toTopOf="@+id/guideline2" />
+
+            <TextView
+                android:id="@+id/labPairDistance2"
+                android:layout_width="64dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="52dp"
+                android:text="@string/distance"
+                android:textAlignment="textEnd"
+                app:layout_constraintStart_toEndOf="@+id/etShiftedTactile"
+                app:layout_constraintTop_toTopOf="@+id/guideline2" />
+
+            <EditText
+                android:id="@+id/etShiftedVisual"
+                android:layout_width="55dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="12dp"
+                android:ems="10"
+                android:inputType="numberSigned|number"
+                android:text="0"
+                app:layout_constraintStart_toEndOf="@+id/etShiftedAudio"
+                app:layout_constraintTop_toBottomOf="@+id/labShiftedVisual" />
+
+            <TextView
+                android:id="@+id/labShiftedAudio"
+                android:layout_width="17dp"
+                android:layout_height="22dp"
+                android:layout_marginStart="420dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/audio_short"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline2" />
+
+            <TextView
+                android:id="@+id/labShiftedVisual"
+                android:layout_width="19dp"
+                android:layout_height="23dp"
+                android:layout_marginStart="48dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/visual_short"
+                app:layout_constraintStart_toEndOf="@+id/labShiftedAudio"
+                app:layout_constraintTop_toTopOf="@+id/guideline2" />
+
+            <EditText
+                android:id="@+id/etShiftedTactile"
+                android:layout_width="55dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="12dp"
+                android:ems="10"
+                android:inputType="numberSigned|number"
+                android:text="0"
+                app:layout_constraintStart_toEndOf="@+id/etShiftedVisual"
+                app:layout_constraintTop_toBottomOf="@+id/labShiftedTactile" />
+
+            <EditText
+                android:id="@+id/etShiftedAudio"
+                android:layout_width="55dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="400dp"
+                android:layout_marginTop="12dp"
+                android:ems="10"
+                android:inputType="numberSigned|number"
+                android:text="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/labShiftedAudio" />
+
+            <TextView
+                android:id="@+id/labCondition2"
+                android:layout_width="93dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="44dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/condition"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline2" />
+
+            <TextView
+                android:id="@+id/labVisualResources"
+                android:layout_width="58dp"
+                android:layout_height="22dp"
+                android:layout_marginStart="276dp"
+                android:layout_marginTop="0dp"
+                android:text="on  - off"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline" />
+
+            <TextView
+                android:id="@+id/labRepNum"
+                android:layout_width="129dp"
+                android:layout_height="27dp"
+                android:layout_marginStart="44dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/repetitions_number"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline3" />
+
+            <EditText
+                android:id="@+id/etTactileTimings"
+                android:layout_width="180dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="12dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="100"
+                app:layout_constraintStart_toEndOf="@+id/labTactileDuration"
+                app:layout_constraintTop_toTopOf="@+id/guideline5" />
+
+            <TextView
+                android:id="@+id/labTactileDuration"
+                android:layout_width="60dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="344dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/duration"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline5" />
+
+            <EditText
+                android:id="@+id/etTactileAmplitudes"
+                android:layout_width="180dp"
+                android:layout_height="42dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="52dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="255"
+                app:layout_constraintStart_toEndOf="@+id/labTactileAmplitude"
+                app:layout_constraintTop_toTopOf="@+id/guideline5" />
+
+            <TextView
+                android:id="@+id/labTactileAmplitude"
+                android:layout_width="60dp"
+                android:layout_height="22dp"
+                android:layout_marginStart="340dp"
+                android:layout_marginTop="60dp"
+                android:text="@string/amplitude_short"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline5" />
+
+            <TextView
+                android:id="@+id/labITI"
+                android:layout_width="48dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/iti"
+                app:layout_constraintStart_toEndOf="@+id/etRepetitionNum"
+                app:layout_constraintTop_toTopOf="@+id/guideline3" />
+
+
+            <Switch
+                android:id="@+id/swWhiteNoise"
+                android:layout_width="140dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="60dp"
+                android:text="@string/whitenoise"
+                app:layout_constraintStart_toEndOf="@+id/swInteractive"
+                app:layout_constraintTop_toTopOf="@+id/guideline3" />
+
+            <Switch
+                android:id="@+id/swInteractive"
+                android:layout_width="126dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="36dp"
+                android:text="@string/end_trial_behaviour"
+                app:layout_constraintStart_toEndOf="@+id/etITI"
+                app:layout_constraintTop_toTopOf="@+id/guideline3" />
+
+            <Button
+                android:id="@+id/bt_clear"
+                style="@style/Base.Widget.AppCompat.Button.Colored"
+                android:layout_width="100dp"
+                android:layout_height="50dp"
+                android:layout_marginTop="8dp"
+                android:background="@color/colorPrimary"
+                android:text="@string/reset"
+                app:layout_constraintEnd_toStartOf="@+id/bt_confirm"
+                app:layout_constraintStart_toEndOf="@+id/bt_cancel"
+                app:layout_constraintTop_toTopOf="@+id/guideline10" />
+
+            <Spinner
+                android:id="@+id/spTactile"
+                android:layout_width="170dp"
+                android:layout_height="29dp"
+                android:layout_marginStart="80dp"
+                android:layout_marginTop="12dp"
+                app:layout_constraintStart_toEndOf="@+id/swTactile"
+                app:layout_constraintTop_toTopOf="@+id/guideline5" />
+
+            <Switch
+                android:id="@+id/swVisual"
+                android:layout_width="64dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="48dp"
+                android:layout_marginTop="20dp"
+                android:text="@string/visual_short"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline" />
+
+            <Spinner
+                android:id="@+id/spVisual"
+                android:layout_width="115dp"
+                android:layout_height="26dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="20dp"
+                app:layout_constraintStart_toEndOf="@+id/etDurationVisual"
+                app:layout_constraintTop_toTopOf="@+id/guideline" />
+
+            <Switch
+                android:id="@+id/swTactile"
+                android:layout_width="64dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="48dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/tactile_short"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline5" />
+
+            <EditText
+                android:id="@+id/etDurationVisual"
+                android:layout_width="58dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="12dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="100"
+                app:layout_constraintStart_toEndOf="@+id/swVisual"
+                app:layout_constraintTop_toTopOf="@+id/guideline" />
+
+            <EditText
+                android:id="@+id/etITI"
+                android:layout_width="55dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="8dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="1"
+                app:layout_constraintStart_toEndOf="@+id/labITI"
+                app:layout_constraintTop_toTopOf="@+id/guideline3" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_begin="6dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_begin="140dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_begin="351dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_begin="420dp" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline7"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_begin="225dp" />
+
+            <Spinner
+                android:id="@+id/spAudioResource"
+                android:layout_width="185dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="48dp"
+                app:layout_constraintStart_toEndOf="@+id/labAudioResource"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+            <TextView
+                android:id="@+id/labAudioResource"
+                android:layout_width="60dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="36dp"
+                android:layout_marginTop="60dp"
+                android:text="@string/resource_name"
+                app:layout_constraintStart_toEndOf="@+id/etAudioVolume"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+            <EditText
+                android:id="@+id/etDurationAudio"
+                android:layout_width="58dp"
+                android:layout_height="45dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="44dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="100"
+                app:layout_constraintStart_toEndOf="@+id/swAudio"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+            <Spinner
+                android:id="@+id/spAudio"
+                android:layout_width="115dp"
+                android:layout_height="25dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="56dp"
+                app:layout_constraintStart_toEndOf="@+id/etDurationAudio"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+            <Switch
+                android:id="@+id/swAudio"
+                android:layout_width="64dp"
+                android:layout_height="28dp"
+                android:layout_marginStart="44dp"
+                android:layout_marginTop="56dp"
+                android:text="@string/audio_short"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+            <EditText
+                android:id="@+id/etAudioVolume"
+                android:layout_width="47dp"
+                android:layout_height="45dp"
+                android:layout_marginTop="44dp"
+                android:ems="10"
+                android:inputType="number"
+                android:text="100"
+                app:layout_constraintStart_toEndOf="@+id/labAudioVolume"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+            <TextView
+                android:id="@+id/labAudioVolume"
+                android:layout_width="27dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="4dp"
+                android:layout_marginTop="56dp"
+                android:text="@string/volume_short"
+                app:layout_constraintStart_toEndOf="@+id/spAudio"
+                app:layout_constraintTop_toTopOf="@+id/guideline7" />
+
+            <androidx.constraintlayout.widget.Guideline
+                android:id="@+id/guideline10"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                app:layout_constraintGuide_begin="536dp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
