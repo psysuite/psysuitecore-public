@@ -580,7 +580,6 @@ abstract class TestBasic(protected val ctx: Context,
         doNextTrial()
     }
 
-
     /**
      * Repeats the current trial.
      * Calls the [show] method with the current trial and the `isRepeat` flag set to true.
@@ -602,12 +601,11 @@ abstract class TestBasic(protected val ctx: Context,
 
         if(mTrial.isTraining)   return
 
-        saveText(mTrial.Log())
-
         if (result != -1 || extra_text.isNotEmpty()){
             mTrialsManager.setResponse(result, elapsed, extra_text)
             mSummary?.add(mTrial)
         }
+        saveText(mTrial.Log())
     }
 
     /**

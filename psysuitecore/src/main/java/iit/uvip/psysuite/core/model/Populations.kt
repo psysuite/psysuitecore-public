@@ -45,6 +45,16 @@ class Populations {
         /** Identifier for Borderline Personality Disorder population. */
         @JvmStatic val POPULATION_BL                    = 42
 
+
+        /** Identifier for Altzeimer Disease. */
+        @JvmStatic val POPULATION_AD                    = 50
+        /** Identifier for Body Levy degeneration population. */
+        @JvmStatic val POPULATION_BLD                   = 51
+        /** Identifier for Mild Cognitive Impairment (AD) population. */
+        @JvmStatic val POPULATION_MCI_AD                = 52
+        /** Identifier for Mild Cognitive Impairment (BLD) population. */
+        @JvmStatic val POPULATION_MCI_BLD               = 53
+
         /** 
          * List of all defined subject populations.
          * Each entry is an [IdLabelData] object containing a label and its corresponding integer ID.
@@ -64,7 +74,14 @@ class Populations {
             IdLabelData("CD",   POPULATION_CD),
             IdLabelData("LD",   POPULATION_LD),
             IdLabelData("CAI",  POPULATION_CAI),
-            IdLabelData("LAI",  POPULATION_LAI)
+            IdLabelData("LAI",  POPULATION_LAI),
+
+            IdLabelData("AD",   POPULATION_AD),
+            IdLabelData("BLD",  POPULATION_BLD),
+            IdLabelData("MCI_AD",  POPULATION_MCI_AD),
+            IdLabelData("MCI_BLD", POPULATION_MCI_BLD)
+
+
 
         )
 
@@ -76,7 +93,11 @@ class Populations {
             IdLabelData("ADHD", POPULATION_ADHD),
             IdLabelData("SK",   POPULATION_SK),
             IdLabelData("BD",   POPULATION_BD),
-            IdLabelData("BL",   POPULATION_BL)
+            IdLabelData("BL",   POPULATION_BL),
+            IdLabelData("AD",   POPULATION_AD),
+            IdLabelData("BLD",  POPULATION_BLD),
+            IdLabelData("MCI_AD",  POPULATION_MCI_AD),
+            IdLabelData("MCI_BLD", POPULATION_MCI_BLD)
         )
 
         /** 
@@ -92,8 +113,12 @@ class Populations {
             IdLabelData("CD",   POPULATION_CD),
             IdLabelData("LD",   POPULATION_LD),
             IdLabelData("CAI",  POPULATION_CAI),
-            IdLabelData("LAI",  POPULATION_LAI)
-        )
+            IdLabelData("LAI",  POPULATION_LAI),
+
+            IdLabelData("AD",   POPULATION_AD),
+            IdLabelData("BLD",  POPULATION_BLD),
+            IdLabelData("MCI_AD",  POPULATION_MCI_AD),
+            IdLabelData("MCI_BLD", POPULATION_MCI_BLD)       )
 
         /** 
          * List of populations that are hearing and can perform acoustic tasks.
@@ -108,7 +133,12 @@ class Populations {
             IdLabelData("CB",   POPULATION_CB),
             IdLabelData("LB",   POPULATION_LB),
             IdLabelData("CLV",  POPULATION_CLV),
-            IdLabelData("LLV",  POPULATION_LLV)
+            IdLabelData("LLV",  POPULATION_LLV),
+
+            IdLabelData("AD",   POPULATION_AD),
+            IdLabelData("BLD",  POPULATION_BLD),
+            IdLabelData("MCI_AD",  POPULATION_MCI_AD),
+            IdLabelData("MCI_BLD", POPULATION_MCI_BLD)
 
         )
 
