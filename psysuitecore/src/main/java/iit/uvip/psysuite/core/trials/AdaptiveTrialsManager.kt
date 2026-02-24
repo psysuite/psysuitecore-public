@@ -2,7 +2,7 @@ package iit.uvip.psysuite.core.trials
 
 import android.util.Log
 import com.chaquo.python.PyObject
-import org.albaspazio.psysuite.adaptive.AdaptiveWrapper
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import iit.uvip.psysuite.core.tests.TestBasic
 import org.albaspazio.psysuite.python.SPython
 
@@ -18,24 +18,25 @@ import org.albaspazio.psysuite.python.SPython
 //          1- get = retrieve the dynamic value
 //          2- set = set subject's answer
 //
-open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper: AdaptiveWrapper, training_trials:MutableList<TrialBasic> = mutableListOf<TrialBasic>())
-            :TrialsManager(TestBasic.TEST_TRMAN_ADAPTIVE, trials, training_trials) {
+open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>,
+                                 training_trials:MutableList<TrialBasic> = mutableListOf<TrialBasic>())
+                                :TrialsManager(TestBasic.TEST_TRMAN_ADAPTIVE, trials, training_trials) {
 
-    private val sPy:SPython = SPython.getInstance(null)     // singleton already initialized in TestFragment, here I dont'need a Context
-    private val wrapperClass:PyObject
-    private val range:Float = adaptiveWrapper.params.range
+    private val sPy:SPython = SPython.getInstance(null)         // singleton already initialized in TestFragment, here I dont'need a Context
+    private val wrapperCache = mutableMapOf<ADOWrapper, PyObject>()  // Cache PyObject wrappers per ADOWrapper instance
 
-    init {
-
-        val adaptparams_dict    = sPy.class2dict(adaptiveWrapper.qparams)
-        val taskparams_dict     = sPy.class2dict(adaptiveWrapper.params)
-
-        wrapperClass            = sPy.instanciate(adaptiveWrapper.module, adaptiveWrapper.classname, adaptparams_dict, taskparams_dict)
-        wrapperClass.callAttr("get").toFloat()  // to init the model, in case of mixed design,
-                                                // if the first trial is not adaptative, when i set its result it gives an error
+    private fun getOrCreateWrapper(adoWrapper: ADOWrapper): PyObject {
+        return wrapperCache.getOrPut(adoWrapper) {
+            // This block only executes if adoWrapper is NOT in cache
+            val adaptparams_dict    = sPy.class2dict(adoWrapper.qparams)
+            val taskparams_dict     = sPy.class2dict(adoWrapper.params)
+            val wrapper             = sPy.instanciate(adoWrapper.module, adoWrapper.classname,adaptparams_dict, taskparams_dict)
+            wrapper.callAttr("get").toFloat()  // Initialize
+            wrapper                                 // Return value stored in cache
+        }
     }
 
-        /**
+    /**
      * Sets the response for the current trial. Even If the trial is not adaptive, it updates the model with the response / magnitude pair.
      * TestBasic::OnAnswerGiven ->TrialsManager::setResponse
      * @param result The result of the trial.
@@ -44,7 +45,10 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
      */
     override fun setResponse(result: Int, elapsedms: Long, extra_text: String) {
         mTrial.setResponse(result, elapsedms, mPrevTrial, extra_text)
-        wrapperClass.callAttr("set", mTrial.success, mTrial.magnitude)
+        mTrial.adoWrapper?.let {
+            val wrapperClass = getOrCreateWrapper(it)
+            wrapperClass.callAttr("set", mTrial.success, mTrial.magnitude)
+        }
     }
 
     /**
@@ -56,10 +60,8 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
     override fun getNewTrial(): TrialBasic {
 
         currTrialID++
-
         val prev_resp = mPrevTrial?.user_answer ?: -1
         val prev_succ = mPrevTrial?.success ?: true
-
 
         val newvalue = getStimulus()
         Log.d("QUEST_VALUE", "${newvalue} , prev resp: $prev_resp , prev succ: $prev_succ")
@@ -69,16 +71,14 @@ open class AdaptiveTrialsManager(trials:MutableList<TrialBasic>, adaptiveWrapper
 
     /**
      * Get the next stimulus value. If the trial is adaptive, get it from the adaptive model and update the current trial.
-     *
      * @return The next stimulus value.
      */
-    override fun getStimulus():Long{
-        return  if(mTrial.isADA) {
-                    var magn = wrapperClass.callAttr("get").toFloat()
-                    magn = magn.coerceAtMost(range)
-                    magn = magn.coerceAtLeast(0.0F)
-                    mTrial.setupTrial(magn)
-                }
-                else    mTrial.stim_value
+    override fun getStimulus(): Long {
+        return mTrial.adoWrapper?.let {
+            val wrapperClass    = getOrCreateWrapper(it)
+            val magn            = wrapperClass.callAttr("get").toFloat().coerceIn(0.0f, it.params.range)
+            Log.d("AdaptativeTrialsManager", "calculated next adaptive stimulus: $magn")
+            mTrial.setupTrial(magn) // setupTrial updates and returns the new value
+        } ?: mTrial.stim_value      // If adoWrapper was null, return the default stimulus value
     }
 }

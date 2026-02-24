@@ -8,7 +8,7 @@ import android.view.Surface
 import android.view.View
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
-import org.albaspazio.psysuite.adaptive.AdaptiveWrapper
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import org.albaspazio.psysuite.adaptive.TaskADAParams
 import org.albaspazio.psysuite.adaptive.ado.ADOParams
 import iit.uvip.psysuite.core.R
@@ -202,7 +202,7 @@ class TestTTC(ctx: Context,
     private val nMinMagnitude:Float             = 0.01F
     private val adoParams                       = ADOParams(guess_rate=0.5F, lapse_rate=0.04F, noise_perc=0.1F)
     private lateinit var taskADAParams: TaskADAParams
-    private lateinit var adoWrapper:AdaptiveWrapper
+    private lateinit var adoWrapper:ADOWrapper
 
 
     // =============================================================================================================================
@@ -247,9 +247,9 @@ class TestTTC(ctx: Context,
                             }
                             
                             taskADAParams = TaskADAParams(range, nAdaptiveTrials, nMinMagnitude)
-                            adoWrapper    = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
+                            adoWrapper    = ADOWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
 
-                            val trman = AdaptiveTrialsManager(createAdaptiveTrials() as MutableList<TrialBasic>, adoWrapper)
+                            val trman = AdaptiveTrialsManager(createAdaptiveTrials() as MutableList<TrialBasic>)
                             trman.getStimulus()
                             trman
                         }
@@ -351,7 +351,7 @@ class TestTTC(ctx: Context,
 
         trials.clear()
         for (i in 0 until nAdaptiveTrials)
-            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, fixedDuration, fixedDistance, mMinVisibility, mDrawablesResource[0], true, true, isADA=true))
+            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, fixedDuration, fixedDistance, mMinVisibility, mDrawablesResource[0], true, true, adoWrapper = adoWrapper))
 
         trials.shuffle()
         alltrials.addAll(trials)
@@ -427,11 +427,11 @@ class TestTTC(ctx: Context,
         // 8 blocks of 5+1 trials each
         for (i in 0 until nAdaptiveTrials/5) {
             trials.clear()
-            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, isADA=true))
-            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, isADA=true))
-            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, isADA=true))
-            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, isADA=true))
-            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, isADA=true))
+            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, adoWrapper = adoWrapper))
+            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, adoWrapper = adoWrapper))
+            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, adoWrapper = adoWrapper))
+            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, adoWrapper = adoWrapper))
+            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, vt, ipl, mMinSpeed, mDrawablesResource[0], true, true, adoWrapper = adoWrapper))
             trials.add(catchtrials.removeFirst())
             trials.shuffle()
 
@@ -507,7 +507,7 @@ class TestTTC(ctx: Context,
             // 8 blocks of 5+1 trials each
         for (i in 0 until nAdaptiveTrials/5) {
             trials.clear()
-            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, _it, vpl, mMinSpeed, mDrawablesResource[0], true, true, isADA = true))
+            trials.add(TrialTTC(-1, subject.type, mTestLabel, TrialsManager.ADAPTIVE_VALUE, _it, vpl, mMinSpeed, mDrawablesResource[0], true, true, adoWrapper = adoWrapper))
 
             trials.add(catchtrials.removeFirst())
             trials.shuffle()

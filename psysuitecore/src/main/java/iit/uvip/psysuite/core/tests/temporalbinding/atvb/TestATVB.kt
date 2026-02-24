@@ -5,7 +5,7 @@ import android.content.Context
 import android.view.View
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
-import org.albaspazio.psysuite.adaptive.AdaptiveWrapper
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import org.albaspazio.psysuite.adaptive.TaskADAParams
 import org.albaspazio.psysuite.adaptive.ado.ADOParams
 import iit.uvip.psysuite.core.R
@@ -18,7 +18,6 @@ import iit.uvip.psysuite.core.stimuli.TactileManager
 import iit.uvip.psysuite.core.stimuli.VibratorNotDefinedException
 import iit.uvip.psysuite.core.stimuli.VisualManager
 import iit.uvip.psysuite.core.tests.TestBasic
-import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.ISI
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.STIM_DURATION
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_ATV
@@ -255,7 +254,7 @@ class TestATVB(
     private val nAdaptiveTrials             = 40
     private val adoParams                   = ADOParams(guess_rate=0.5F, lapse_rate=0.04F, noise_perc=0.1F)
     private val taskADAParams               = TaskADAParams(1200.0F, nAdaptiveTrials)
-    private val adoWrapper:AdaptiveWrapper  = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
+    private val adoWrapper:ADOWrapper       = ADOWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
 
     // =============================================================================================================================
     // INIT
@@ -315,7 +314,7 @@ class TestATVB(
                     TEST_ATVB_TIME_D_BAL        -> createTrialsAdaptiveBalanced()
                     else                        -> throw Exception("ERROR in TEST ATVB")
                 }
-                AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
+                AdaptiveTrialsManager(trials as MutableList<TrialBasic>)
             }
         initSummary()
 
@@ -415,12 +414,12 @@ class TestATVB(
 
         // 48
         for (j in 0 until 8) {
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_AT_V, 0.0F, isADA = true))
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_AT, 0.0F, isADA = true))
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_AV_T, 0.0F, isADA = true))
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_T_AV, 0.0F, isADA = true))
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, 0.0F, isADA = true))
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, 0.0F, isADA = true))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_AT_V, 0.0F, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_AT, 0.0F, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_AV_T, 0.0F, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_T_AV, 0.0F, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_TV_A, 0.0F, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_TV, 0.0F, adoWrapper = adoWrapper))
         }
         trials.shuffle()
         return trials
@@ -441,12 +440,12 @@ class TestATVB(
         }
         // 32
         for (j in 0 until 8) {
-            trials.add(TrialBindingsBalanced(++cnt, TYPE_V_A_T, 0.0F, validAnswers, isADA = true))
-            trials.add(TrialBindingsBalanced(++cnt, TYPE_T_A_V, 0.0F, validAnswers, isADA = true))
-            trials.add(TrialBindingsBalanced(++cnt, TYPE_A_T_V, 0.0F, validAnswers, isADA = true))
-            trials.add(TrialBindingsBalanced(++cnt, TYPE_V_T_A, 0.0F, validAnswers, isADA = true))
-            trials.add(TrialBindingsBalanced(++cnt, TYPE_A_V_T, 0.0F, validAnswers, isADA = true))
-            trials.add(TrialBindingsBalanced(++cnt, TYPE_T_V_A, 0.0F, validAnswers, isADA = true))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_V_A_T, 0.0F, validAnswers, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_T_A_V, 0.0F, validAnswers, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_A_T_V, 0.0F, validAnswers, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_V_T_A, 0.0F, validAnswers, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_A_V_T, 0.0F, validAnswers, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsBalanced(++cnt, TYPE_T_V_A, 0.0F, validAnswers, adoWrapper = adoWrapper))
         }
         trials.shuffle()
         return trials

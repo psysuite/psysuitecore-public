@@ -6,7 +6,7 @@ import android.content.Context
 import android.view.View
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
-import org.albaspazio.psysuite.adaptive.AdaptiveWrapper
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import org.albaspazio.psysuite.adaptive.TaskADAParams
 import org.albaspazio.psysuite.adaptive.ado.ADOParams
 import iit.uvip.psysuite.core.R
@@ -46,7 +46,7 @@ import org.albaspazio.core.ui.showToast
  * - Both sub-threshold and supra-threshold stimulus intensity levels.
  *
  * It handles trial generation, stimulus delivery through [StimuliManager],
- * and interaction with adaptive testing procedures via [AdaptiveWrapper] if configured.
+ * and interaction with adaptive testing procedures via [ADOWrapper] if configured.
  *
  * @param ctx The application context.
  * @param activity The host activity.
@@ -104,22 +104,25 @@ class TestBIS(
                     ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_TACTILE}"   , TEST_BISECTION_AUDIO_TACTILE   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_TACTILE_LOG}"   , Populations.hearing_populations),
                     ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_VISUAL}"    , TEST_BISECTION_AUDIO_VISUAL    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_VISUAL_LOG}"    , Populations.sighted_hearing_populations),
                     ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_TACTILE}"  , TEST_BISECTION_VISUAL_TACTILE  , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_TACTILE_LOG}"  , Populations.sighted_populations),
+                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${STIMULUS_ISI_SUB}_${STIMULUS_ISI_SUPRA}"           , TEST_BISECTION_AUDIO_SUBSUPRA           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}${STIMULUS_ISI_SUB}${STIMULUS_ISI_SUPRA}"           , Populations.hearing_populations))
 
-                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${STIMULUS_ISI_SUPRA}"           , TEST_BISECTION_AUDIO_SUPRA           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}${STIMULUS_ISI_SUPRA}"           , Populations.hearing_populations),
-                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_${STIMULUS_ISI_SUPRA}"         , TEST_BISECTION_TACTILE_SUPRA         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE_LOG}${STIMULUS_ISI_SUPRA}"         , Populations.all_populations),
-                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_${STIMULUS_ISI_SUPRA}"          , TEST_BISECTION_VISUAL_SUPRA          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}${STIMULUS_ISI_SUPRA}"          , Populations.sighted_populations),
-                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_TACTILE}_${STIMULUS_ISI_SUPRA}"   , TEST_BISECTION_AUDIO_TACTILE_SUPRA   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_TACTILE_LOG}${STIMULUS_ISI_SUPRA}"   , Populations.hearing_populations),
-                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_VISUAL}_${STIMULUS_ISI_SUPRA}"    , TEST_BISECTION_AUDIO_VISUAL_SUPRA    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_VISUAL_LOG}${STIMULUS_ISI_SUPRA}"    , Populations.sighted_hearing_populations),
-                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_TACTILE}_${STIMULUS_ISI_SUPRA}"  , TEST_BISECTION_VISUAL_TACTILE_SUPRA  , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_TACTILE_LOG}${STIMULUS_ISI_SUPRA}"  , Populations.sighted_populations))
+//                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${STIMULUS_ISI_SUPRA}"           , TEST_BISECTION_AUDIO_SUPRA           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}${STIMULUS_ISI_SUPRA}"           , Populations.hearing_populations),
+//                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_TACTILE}_${STIMULUS_ISI_SUPRA}"         , TEST_BISECTION_TACTILE_SUPRA         , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_TACTILE_LOG}${STIMULUS_ISI_SUPRA}"         , Populations.all_populations),
+//                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_${STIMULUS_ISI_SUPRA}"          , TEST_BISECTION_VISUAL_SUPRA          , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}${STIMULUS_ISI_SUPRA}"          , Populations.sighted_populations),
+//                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_TACTILE}_${STIMULUS_ISI_SUPRA}"   , TEST_BISECTION_AUDIO_TACTILE_SUPRA   , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_TACTILE_LOG}${STIMULUS_ISI_SUPRA}"   , Populations.hearing_populations),
+//                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_VISUAL}_${STIMULUS_ISI_SUPRA}"    , TEST_BISECTION_AUDIO_VISUAL_SUPRA    , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_VISUAL_LOG}${STIMULUS_ISI_SUPRA}"    , Populations.sighted_hearing_populations),
+//                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL_TACTILE}_${STIMULUS_ISI_SUPRA}"  , TEST_BISECTION_VISUAL_TACTILE_SUPRA  , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_TACTILE_LOG}${STIMULUS_ISI_SUPRA}"  , Populations.sighted_populations))
 
             else
                 mutableListOf(
                     ConditionData(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO                              , TEST_BISECTION_AUDIO                  , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}"                            , Populations.hearing_populations),
                     ConditionData(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_VISUAL                             , TEST_BISECTION_VISUAL                 , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}"                           , Populations.sighted_populations),
                     ConditionData(TEST_BASIC_LABEL + "_" + STIMULUS_TYPE_AUDIO_VISUAL                       , TEST_BISECTION_AUDIO_VISUAL           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_VISUAL_LOG}"                     , Populations.sighted_hearing_populations),
-                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${STIMULUS_ISI_SUPRA}"        , TEST_BISECTION_AUDIO_SUPRA            , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}${STIMULUS_ISI_SUPRA}"       , Populations.hearing_populations),
-                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_${STIMULUS_ISI_SUPRA}"       , TEST_BISECTION_VISUAL_SUPRA           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}${STIMULUS_ISI_SUPRA}"      , Populations.sighted_populations),
-                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_VISUAL}_${STIMULUS_ISI_SUPRA}" , TEST_BISECTION_AUDIO_VISUAL_SUPRA     , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_VISUAL_LOG}${STIMULUS_ISI_SUPRA}", Populations.sighted_hearing_populations))
+                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${STIMULUS_ISI_SUB}_${STIMULUS_ISI_SUPRA}"           , TEST_BISECTION_AUDIO_SUBSUPRA           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}${STIMULUS_ISI_SUB}${STIMULUS_ISI_SUPRA}"           , Populations.hearing_populations))
+
+//                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO}_${STIMULUS_ISI_SUPRA}"        , TEST_BISECTION_AUDIO_SUPRA            , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_LOG}${STIMULUS_ISI_SUPRA}"       , Populations.hearing_populations),
+//                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_VISUAL}_${STIMULUS_ISI_SUPRA}"       , TEST_BISECTION_VISUAL_SUPRA           , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_VISUAL_LOG}${STIMULUS_ISI_SUPRA}"      , Populations.sighted_populations),
+//                    ConditionData("${TEST_BASIC_LABEL}_${STIMULUS_TYPE_AUDIO_VISUAL}_${STIMULUS_ISI_SUPRA}" , TEST_BISECTION_AUDIO_VISUAL_SUPRA     , "${TEST_BASIC_LABEL}${STIMULUS_TYPE_AUDIO_VISUAL_LOG}${STIMULUS_ISI_SUPRA}", Populations.sighted_hearing_populations))
         }
 
         /**
@@ -137,10 +140,10 @@ class TestBIS(
         fun getNextTrialModes(ctx: Context):List<List<Int>>{
             return if(VibrationManager.sysHasVibrator(ctx))
                 listOf( listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),
-                        listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER))
+                        listOf(TEST_NEXTTRIAL_ANSWER))
             else
                 listOf( listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),
-                        listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER))
+                        listOf(TEST_NEXTTRIAL_ANSWER)) //,listOf(TEST_NEXTTRIAL_ANSWER),listOf(TEST_NEXTTRIAL_ANSWER))
         }
     }
 
@@ -259,7 +262,7 @@ class TestBIS(
     private val adoParams                   = ADOParams(guess_rate=0.5F, lapse_rate=0.04F, noise_perc=0.1F)
 
     private lateinit var taskADAParams:TaskADAParams
-    private lateinit var adoWrapper:AdaptiveWrapper
+    private lateinit var adoWrapper:ADOWrapper
     // endregion
 
     // =============================================================================================================================
@@ -297,7 +300,10 @@ class TestBIS(
 
         // manage SUB/SUPRA
         lastStimulusDelay = if(subject.type > TEST_BISECTION_VISUAL_TACTILE) {
-                                taskADAParams   = TaskADAParams(nAT_range_supra, nTotalAdaptiveTrials)
+                                taskADAParams   = TaskADAParams(
+                                    nAT_range_supra,
+                                    nTotalAdaptiveTrials
+                                )
                                 LAST_STIMULUS_DELAY_SUPRA
                             }
                             else {
@@ -306,43 +312,42 @@ class TestBIS(
                             }
         midLatency      = lastStimulusDelay / 2
         questionDelay   = lastStimulusDelay + QUESTION_DELAY
-        adoWrapper      = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
+        adoWrapper      = ADOWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
 
         initBisection(subject.type) // set mQuestion/ currStimulusDuration/ currStimulusDuration2/ currStimulusLabel
 
 //        testEvent.accept(Triple(EVENT_SHOW_INFO, "Setting up trials", listOf()))
         // manage trials
         mTrialsManager =
-            if (subject.isDebug)
-                FixedTrialsManager(createTrialsDebug() as MutableList<TrialBasic>)
-            else {
-                var training_trials = if(subject.doTraining == TEST_SWITCH_ENABLED)
-                    when (subject.type) {
-                        TEST_BISECTION_AUDIO, TEST_BISECTION_TACTILE, TEST_BISECTION_VISUAL,
-                        TEST_BISECTION_AUDIO_SUPRA, TEST_BISECTION_TACTILE_SUPRA, TEST_BISECTION_VISUAL_SUPRA ->
-                                createUnimodalTrainingTrials() as MutableList<TrialBasic>
-                        else -> mutableListOf()
-                    }
-                else    mutableListOf()
+        if (!subject.isDebug){
+            var training_trials =   if(subject.doTraining == TEST_SWITCH_ENABLED)
+                                        when (subject.type) {
+                                            TEST_BISECTION_AUDIO, TEST_BISECTION_TACTILE, TEST_BISECTION_VISUAL,
+                                            TEST_BISECTION_AUDIO_SUPRA, TEST_BISECTION_TACTILE_SUPRA, TEST_BISECTION_VISUAL_SUPRA ->
+                                                    createUnimodalTrainingTrials() as MutableList<TrialBasic>
+                                            else -> mutableListOf()
+                                        }
+                                    else    mutableListOf()
 
-                if (subject.trman_type == TEST_TRMAN_FIXED) {
-                    val trials = when (subject.type) {
-                        TEST_BISECTION_AUDIO, TEST_BISECTION_TACTILE, TEST_BISECTION_VISUAL, TEST_BISECTION_AUDIO_SUPRA, TEST_BISECTION_TACTILE_SUPRA, TEST_BISECTION_VISUAL_SUPRA
-                             -> createUnimodalTrials() as MutableList<TrialBasic>
-                        else -> createBimodalTrials(subject.type) as MutableList<TrialBasic>
+            if (subject.trman_type == TEST_TRMAN_FIXED) {
+                val trials = when (subject.type) {
+                    TEST_BISECTION_AUDIO, TEST_BISECTION_TACTILE, TEST_BISECTION_VISUAL, TEST_BISECTION_AUDIO_SUPRA, TEST_BISECTION_TACTILE_SUPRA, TEST_BISECTION_VISUAL_SUPRA
+                         -> createUnimodalTrials() as MutableList<TrialBasic>
+                    else -> createBimodalTrials(subject.type) as MutableList<TrialBasic>
+                }
+                FixedTrialsManager(trials, training_trials)
+            } else {
+                when (subject.type) {
+                    TEST_BISECTION_AUDIO, TEST_BISECTION_TACTILE, TEST_BISECTION_VISUAL,
+                    TEST_BISECTION_AUDIO_SUPRA, TEST_BISECTION_TACTILE_SUPRA, TEST_BISECTION_VISUAL_SUPRA -> {
+                        val trials = createTrialsAdaptive()
+                        AdaptiveTrialsManager(trials as MutableList<TrialBasic>, training_trials)
                     }
-                    FixedTrialsManager(trials, training_trials)
-                } else {
-                    when (subject.type) {
-                        TEST_BISECTION_AUDIO, TEST_BISECTION_TACTILE, TEST_BISECTION_VISUAL,
-                        TEST_BISECTION_AUDIO_SUPRA, TEST_BISECTION_TACTILE_SUPRA, TEST_BISECTION_VISUAL_SUPRA -> {
-                            val trials = createTrialsAdaptive()
-                            AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper, training_trials)
-                        }
-                        else -> throw IllegalArgumentException(ctx.getString(R.string.condition_not_allowed))
-                    }
+                    else -> throw IllegalArgumentException(ctx.getString(R.string.condition_not_allowed))
                 }
             }
+        }
+        else    FixedTrialsManager(createTrialsDebug() as MutableList<TrialBasic>)
 
         mTestLabel              = ""
         getConditionsInfo(ctx).map {
@@ -446,8 +451,8 @@ class TestBIS(
         var cnt = -1
         val trials: MutableList<TrialBasic> = mutableListOf()
         for (i in 0 until (nAdaptiveTrials-10)/2){
-            trials.add(TrialBIS(++cnt, subject.type, STIMULUS_TYPE_AUDIO, TrialsManager.ADAPTIVE_VALUE, true , CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, isADA=true))
-            trials.add(TrialBIS(++cnt, subject.type, STIMULUS_TYPE_AUDIO, TrialsManager.ADAPTIVE_VALUE, false, CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, isADA=true))
+            trials.add(TrialBIS(++cnt, subject.type, STIMULUS_TYPE_AUDIO, TrialsManager.ADAPTIVE_VALUE, true , CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, adoWrapper = adoWrapper))
+            trials.add(TrialBIS(++cnt, subject.type, STIMULUS_TYPE_AUDIO, TrialsManager.ADAPTIVE_VALUE, false, CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, adoWrapper = adoWrapper))
         }
 
         trials.add(TrialBIS(-1, subject.type, currStimulusLabel, 300F, true, conflictType, currStimulusDuration, currStimulusDuration2))
@@ -465,6 +470,7 @@ class TestBIS(
         return trials
     }
 
+    // version for testing adaptive vs fixed trials
     private fun createTrialsAdaptive2():List<TrialBasic>{
 
         val schema =    if(isSupra)     trialsUnimodalSupraSchema
@@ -479,8 +485,8 @@ class TestBIS(
 
         // 180 are adaptive
         for (i in 0 until (nTotalAdaptiveTrials - nFixedInAdaptiveTrials)/2){
-            trials.add(TrialBIS(-1, subject.type, currStimulusLabel, TrialsManager.ADAPTIVE_VALUE, true , CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, mid_latency = midLatency, isADA=true))
-            trials.add(TrialBIS(-1, subject.type, currStimulusLabel, TrialsManager.ADAPTIVE_VALUE, false, CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, mid_latency = midLatency, isADA=true))
+            trials.add(TrialBIS(-1, subject.type, currStimulusLabel, TrialsManager.ADAPTIVE_VALUE, true , CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, mid_latency = midLatency, adoWrapper = adoWrapper))
+            trials.add(TrialBIS(-1, subject.type, currStimulusLabel, TrialsManager.ADAPTIVE_VALUE, false, CONFLICT_TYPE_NONE,STIMULUS_DURATION_AUDIO, mid_latency = midLatency, adoWrapper = adoWrapper))
         }
 
         trials.shuffle()

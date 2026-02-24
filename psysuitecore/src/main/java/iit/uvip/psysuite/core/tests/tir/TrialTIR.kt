@@ -2,6 +2,7 @@ package iit.uvip.psysuite.core.tests.tir
 
 import android.util.Log
 import iit.uvip.psysuite.core.trials.TrialBasic
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import kotlin.math.abs
 
 /*
@@ -13,7 +14,7 @@ import kotlin.math.abs
 
 class TrialTIR (id:Int=-1, type:Int, label:String,
                 override var magnitude:Float,
-                isADA:Boolean=false, isTraining: Boolean=false): TrialBasic(id, type, label, isADA= isADA, isTraining = isTraining) {
+                adoWrapper: ADOWrapper?=null, isTraining: Boolean=false): TrialBasic(id, type, label, adoWrapper = adoWrapper, isTraining = isTraining) {
 
     companion object {
         @JvmStatic val LOG_HEADER = "id\tlabel\tdur\terror\tsuccess\n"

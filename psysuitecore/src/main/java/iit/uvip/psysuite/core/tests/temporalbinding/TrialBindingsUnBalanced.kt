@@ -1,11 +1,12 @@
 package iit.uvip.psysuite.core.tests.temporalbinding
 
 import iit.uvip.psysuite.core.trials.TrialBasic
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 
 
 //                     trial_id    0-8      "none"
-class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, override var magnitude:Float, isADA:Boolean=false):
-    TrialBasic(id, type, isADA=isADA) {
+class TrialBindingsUnBalanced(id:Int=-1, type:Int=0, override var magnitude:Float, adoWrapper: ADOWrapper?=null):
+    TrialBasic(id, type, adoWrapper =adoWrapper) {
 
     companion object {
         @JvmStatic val LOG_HEADER = "id\ttype\tdelay\tanswer\tsuccess\telapsed\n"

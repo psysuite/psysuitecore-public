@@ -6,10 +6,11 @@ import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_T_V_A
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_V_A_T
 import iit.uvip.psysuite.core.tests.temporalbinding.BindingsConstants.Companion.TYPE_V_T_A
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 
 
-class TrialBindingsBalanced(id:Int=-1, type:Int=0, override var magnitude:Float, private val correct_answers:List<String>, isADA:Boolean=false)
-     :TrialBindings3latencies(id, type, 0L,0L,0L, isADA=isADA) {
+class TrialBindingsBalanced(id:Int=-1, type:Int=0, override var magnitude:Float, private val correct_answers:List<String>, adoWrapper: ADOWrapper?=null)
+     :TrialBindings3latencies(id, type, 0L,0L,0L, adoWrapper=adoWrapper) {
 
     companion object {
         @JvmStatic

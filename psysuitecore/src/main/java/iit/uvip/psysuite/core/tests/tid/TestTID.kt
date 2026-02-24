@@ -5,7 +5,7 @@ import android.content.Context
 import android.view.View
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
-import org.albaspazio.psysuite.adaptive.AdaptiveWrapper
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import org.albaspazio.psysuite.adaptive.TaskADAParams
 import org.albaspazio.psysuite.adaptive.ado.ADOParams
 import iit.uvip.psysuite.core.R
@@ -157,7 +157,7 @@ class TestTID(ctx: Context,
     private val nAdaptiveTrials                 = 40
     private val adoParams                       = ADOParams(guess_rate=0.5F, lapse_rate=0.04F, noise_perc=0.1F)
     private lateinit var taskADAParams: TaskADAParams
-    private lateinit var adoWrapper:AdaptiveWrapper
+    private lateinit var adoWrapper:ADOWrapper
 
     // =============================================================================================================================
     // INIT
@@ -211,9 +211,9 @@ class TestTID(ctx: Context,
                     FixedTrialsManager(trials as MutableList<TrialBasic>)
                 }
                 else -> {
-                    adoWrapper  = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
+                    adoWrapper  = ADOWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
                     val trials = createQuestTrials(currStimulusDuration)
-                    AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
+                    AdaptiveTrialsManager(trials as MutableList<TrialBasic>)
                 }
             }
 
@@ -298,10 +298,10 @@ class TestTID(ctx: Context,
         // 8*4 = 32
         for(t in 0 until 8){
             //                    id:Int=-1, type:Int, val block:Int, val group:Int,            val session:Int,  var delta1:Int, var delta2:Int, val ref_first:Boolean, val duration:Int, answers:List<String>
-            block_trials.add(TrialTID(-1, subject.type, t, (subject as SubjectTIDParcel).group, subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, true,  true, duration, validAnswers, isADA = true))
-            block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, true, false, duration, validAnswers, isADA = true))
-            block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, false, true, duration, validAnswers, isADA = true))
-            block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, false, false, duration, validAnswers, isADA = true))
+            block_trials.add(TrialTID(-1, subject.type, t, (subject as SubjectTIDParcel).group, subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, true,  true, duration, validAnswers, adoWrapper = adoWrapper))
+            block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, true, false, duration, validAnswers, adoWrapper = adoWrapper))
+            block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, false, true, duration, validAnswers, adoWrapper = adoWrapper))
+            block_trials.add(TrialTID(-1, subject.type, t, subject.group,                       subject.session, refDelta, TrialsManager.ADAPTIVE_VALUE, false, false, duration, validAnswers, adoWrapper = adoWrapper))
         }
         block_trials.shuffle()
 

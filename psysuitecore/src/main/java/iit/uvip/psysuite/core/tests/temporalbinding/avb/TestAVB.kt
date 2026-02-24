@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
-import org.albaspazio.psysuite.adaptive.AdaptiveWrapper
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import org.albaspazio.psysuite.adaptive.TaskADAParams
 import org.albaspazio.psysuite.adaptive.ado.ADOParams
 import iit.uvip.psysuite.core.R
@@ -125,7 +125,7 @@ class TestAVB(ctx: Context,
     private val nAdaptiveTrials             = 88
     private val adoParams                   = ADOParams(guess_rate=0.5F, lapse_rate=0.04F, noise_perc=0.1F)
     private val taskADAParams               = TaskADAParams(1200.0F, nAdaptiveTrials)
-    private val adoWrapper:AdaptiveWrapper  = AdaptiveWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
+    private val adoWrapper:ADOWrapper       = ADOWrapper("adopywrapper.AdopyWrapper", "AdopyWrapper", adoParams, taskADAParams)
 
     // =============================================================================================================================
     // INIT
@@ -208,7 +208,7 @@ class TestAVB(ctx: Context,
                     TEST_AVB_TIME_SINGLESTIM    -> createTrialsAdaptiveSingle()
                     else                        -> throw Exception("ERROR in TEST AVB")
                 }
-                AdaptiveTrialsManager(trials as MutableList<TrialBasic>, adoWrapper)
+                AdaptiveTrialsManager(trials as MutableList<TrialBasic>)
             }
 
         mTestLabel = ""
@@ -334,8 +334,8 @@ class TestAVB(ctx: Context,
 
         // 28
         for (j in 0 until 28) {
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_V, 0.0F, isADA = true))
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_A, 0.0F, isADA = true))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_V, 0.0F, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_A, 0.0F, adoWrapper = adoWrapper))
         }
         trials.shuffle()
         return trials
@@ -371,8 +371,8 @@ class TestAVB(ctx: Context,
 
         // 64
         for (j in 0 until 32) {
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_V, 0.0F, isADA = true))
-            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_A, 0.0F, isADA = true))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_A_V, 0.0F, adoWrapper = adoWrapper))
+            trials.add(TrialBindingsUnBalanced(++cnt, TYPE_V_A, 0.0F, adoWrapper = adoWrapper))
         }
         trials.shuffle()
         return trials

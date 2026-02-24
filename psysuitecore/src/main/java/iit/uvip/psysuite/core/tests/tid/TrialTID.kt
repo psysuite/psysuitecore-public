@@ -1,10 +1,11 @@
 package iit.uvip.psysuite.core.tests.tid
 
 import iit.uvip.psysuite.core.trials.TrialBasic
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 
 
-class TrialTID(id:Int=-1, type:Int, val block:Int, val group:Int, val session:String, val refdelta:Float, override var magnitude:Float, val ref_first:Boolean, val isBefore:Boolean, val duration:Long, val answers:List<String>, isADA:Boolean=false, isTraining:Boolean=false):
-    TrialBasic(id, type, isADA=isADA, isTraining = isTraining){
+class TrialTID(id:Int=-1, type:Int, val block:Int, val group:Int, val session:String, val refdelta:Float, override var magnitude:Float, val ref_first:Boolean, val isBefore:Boolean, val duration:Long, val answers:List<String>, adoWrapper: ADOWrapper?=null, isTraining:Boolean=false):
+    TrialBasic(id, type, adoWrapper =adoWrapper, isTraining = isTraining){
 
     var delta1:Long = 0L
     var delta2:Long = 0L

@@ -136,6 +136,8 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_BISECTION_VISUAL_SUPRA          = 110
         /** Unique code for Bisection test with supra-threshold visual-tactile stimuli. */
         @JvmStatic val TEST_BISECTION_VISUAL_TACTILE_SUPRA  = 111
+        /** Unique code for Bisection test with audio stimulus comparing SUB vs SUPRA. */
+        @JvmStatic val TEST_BISECTION_AUDIO_SUBSUPRA        = 112
 
         /** Unique code for Temporal Integration Window (TID) test with short audio stimulus. */
         @JvmStatic val TEST_TID_SHORT_AUDIO         = 120

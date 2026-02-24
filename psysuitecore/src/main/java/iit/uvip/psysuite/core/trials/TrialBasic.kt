@@ -1,11 +1,13 @@
 package iit.uvip.psysuite.core.trials
 
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
+
 open class TrialBasic(
     var id: Int = -1,
     val type: Int,
     protected val label: String = "",
     open var magnitude: Float = 0F,
-    val isADA: Boolean = false,
+    val adoWrapper: ADOWrapper? = null,
     val isTraining: Boolean = false
 ) {
 
@@ -46,7 +48,6 @@ open class TrialBasic(
         success             = (result == correct_answer)
         user_answer_extra   = extra_text
     }
-
 
     override fun toString():String{
         return Log()

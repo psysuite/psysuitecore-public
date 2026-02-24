@@ -2,6 +2,7 @@ package iit.uvip.psysuite.core.tests.tsp
 
 import android.util.Log
 import iit.uvip.psysuite.core.trials.TrialBasic
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import kotlin.math.abs
 
 /*
@@ -18,8 +19,8 @@ class TrialTSP (id:Int=-1, type:Int, label:String,
                 val isBefore: Boolean,
                 val nCues:Int,
                 val duration:Long,
-                isADA:Boolean=false,
-                isTraining: Boolean=false): TrialBasic(id, type, label, isADA=isADA, isTraining = isTraining) {
+                adoWrapper: ADOWrapper?=null,
+                isTraining: Boolean=false): TrialBasic(id, type, label, adoWrapper =adoWrapper, isTraining = isTraining) {
 
     companion object {
         @JvmStatic val LOG_HEADER = "id\tlabel\tisi\terror\tsuccess\tmagnitude\n"

@@ -4,6 +4,7 @@ import android.util.Log
 import iit.uvip.psysuite.core.tests.TestBasic
 import iit.uvip.psysuite.core.trials.TrialBasic
 import org.albaspazio.core.accessory.round
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import kotlin.math.round
 
 // speed in px per second
@@ -15,12 +16,7 @@ class TrialTTC(id:Int=-1, type:Int, label:String,
                     time:Long,
                     distance:Int,
                     val minMagnitude:Float,
-                    val imageId:Int, val isHoriz:Boolean=true, val isDownRight:Boolean=true, isADA:Boolean=false): TrialBasic(
-    id,
-    type,
-    label,
-    isADA=isADA
-) {
+                    val imageId:Int, val isHoriz:Boolean=true, val isDownRight:Boolean=true, adoWrapper: ADOWrapper?=null): TrialBasic(id, type, label, adoWrapper =adoWrapper) {
     var TT:Long = 0
     var VT:Long = 0
     var IT:Long = 0

@@ -1,6 +1,7 @@
 package iit.uvip.psysuite.core.tests.bis
 
 import iit.uvip.psysuite.core.trials.TrialBasic
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 
 // trial adopting the pattern where magnitude and stim_value does not coincide....I fix a magnitude and, through the isBefore parameter, I calculate the stim_value
 
@@ -18,13 +19,13 @@ import iit.uvip.psysuite.core.trials.TrialBasic
  * @param duration2 The duration of a secondary stimulus in milliseconds, if applicable. Defaults to 0L.
  * @property mid_latency The reference midpoint latency (in milliseconds) around which stimuli are presented. Defaults to 500L.
  * @property conflict_magn The magnitude of the conflict, if any. Defaults to 0F.
- * @param isADA Indicates if the trial is part of an adaptive procedure. Defaults to `false`.
+ * @param adoWrapper reference to a ADOWrapper instance, if the trial is part of an adaptive procedure is not null. Defaults to `null`.
  * @param id The unique identifier for the trial. Defaults to -1.
  * @param type The type identifier for the trial.
  * @param label A descriptive label for the trial.
  */
-class TrialBIS(id:Int=-1, type:Int, label:String, override var magnitude:Float, val isBefore:Boolean, val conflict_type:String, val duration:Long, private val duration2:Long=0L, val mid_latency:Long = 500L, val conflict_magn:Float=0F, isADA:Boolean=false, isTraining:Boolean=false):
-    TrialBasic(id, type, label, isADA=isADA, isTraining = isTraining){
+class TrialBIS(id:Int=-1, type:Int, label:String, override var magnitude:Float, val isBefore:Boolean, val conflict_type:String, val duration:Long, private val duration2:Long=0L, val mid_latency:Long = 500L, val conflict_magn:Float=0F, adoWrapper: ADOWrapper?=null, isTraining:Boolean=false):
+    TrialBasic(id, type, label, adoWrapper = adoWrapper, isTraining = isTraining){
 
     companion object {
         /**

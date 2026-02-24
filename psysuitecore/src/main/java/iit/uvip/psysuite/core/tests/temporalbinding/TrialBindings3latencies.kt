@@ -1,11 +1,12 @@
 package iit.uvip.psysuite.core.tests.temporalbinding
 
 import iit.uvip.psysuite.core.trials.TrialBasic
+import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 
 
 //                     trial_id    0-8      "none"
-open class TrialBindings3latencies(id:Int=-1, type:Int=0, var a:Long=0L, var t:Long=0L, var v:Long=0L, isADA:Boolean=false):
-    TrialBasic(id, type, isADA=isADA) {
+open class TrialBindings3latencies(id:Int=-1, type:Int=0, var a:Long=0L, var t:Long=0L, var v:Long=0L, adoWrapper: ADOWrapper?=null):
+    TrialBasic(id, type, adoWrapper =adoWrapper) {
 
     companion object {
         @JvmStatic
