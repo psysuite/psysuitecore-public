@@ -37,14 +37,14 @@ object Versions {
     const val recycleView       = "1.2.1"
 
     // org.albaspazio.core
-    const val kotlin = "1.9.20"
-    const val ktxCore = "1.7.0"
-    const val appCompat = "1.5.1"
-    const val androidLibrary = "7.4.2"
+    const val kotlin = "1.9.22"
+    const val ktxCore = "1.12.0"
+    const val appCompat = "1.6.1"
+    const val androidLibrary = "8.2.2"
     const val kparcelablePlugin = "1.7.0"
     const val constraintLayout = "2.1.4"
     const val material = "1.6.1"
-    const val lifecycle = "2.5.1"
+    const val lifecycle = "2.6.1"
     const val localbroadcastmanager = "1.1.0"
     const val navFragment = "2.3.5"
     const val moshi = "1.12.0"
@@ -65,7 +65,7 @@ object Dependencies {
     object AndroidX {
 
         const val localbroadcastmanager   = "androidx.localbroadcastmanager:localbroadcastmanager:${Versions.localbroadcastmanager}"
-        const val livecycleviewmodel= "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}"
+        const val lifecycleviewmodel= "androidx.lifecycle:lifecycle-viewmodel-ktx:${Versions.lifecycle}"
         const val legacy_support    = "androidx.legacy:legacy-support-v4:${Versions.legacy_support}"
         const val fragment          = "androidx.fragment:fragment:${Versions.fragment}"
 
@@ -82,8 +82,8 @@ object Dependencies {
         const val constraintLayout  = "androidx.constraintlayout:constraintlayout:${Versions.constraintLayout}"
         const val material          = "com.google.android.material:material:${Versions.material}"
 
-        const val livecycledataKtx  = "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.lifecycle}"
-        const val livecyclecommon   = "androidx.lifecycle:lifecycle-common-java8:${Versions.lifecycle}"
+        const val lifecycledataKtx  = "androidx.lifecycle:lifecycle-livedata-ktx:${Versions.lifecycle}"
+        const val lifecyclecommon   = "androidx.lifecycle:lifecycle-common-java8:${Versions.lifecycle}"
 
         const val testRunner        = "androidx.test:runner:${Versions.testRunner}"
         const val testEspressoCore  = "androidx.test.espresso:espresso-core:${Versions.testEspressoCore}"

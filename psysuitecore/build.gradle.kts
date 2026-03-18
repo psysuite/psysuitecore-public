@@ -51,7 +51,7 @@ dependencies {
     implementation(Dependencies.permissions)
     implementation(Dependencies.AndroidX.legacy_support)
     implementation(Dependencies.AndroidX.fragment)
-    implementation(Dependencies.AndroidX.livecycleviewmodel)
+    implementation(Dependencies.AndroidX.lifecycleviewmodel)
 
 
     implementation(Dependencies.AndroidX.ktxCore)

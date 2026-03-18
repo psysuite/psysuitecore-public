@@ -1,6 +1,7 @@
 package org.albaspazio.psysuite.trials
 
 import org.albaspazio.psysuite.tests.TestBasic
+import org.albaspazio.psysuite.tests.TrialBasic
 
 // this class manage all classic tasks/conditions using predetermined trials sequence
 // they are defined in the test's class and passed here with initTrials

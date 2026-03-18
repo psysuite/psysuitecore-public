@@ -5,6 +5,7 @@ import com.chaquo.python.PyObject
 import kotlinx.coroutines.*
 import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 import org.albaspazio.psysuite.tests.TestBasic
+import org.albaspazio.psysuite.tests.TrialBasic
 import org.albaspazio.psysuite.python.SPython
 
 // this class manages adaptive tasks

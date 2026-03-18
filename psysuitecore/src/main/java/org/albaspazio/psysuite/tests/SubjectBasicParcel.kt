@@ -1,4 +1,4 @@
-package org.albaspazio.psysuite.model
+package org.albaspazio.psysuite.tests
 
 import android.content.Context
 import android.os.Environment
@@ -6,13 +6,6 @@ import android.os.Parcelable
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.parcelize.IgnoredOnParcel
-import org.albaspazio.psysuite.stimuli.DelaysAligner
-import org.albaspazio.psysuite.tests.TestBasic
-import org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_NO_LONGITUDINAL
-import org.albaspazio.psysuite.utility.ConditionData
-import org.albaspazio.psysuite.utility.filesystem.FileSystemManager
-import org.albaspazio.psysuite.utility.getIds
-import org.albaspazio.psysuite.utility.getLabelLog
 import org.albaspazio.core.accessory.Device
 import org.albaspazio.core.accessory.getCompanionObjectMethod
 import org.albaspazio.core.accessory.getDateString
@@ -24,6 +17,12 @@ import org.albaspazio.core.filesystem.getFileList
 import org.albaspazio.core.filesystem.readText
 import org.albaspazio.core.filesystem.saveText
 import org.albaspazio.psysuite.core.R
+import org.albaspazio.psysuite.model.Populations
+import org.albaspazio.psysuite.stimuli.DelaysAligner
+import org.albaspazio.psysuite.utility.ConditionData
+import org.albaspazio.psysuite.utility.filesystem.FileSystemManager
+import org.albaspazio.psysuite.utility.getIds
+import org.albaspazio.psysuite.utility.getLabelLog
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -47,7 +46,7 @@ import java.util.UUID
  * @param label A descriptive label or identifier for the subject (e.g., name or code). Defaults to an empty string.
  * @param age The age of the subject. Defaults to -1 (unknown).
  * @param gender The gender of the subject (e.g., 0 for male, 1 for female). Defaults to -1 (unknown).
- * @param population The population group the subject belongs to (e.g., [Populations.POPULATION_TD]). Defaults to [Populations.POPULATION_TD].
+ * @param population The population group the subject belongs to (e.g., [org.albaspazio.psysuite.model.Populations.Companion.POPULATION_TD]). Defaults to [org.albaspazio.psysuite.model.Populations.Companion.POPULATION_TD].
  * @param type An integer code representing the specific type of test or configuration. Defaults to -1.
  * @param project The name of the project this subject belongs to. Defaults to an empty string.
  * @param block The current block number in a series of tests. Defaults to -1.
@@ -55,14 +54,14 @@ import java.util.UUID
  * @param device Information about the device running the test. Defaults to `null`.
  * @param vercode Version code of the application or test suite. Defaults to -1.
  * @param stimuliDelays Configuration for aligning stimuli delays. Defaults to a new [org.albaspazio.psysuite.stimuli.DelaysAligner] instance.
- * @param nextTrailModality How the test proceeds to the next trial (e.g., [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_NEXTTRIAL_AUTO]). Defaults to [TEST_NEXTTRIAL_AUTO].
- * @param whitenoise Configuration for white noise during the test (e.g., [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_SWITCH_CHOOSE_ON]). Defaults to [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_SWITCH_CHOOSE_ON].
- * @param trman_type Trial management type (e.g., [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_TRMAN_FIXED]). Defaults to [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_TRMAN_FIXED].
- * @param showResult Configuration for showing results after a trial/test. Defaults to [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_SWITCH_DISABLED].
- * @param canRepeat Configuration for allowing trial repetition. Defaults to [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_SWITCH_CHOOSE_OFF].
- * @param doTraining Configuration for enabling a training phase. Defaults to [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_SWITCH_DISABLED].
- * @param showTrialID Configuration for showing trial IDs. Defaults to [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_SHOWTRIALS_NEVER].
- * @param abortMode Configuration for aborting the test. Defaults to [org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_ABORT_TRIALEND].
+ * @param nextTrailModality How the test proceeds to the next trial (e.g., [TestBasic.Companion.TEST_NEXTTRIAL_AUTO]). Defaults to [TEST_NEXTTRIAL_AUTO].
+ * @param whitenoise Configuration for white noise during the test (e.g., [TestBasic.Companion.TEST_SWITCH_CHOOSE_ON]). Defaults to [TestBasic.Companion.TEST_SWITCH_CHOOSE_ON].
+ * @param trman_type Trial management type (e.g., [TestBasic.Companion.TEST_TRMAN_FIXED]). Defaults to [TestBasic.Companion.TEST_TRMAN_FIXED].
+ * @param showResult Configuration for showing results after a trial/test. Defaults to [TestBasic.Companion.TEST_SWITCH_DISABLED].
+ * @param canRepeat Configuration for allowing trial repetition. Defaults to [TestBasic.Companion.TEST_SWITCH_CHOOSE_OFF].
+ * @param doTraining Configuration for enabling a training phase. Defaults to [TestBasic.Companion.TEST_SWITCH_DISABLED].
+ * @param showTrialID Configuration for showing trial IDs. Defaults to [TestBasic.Companion.TEST_SHOWTRIALS_NEVER].
+ * @param abortMode Configuration for aborting the test. Defaults to [TestBasic.Companion.TEST_ABORT_TRIALEND].
  * @param session_spsel The currently selected item's index in the spinner. Set to TEST_NO_LONGITUDINAL for non-longitudinal tests. Defaults to TEST_NO_LONGITUDINAL.
  * @param spinner_label The label associated with the current spinner selection. Defaults to "session".
  * @param session_spdatares The resource ID for the data populating the spinner (e.g., a string array). Defaults to -1.
@@ -74,7 +73,7 @@ abstract class SubjectBasicParcel(
     open var label: String = "",
     open var age: Int = -1,
     open var gender: Int = -1,
-    open var population: Int = Populations.POPULATION_TD,
+    open var population: Int = Populations.Companion.POPULATION_TD,
     open var type: Int = -1,
     open var project: String = "",
 
@@ -94,7 +93,7 @@ abstract class SubjectBasicParcel(
     open var showTrialID: Int = TestBasic.Companion.TEST_SHOWTRIALS_NEVER,
     open var abortMode: Int = TestBasic.Companion.TEST_ABORT_TRIALEND,
 
-    open var session_spsel: Int = TEST_NO_LONGITUDINAL,
+    open var session_spsel: Int = TestBasic.Companion.TEST_NO_LONGITUDINAL,
     open var session_spdatares: Int = R.array.sessions_array,
     open var date: String = "",
     open var exp_uid: String = ""
@@ -107,7 +106,7 @@ abstract class SubjectBasicParcel(
     var subjectFileName:String = ""
 
     @IgnoredOnParcel
-    private val outFolder = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.RESULTS_FOLDER_NAME}"
+    private val outFolder = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.Companion.RESULTS_FOLDER_NAME}"
 
 
     companion object  {
@@ -141,7 +140,7 @@ abstract class SubjectBasicParcel(
      * Returns true if session_spsel != TEST_NO_LONGITUDINAL, false otherwise.
      */
     val isLongitudinal: Boolean
-        get() = session_spsel != TEST_NO_LONGITUDINAL
+        get() = session_spsel != TestBasic.Companion.TEST_NO_LONGITUDINAL
 
     /**
      * Loads subject data from the default [CURR_SUBJ_FILE] if it exists.
@@ -151,7 +150,8 @@ abstract class SubjectBasicParcel(
     open fun loadSubject(): SubjectBasicParcel {
         val subj = existFile(CURR_SUBJ_FILE + TestBasic.Companion.SUBJFILE_EXTENSION)
         if (subj.first) {
-            val jsontext = readText(CURR_SUBJ_FILE + TestBasic.Companion.SUBJFILE_EXTENSION, outFolder)
+            val jsontext =
+                readText(CURR_SUBJ_FILE + TestBasic.Companion.SUBJFILE_EXTENSION, outFolder)
             return try {
                 loadJsonText(jsontext)
             } catch (e: Exception) {
@@ -162,9 +162,9 @@ abstract class SubjectBasicParcel(
     }
 
     /** Indicates if the subject belongs to a visually impaired population. */
-    val isBlindUser:Boolean = Populations.vi_populations.getIds().contains(population)
+    val isBlindUser:Boolean = Populations.Companion.vi_populations.getIds().contains(population)
     /** Indicates if the subject belongs to an auditory impaired population. */
-    val isDeafUser:Boolean  = Populations.ai_populations.getIds().contains(population)
+    val isDeafUser:Boolean  = Populations.Companion.ai_populations.getIds().contains(population)
 
     /**
      * Parses JSON text and converts it to a [SubjectBasicParcel] instance of the current object's type.
@@ -227,7 +227,7 @@ abstract class SubjectBasicParcel(
         val ci                  = getCompanionObjectMethod(classes[0], "getConditionsInfo")
         @Suppress("UNCHECKED_CAST")
         val type_label          = (ci.first?.call(ci.second, ctx) as List<ConditionData>).getLabelLog(type)
-        val population_label    = Populations.all_populations.getLabelLog(population)
+        val population_label    = Populations.Companion.all_populations.getLabelLog(population)
 
         val gender_str          =   if(gender == 0) "m"
                                     else            "f"
@@ -313,7 +313,10 @@ abstract class SubjectBasicParcel(
 
         return try {
                     // Set current date in ISO 8601 format
-                    date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
+                    date = SimpleDateFormat(
+                        "yyyy-MM-dd HH:mm:ss",
+                        Locale.getDefault()
+                    ).format(Date())
 
                     // Set unique experiment ID
                     exp_uid = "${classes[0].substringAfterLast(".")}${System.currentTimeMillis()}_${UUID.randomUUID().toString().substring(0, 8)}"
@@ -322,7 +325,13 @@ abstract class SubjectBasicParcel(
                     subjectFileName = composeSubjectFileName(context)
                     if(subjectFileName.isEmpty())   ERROR_SUBJECT_INCOMPLETE
                     else {
-                        saveText(context,subjectFileName, jsonAdapter.toJson(this),outFolder, forceOld = true)
+                        saveText(
+                            context,
+                            subjectFileName,
+                            jsonAdapter.toJson(this),
+                            outFolder,
+                            forceOld = true
+                        )
                         0
                     }
                 }

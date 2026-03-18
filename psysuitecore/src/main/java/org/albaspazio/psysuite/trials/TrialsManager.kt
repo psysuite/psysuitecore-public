@@ -1,5 +1,7 @@
 package org.albaspazio.psysuite.trials
 
+import org.albaspazio.psysuite.tests.TrialBasic
+
 /*
 type:
 - 0:    predetermined trials

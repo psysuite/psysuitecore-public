@@ -14,7 +14,7 @@ import androidx.fragment.app.DialogFragment
 import androidx.navigation.findNavController
 import org.albaspazio.psysuite.core.R
 import org.albaspazio.psysuite.core.databinding.FragmentTestBinding
-import org.albaspazio.psysuite.model.SubjectBasicParcel
+import org.albaspazio.psysuite.tests.SubjectBasicParcel
 import org.albaspazio.psysuite.tests.TestBasic
 import org.albaspazio.psysuite.utility.TestResult
 import io.reactivex.android.schedulers.AndroidSchedulers

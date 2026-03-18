@@ -61,8 +61,6 @@
     <string name="volume_short">vol</string>
     <string name="resource_name">nome</string>
     <string name="interactivity">interattivo</string>
-    <string name="trials_management">gestione trials</string>
-    <string name="do_training" translatable="false">training</string>
 
     <string name="time">tempo</string>
     <string name="frequency">frequenza</string>
@@ -70,11 +68,10 @@
     <string name="population">popolazione</string>
     <string name="project">progetto</string>
 
+    <string name="correct_answer">risposta esatta</string>
+    <string name="wrong_answer">risposta sbagliata</string>
+
     <string name="warning">Attenzione</string>
-    <string name="nblocks">Num. Blocchi</string>
-    <string name="durblock_sec">Durata Blocchi [sec]</string>
-    <string name="durblock_msec">Durata Blocchi [ms]</string>
-    <string name="firstcond">Cond. Iniziale</string>
 
     <string name="subject_present">Il nome scelto è già esistente. Vuoi continuare ad usare questo nome?</string>
     <string name="subject_block_present">Esiste una precedente sessione di test Vuoi proseguirla o vuoi cancellare tutto e ricominciare da zero?</string>
@@ -103,11 +100,17 @@
     <string name="no">no</string>
     <string name="whitenoise">rumore</string>
 
+    <string name="session">sessione</string>
+
     <string name="trials_fixed">fissi</string>
     <string name="trials_adaptive">adattativi</string>
 
-    <string name="sequence">sequenza</string>
-    <string name="session">sessione</string>
+
+    <string-array name="trial_manager_types">
+        <item>@string/trials_fixed</item>
+        <item>@string/trials_adaptive</item>
+    </string-array>
+
 
     <string-array name="prepost_sessions3_array">
         <item>seleziona...</item>
@@ -157,266 +160,5 @@
     <string name="pref_delay_t2" translatable="false">0</string>
     <string name="pref_delay_v1" translatable="false">29</string>
     <string name="pref_delay_v2" translatable="false">29</string>
-
-
-    <string name="label_bindings" translatable="false">Temporal Bindings</string>
-    <string name="label_temporal_tests">Temporal Tests</string>
-    <string name="label_miscellaneous_tests">Various Tests</string>
-    <string name="label_decision_tests">Decisions Tests</string>
-    <string name="label_illusion_tests">Illusions Tests</string>
-    <string name="label_prediction_tests">Prediction Tests</string>
-
-    <!-- ATB -->
-    <string name="start_atb" translatable="false">AT Binding (AT-B)</string>
-
-    <string name="atb_subtask_time_single">Sing Stim</string>
-    <string name="atb_subtask_time_single_tag" translatable="false">SS</string>
-    <string name="atb_subtask_time_double">Dop Stim</string>
-    <string name="atb_subtask_time_double_tag" translatable="false">DS</string>
-
-    <string name="atb_subtask_time_single_tod">Sing Stim Toddl</string>
-    <string name="atb_subtask_time_single_tod_tag" translatable="false">SST</string>
-    <string name="atb_subtask_time_double_tod">Dop Stim Toddl</string>
-    <string name="atb_subtask_time_double_tod_tag" translatable="false">DST</string>
-
-    <string name="atb_subtask_time_infants">tempo infanti</string>
-    <string name="atb_subtask_time_infants_tag">INF</string>
-
-    <string name="atb_rb1_text">uguali</string>
-    <string name="atb_rb3_text">diversi</string>
-    <string name="atb_question">Sono uguali?</string>
-
-    <!-- ATVB -->
-    <string name="start_atvb" translatable="false">ATV Binding (ATV-B)</string>
-
-    <string name="atvb_subtask_time_single">Sing Stim</string>
-    <string name="atvb_subtask_time_single_tag" translatable="false">SSU</string>
-    <string name="atvb_subtask_time_single_b">Sing Stim bilanciato</string>
-    <string name="atvb_subtask_time_single_b_tag" translatable="false">SSB</string>
-    <string name="atvb_subtask_time_single_b2">Sing Stim bilanciato 2</string>
-    <string name="atvb_subtask_time_single_b2_tag" translatable="false">SSB</string>
-    <string name="atvb_subtask_time_double">Dop Stim</string>
-    <string name="atvb_subtask_time_double_tag" translatable="false">DSU</string>
-    <string name="atvb_subtask_time_double2">Dop Stim bilanciato</string>
-    <string name="atvb_subtask_time_double2_tag" translatable="false">DSB</string>
-
-    <string name="atvb_rb1_text">si</string>
-    <string name="atvb_rb3_text">no</string>
-    <string name="atvb_question_equal">Sono uguali?</string>
-    <string name="atvb_question_synchro">Sono simultanei?</string>
-    <string name="atvb_question_whichsecond">Che tipo di stimolo è il secondo?</string>
-
-    <!-- TVB -->
-    <string name="start_tvb" translatable="false">TV Binding (TV-B)</string>
-
-    <string name="tvb_subtask_time_single">Sing Stim</string>
-    <string name="tvb_subtask_time_single_tag" translatable="false">SS</string>
-    <string name="tvb_subtask_time_double">Dop Stim</string>
-    <string name="tvb_subtask_time_double_tag" translatable="false">DS</string>
-
-    <string name="tvb_subtask_time_single_tod">Sing Stim Toddl</string>
-    <string name="tvb_subtask_time_single_tod_tag" translatable="false">SST</string>
-    <string name="tvb_subtask_time_double_tod">Dop Stim Toddl</string>
-    <string name="tvb_subtask_time_double_tod_tag" translatable="false">DST</string>
-
-    <string name="tvb_rb1_text">uguali</string>
-    <string name="tvb_rb3_text">diversi</string>
-    <string name="tvb_question">Sono uguali?</string>
-
-    <!-- AVB -->
-    <string name="start_avb" translatable="false">AV Binding (AV-B)</string>
-
-    <string name="avb_subtask_time_single">Sing Stim</string>
-    <string name="avb_subtask_time_single_tag" translatable="false">SS</string>
-    <string name="avb_subtask_time_double">Dop Stim</string>
-    <string name="avb_subtask_time_double_tag" translatable="false">DS</string>
-
-    <string name="avb_subtask_time_single_tod">Sing Stim Toddl</string>
-    <string name="avb_subtask_time_single_tod_tag" translatable="false">SST</string>
-    <string name="avb_subtask_time_double_tod">Dop Stim Toddl</string>
-    <string name="avb_subtask_time_double_tod_tag" translatable="false">DST</string>
-
-    <string name="avb_rb1_text">uguali</string>
-    <string name="avb_rb3_text">diversi</string>
-    <string name="avb_question">Sono uguali?</string>
-
-    <!-- TIR -->
-
-    <string name="tir_label">Temporal Interval Reproduction (TIR)</string>
-    <string name="tir_label_short" translatable="false">TIR</string>
-
-    <!-- TID -->
-
-    <string name="tid_label">Temporal Interval Discrimination (TID)</string>
-    <string name="tid_label_short" translatable="false">TID</string>
-
-    <string name="tid_question_text">Quale intervallo in ciascuna coppia era maggiore?\nnella prima o nella seconda coppia?</string>
-
-    <string name="tid_rb1_text">primo</string>
-    <string name="tid_rb2_text">secondo</string>
-    <string name="tid_rb3_text">terzo</string>
-
-    <string name="tid_rb_male_text">M</string>
-    <string name="tid_rb_female_text">F</string>
-
-    <string name="tid_rb_short_text">CORTO</string>
-    <string name="tid_rb_long_text">LUNGO</string>
-
-    <string name="tid_rb_short_text_short">S</string>
-    <string name="tid_rb_long_text_short">L</string>
-
-    <string name="tid_rb_audio_text">audio</string>
-    <string name="tid_rb_vibro_text">vibro</string>
-
-    <string name="tid_select_training_first_modality">Seleziona un\'opzione per la modalità iniziale di training</string>
-
-    <string-array name="tid_sessions_array">
-        <item>seleziona...</item>
-        <item>test iniziale</item>
-        <item>sessione 1</item>
-        <item>sessione 2</item>
-        <item>sessione 3</item>
-        <item>sessione 4</item>
-        <item>sessione 5</item>
-        <item>test finale</item>
-    </string-array>
-
-
-
-    <string name="tid_group_interval_text">gruppo intervallo</string>
-    <string name="tid_group_modality_text">gruppo modalità</string>
-    <string name="tid_group_first_modality_text">prima modalità</string>
-
-    <string name="tid_insert_subjectdata_button_text">INSERISCI SOGGETTO</string>
-    <string name="tid_start_pre_text">INIZIA PRE-TESTS</string>
-    <string name="tid_start_post_text">INIZIA POST-TESTS</string>
-    <string name="tid_start_training_text">INIZIA TRAINING</string>
-
-    <!-- BISECTION -->
-    <string name="start_bisection">MULTIMODAL BISECTION</string>
-
-    <string-array name="bis_sessions_array">
-        <item>pre test</item>
-        <item>session 1</item>
-        <item>session 2</item>
-        <item>session 3</item>
-        <item>post test</item>
-    </string-array>
-
-    <string name="bisection_question_text_audio">Il secondo suono era più vicino al primo o al terzo?</string>
-    <string name="bisection_question_text_visual">La luce gialla era più vicina alla verde o alla rossa?</string>
-    <string name="bisection_question_text_tactile">La seconda vibrazione era più vicina alla prima o alla terza?</string>
-    <string name="bisection_question_text_mixed">Il secondo stimolo era più vicino al primo o al terzo?</string>
-
-    <string name="bisection_rb1_text">primo</string>
-    <string name="bisection_rb2_text">Uguale</string>
-    <string name="bisection_rb3_text">terzo</string>
-
-    <!-- REACTION TIME -->
-    <string name="start_reactiontimes">TEMPO DI REAZIONE (RT)</string>
-    <string name="tr_label_short" translatable="false">TR</string>
-
-    <!-- MUSICAL METERS -->
-    <string name="start_musicalmeter">MUSICAL METER DISCRIMINATION (MMD)</string>
-
-    <string name="mmeters_question_text">Le due sequenze sono uguali?</string>
-
-    <string name="mmeters_rb1_text">si</string>
-    <string name="mmeters_rb2_text">Uguale</string>
-    <string name="mmeters_rb3_text">no</string>
-
-    <!-- TFI TEST -->
-    <string name="tfi_label">FLASH ILLUSIONS (DFI/TFI)</string>
-    <string name="tfi_question">Indica il numero di stimoli che hai percepito per ciascuna delle 3 modalità</string>
-
-    <string name="tfi_warning_null_answer">seleziona almeno uno stimolo maggiore di zero</string>
-
-    <!-- GROUND-FIGURE TEST -->
-    <string name="start_figure_ground_illusion">FIGURE GROUND ILLUSION (FGI)</string>
-    <string name="label_fgi">FIGURE GROUND ILLUSION (FGI)</string>
-    <string name="label_fgi2">BISTABLE IMAGES (BI)</string>
-
-    <string name="label_jar">VASO</string>
-    <string name="label_faces">FACCE</string>
-    <string name="label_youngwoman">GIOVANE</string>
-    <string name="label_elderlywoman">ANZIANA</string>
-    <string name="label_musician">MUSICISTA</string>
-    <string name="label_woman">DONNA</string>
-
-    <!-- RIVALRY GROUPING TEST -->
-    <string name="label_rivgrp">RIVALRY vs GROUPING\n(RIVGRP)</string>
-
-    <string name="label_house">CASA</string>
-    <string name="label_face">FACCIA</string>
-    <string name="label_car">MACCHINA</string>
-
-    <string name="warn_blocks">Il numero di blocchi deve essere maggiore di 1 e multiplo di 2</string>
-
-
-    <!-- BEADS TEST -->
-    <string name="label_beads">BEADS TEST (BEADS)</string>
-    <string name="label_jar1">Urna 1</string>
-    <string name="label_jar2">Urna 2</string>
-    <string name="label_new_bead">Nuova pallina</string>
-    <string name="label_choose_jar">Scegli Urna</string>
-
-    <!-- TTC TEST -->
-    <string name="label_ttc" translatable="false">TIME TO CONTACT (TTC)</string>
-
-    <!-- TSP TEST -->
-    <string name="label_tsp" translatable="false">SEQUENCE PREDICTION (TSP)</string>
-
-    <!-- RT TEST -->
-    <string name="RT_label">REACTION TIMES (RT)</string>
-
-    <!-- SAMPLE TEST -->
-
-    <string name="samples_test">CUSTOM STIMULI CREATOR (CSC) </string>
-
-    <string name="select_source">Seleziona almeno una modalità di stimolazione</string>
-
-    <string-array name="sample_audio_types">
-        <item>Tone</item>
-        <item>MediaPlayer</item>
-        <item>AudioTrack</item>
-        <item>Nativo</item>
-    </string-array>
-
-    <string-array name="sample_visual_types">
-        <item>visibility</item>
-        <item>drawables</item>
-    </string-array>
-
-    <string-array name="sample_tactile_types">
-        <item>@string/single</item>
-        <item>@string/sequence</item>
-    </string-array>
-
-    <string-array name="trial_manager_types">
-        <item>@string/trials_fixed</item>
-        <item>@string/trials_adaptive</item>
-    </string-array>
-
-    <string-array name="sample_audioassets_array">
-        <item>t1000hz_7ms.wav</item>
-        <item>t1000hz_10ms.wav</item>
-        <item>t1000hz_17ms.wav</item>
-        <item>t1000hz_20ms.wav</item>
-        <item>t1000hz_30ms.wav</item>
-        <item>t1000hz_35ms.wav</item>
-        <item>t1000hz_50ms.wav</item>
-        <item>t1000hz_100ms.wav</item>
-        <item>t1000hz_1000ms.wav</item>
-        <item>t200hz_1000ms.wav</item>
-    </string-array>
-
-    <string name="abort_test">ANNULLA TEST</string>
-    <string name="iti">ITI [s]</string>
-    <string name="repeat_trial">ripeti il trial</string>
-    <string name="show_result">mostra risultato</string>
-    <string name="correct_answer">risposta esatta</string>
-    <string name="wrong_answer">risposta sbagliata</string>
-    <string name="condition_not_allowed">codice sub-test non ammesso</string>
-    <string name="error_test_code_not_recognized">Test non riconosciuto</string>
 
 </resources>

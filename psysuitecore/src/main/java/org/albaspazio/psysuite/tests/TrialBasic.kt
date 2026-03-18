@@ -1,4 +1,4 @@
-package org.albaspazio.psysuite.trials
+package org.albaspazio.psysuite.tests
 
 import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 
@@ -69,6 +69,3 @@ open class TrialBasic(
     }
 
 }
-
-
-

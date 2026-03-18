@@ -3,7 +3,7 @@ package org.albaspazio.psysuite.model.summary
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
-import org.albaspazio.psysuite.trials.TrialBasic
+import org.albaspazio.psysuite.tests.TrialBasic
 import org.albaspazio.core.filesystem.getAbsoluteFilePath
 import org.albaspazio.core.filesystem.saveText
 

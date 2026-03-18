@@ -12,22 +12,23 @@ import android.view.View
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.jakewharton.rxrelay2.PublishRelay
-
+import org.albaspazio.core.accessory.VibrationManager
+import org.albaspazio.core.accessory.logLastTwo
+import org.albaspazio.core.filesystem.deleteFile
+import org.albaspazio.core.filesystem.getAbsoluteFilePath
+import org.albaspazio.core.filesystem.notifyFile
+import org.albaspazio.core.filesystem.renameFile
+import org.albaspazio.core.filesystem.saveTextQ
+import org.albaspazio.core.speech.SpeechManager
+import org.albaspazio.core.ui.showAlert
 import org.albaspazio.psysuite.core.R
-import org.albaspazio.psysuite.model.SubjectBasicParcel
+import org.albaspazio.psysuite.tests.SubjectBasicParcel
 import org.albaspazio.psysuite.model.summary.Summary
 import org.albaspazio.psysuite.stimuli.StimuliManager
 import org.albaspazio.psysuite.trials.AdaptiveTrialsManager
-import org.albaspazio.psysuite.trials.TrialBasic
+import org.albaspazio.psysuite.tests.TrialBasic
 import org.albaspazio.psysuite.trials.TrialsManager
 import org.albaspazio.psysuite.utility.filesystem.FileSystemManager
-
-import org.albaspazio.core.accessory.VibrationManager
-import org.albaspazio.core.accessory.logLastTwo
-import org.albaspazio.core.filesystem.*
-import org.albaspazio.core.speech.SpeechManager
-import org.albaspazio.core.ui.showAlert
-
 
 /**
  * Base class for all psychophysical tests within the Psysuite framework.
@@ -35,8 +36,8 @@ import org.albaspazio.core.ui.showAlert
  *
  * This abstract class handles:
  * - Initialization of test parameters and resources.
- * - Management of trials through a [TrialsManager].
- * - Delivery of stimuli via a [StimuliManager].
+ * - Management of trials through a [org.albaspazio.psysuite.trials.TrialsManager].
+ * - Delivery of stimuli via a [org.albaspazio.psysuite.stimuli.StimuliManager].
  * - Event handling and communication with the UI (typically a Fragment).
  * - Saving test results and subject data.
  * - Configuration of test behavior like trial display modes and abort mechanisms.
@@ -48,9 +49,9 @@ import org.albaspazio.core.ui.showAlert
  * @property activity The hosting activity.
  * @property hostfragment The hosting fragment, used for UI interactions like showing alerts.
  * @property subject The [SubjectBasicParcel] containing subject information and test configuration.
- * @property vibrator An optional [VibrationManager] for tests involving tactile stimuli.
- * @property mImageView An optional [ImageView] for tests involving visual stimuli.
- * @property speechManager An optional [SpeechManager] for tests involving voice input.
+ * @property vibrator An optional [org.albaspazio.core.accessory.VibrationManager] for tests involving tactile stimuli.
+ * @property mImageView An optional [android.widget.ImageView] for tests involving visual stimuli.
+ * @property speechManager An optional [org.albaspazio.core.speech.SpeechManager] for tests involving voice input.
  * @property outResultsDir The directory where result files will be saved. Defaults to `Environment.DIRECTORY_DOWNLOADS/FileSystemManager.RESULTS_FOLDER_NAME`.
  */
 abstract class TestBasic(protected val ctx: Context,
@@ -61,7 +62,7 @@ abstract class TestBasic(protected val ctx: Context,
                          protected val mImageView: ImageView? = null,
                          protected val speechManager: SpeechManager? = null,
                          protected val mainView: View? = null,
-                         protected val outResultsDir:String= "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.RESULTS_FOLDER_NAME}")
+                         protected val outResultsDir:String= "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.Companion.RESULTS_FOLDER_NAME}")
 {
 
     /**
@@ -537,13 +538,13 @@ abstract class TestBasic(protected val ctx: Context,
     val currTrialID:Int   get() = mTrialsManager.currTrialID
 
     /**
-     * A [PublishRelay] used to emit events from the test to observers (typically the UI).
+     * A [com.jakewharton.rxrelay2.PublishRelay] used to emit events from the test to observers (typically the UI).
      * The Triple contains:
      * - `Int`: The event code (e.g., [EVENT_TEST_END], [EVENT_GIVE_ANSWER]).
      * - `Any?`: Optional event data.
      * - `List<String>`: Optional list of strings, often file paths.
      */
-    val testEvent:PublishRelay<Triple<Int,Any?,List<String>>> = PublishRelay.create()
+    val testEvent: PublishRelay<Triple<Int, Any?, List<String>>> = PublishRelay.create()
 
     /** The label for the current test, often derived from subject type or conditions. */
     var mTestLabel: String                      = ""
@@ -553,12 +554,12 @@ abstract class TestBasic(protected val ctx: Context,
     var validAnswers: MutableList<String>       = mutableListOf()
 
     // Stimulus type constants that can be overridden by subclasses
-    /** Protected value representing the primary audio stimulus type for this test. Defaults to [StimuliManager.STIM_TYPE_A4]. */
-    protected open val STIM_A: Int      = StimuliManager.STIM_TYPE_A4
-    /** Protected value representing the primary visual stimulus type for this test. Defaults to [StimuliManager.STIM_TYPE_V1]. */
-    protected open val STIM_V: Int      = StimuliManager.STIM_TYPE_V1
-    /** Protected value representing the primary tactile stimulus type for this test. Defaults to [StimuliManager.STIM_TYPE_T1]. */
-    protected open val STIM_T: Int      = StimuliManager.STIM_TYPE_T1
+    /** Protected value representing the primary audio stimulus type for this test. Defaults to [org.albaspazio.psysuite.stimuli.StimuliManager.Companion.STIM_TYPE_A4]. */
+    protected open val STIM_A: Int      = StimuliManager.Companion.STIM_TYPE_A4
+    /** Protected value representing the primary visual stimulus type for this test. Defaults to [StimuliManager.Companion.STIM_TYPE_V1]. */
+    protected open val STIM_V: Int      = StimuliManager.Companion.STIM_TYPE_V1
+    /** Protected value representing the primary tactile stimulus type for this test. Defaults to [StimuliManager.Companion.STIM_TYPE_T1]. */
+    protected open val STIM_T: Int      = StimuliManager.Companion.STIM_TYPE_T1
     /** Combined stimulus type for Audio, Tactile, and Visual. */
     protected open val STIM_ATV: Int    = STIM_A or STIM_T or STIM_V
     /** Combined stimulus type for Tactile and Visual. */
@@ -580,7 +581,7 @@ abstract class TestBasic(protected val ctx: Context,
 
     /**
      * Starts the test execution.
-     * This method checks if the [StimuliManager] and [TrialsManager] are valid and initialized.
+     * This method checks if the [StimuliManager] and [org.albaspazio.psysuite.trials.TrialsManager] are valid and initialized.
      * If in debug mode, it emits debug information. Then, it calls [show] to present the first trial.
      *
      * @return `true` if the test started successfully, `false` if there was a critical error.
@@ -623,8 +624,8 @@ abstract class TestBasic(protected val ctx: Context,
 
     /**
      * Handles the event when an answer is given by the user.
-     * If a valid result or extra text is provided, it sets the response in the [TrialsManager]
-     * and adds the current trial data to the [Summary].
+     * If a valid result or extra text is provided, it sets the response in the [org.albaspazio.psysuite.trials.TrialsManager]
+     * and adds the current trial data to the [org.albaspazio.psysuite.model.summary.Summary].
      *
      * @param result The numerical result of the answer (e.g., button index). Defaults to -1 (no answer).
      * @param elapsed The time elapsed for the answer in milliseconds. Defaults to -1.
@@ -806,7 +807,7 @@ abstract class TestBasic(protected val ctx: Context,
             this@TestBasic.nBlocks = value.size + 1
         }
 
-    /** Optional [MediaPlayer] instance for playing background noise if required by the test. */
+    /** Optional [android.media.MediaPlayer] instance for playing background noise if required by the test. */
     protected var mNoise: MediaPlayer? = null
 
     /**
@@ -815,7 +816,7 @@ abstract class TestBasic(protected val ctx: Context,
      */
     protected open var mDrawablesResource:MutableList<Int>  = mutableListOf()
 
-    /** Optional [Summary] object for collecting and storing summary data for the test. */
+    /** Optional [org.albaspazio.psysuite.model.summary.Summary] object for collecting and storing summary data for the test. */
     protected var mSummary: Summary?                        = null
 
     /**
@@ -893,9 +894,23 @@ abstract class TestBasic(protected val ctx: Context,
      */
     protected fun saveText(text: String, overwrite: Boolean = false, notifyDm: Boolean = false): Any {
         return  if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            saveTextQ(ctx, mResultUri!!, text, overwrite = overwrite, notifyDm = notifyDm, dir = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.RESULTS_FOLDER_NAME}")
+            saveTextQ(
+                ctx,
+                mResultUri!!,
+                text,
+                overwrite = overwrite,
+                notifyDm = notifyDm,
+                dir = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.Companion.RESULTS_FOLDER_NAME}"
+            )
         else
-            saveText(ctx, mResultFile, text, overwrite = overwrite, notifyDm = notifyDm, dir = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.RESULTS_FOLDER_NAME}")
+            org.albaspazio.core.filesystem.saveText(
+                ctx,
+                mResultFile,
+                text,
+                overwrite = overwrite,
+                notifyDm = notifyDm,
+                dir = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.Companion.RESULTS_FOLDER_NAME}"
+            )
     }
 
     /**
@@ -907,9 +922,19 @@ abstract class TestBasic(protected val ctx: Context,
      */
     protected fun createResultFile(header:String){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)
-            mResultUri = saveTextQ(ctx, mResultFile, header, dir = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.RESULTS_FOLDER_NAME}")
+            mResultUri = saveTextQ(
+                ctx,
+                mResultFile,
+                header,
+                dir = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.Companion.RESULTS_FOLDER_NAME}"
+            )
         else
-            saveText(ctx, mResultFile, header, dir = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.RESULTS_FOLDER_NAME}")
+            org.albaspazio.core.filesystem.saveText(
+                ctx,
+                mResultFile,
+                header,
+                dir = "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.Companion.RESULTS_FOLDER_NAME}"
+            )
     }
 
     /**

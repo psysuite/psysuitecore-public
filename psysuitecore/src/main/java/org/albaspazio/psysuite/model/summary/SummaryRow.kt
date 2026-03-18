@@ -1,6 +1,6 @@
 package org.albaspazio.psysuite.model.summary
 
-import org.albaspazio.psysuite.trials.TrialBasic
+import org.albaspazio.psysuite.tests.TrialBasic
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 

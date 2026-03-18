@@ -1,6 +1,6 @@
 package org.albaspazio.psysuite.model.summary
 
-import org.albaspazio.psysuite.trials.TrialBasic
+import org.albaspazio.psysuite.tests.TrialBasic
 
 /**
  * Abstract class representing the summary data for a single condition within a test.
