@@ -22,9 +22,6 @@ object Plugins {
 
 object Versions {
 
-    const val gradlePlugin = "4.1.1"
-    const val navVersion = "2.3.5"
-    const val navSafeArgsGradlePlugin = "1.0.0"
     const val fragment = "1.4.0"
 
     const val permissions = "2.0.54"

@@ -7,11 +7,11 @@ plugins {
 android {
 
     namespace = Configs.psysuitecorenamespace
+    compileSdk = Configs.compileSdkVersion
 
-    compileSdkVersion(Configs.compileSdkVersion)
     defaultConfig {
-        minSdkVersion(Configs.minSdkVersion)
-        targetSdkVersion(Configs.targetSdkVersion)
+        minSdk = Configs.minSdkVersion
+        targetSdk = Configs.targetSdkVersion
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

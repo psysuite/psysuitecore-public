@@ -7,28 +7,24 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.os.Environment
 import android.util.Log
-import android.widget.Toast
-import org.albaspazio.psysuite.core.models.BatchUploadResult
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.albaspazio.core.accessory.SingletonHolder
-import org.albaspazio.core.accessory.getCompanionObjectMethod
-import org.albaspazio.core.mail.EMailAccount
-import org.albaspazio.core.mail.Mail
-import org.albaspazio.core.mail.MailIntent
 import org.albaspazio.core.ui.show1MethodDialog
-import org.albaspazio.core.ui.show2ChoisesDialog
-import org.albaspazio.core.ui.showAlert
+import org.albaspazio.psysuite.core.R
+import org.albaspazio.psysuite.core.utils.filesystem.FileSystemManager
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.*
 import kotlin.math.min
-import androidx.core.content.edit
-import kotlinx.coroutines.*
 
 /*
     RULES:
@@ -43,13 +39,18 @@ class ResultsManager private constructor(private var activity: Activity?) {
 
     companion object : SingletonHolder<ResultsManager, Activity>(::ResultsManager)
 
-    private var resources: Resources? = activity?.resources
-    private var prefs: SharedPreferences? = activity?.getSharedPreferences("psysuite_web_config", Context.MODE_PRIVATE)
+    private var resources: Resources?       = activity?.resources
+    private var prefs: SharedPreferences?   = activity?.getSharedPreferences("psysuite_web_config", Context.MODE_PRIVATE)
 
-    private var maxRetryAttempts: Int = prefs?.getInt("max_retry_attempts", 3) ?: 3
-    private var retryDelayMs: Long = prefs?.getLong("retry_delay_ms", 5000) ?: 5000
+    private var maxRetryAttempts: Int       = prefs?.getInt("max_retry_attempts", 3) ?: 3
+    private var retryDelayMs: Long          = prefs?.getLong("retry_delay_ms", 5000) ?: 5000
 
+
+    private var fileSystemManager           = FileSystemManager.getInstance()
     private val HTTP_ERROR_SUBMISSION_NOT_ALLOWED = 423
+
+    private var uploadAD: AlertDialog? = null
+    private var uploadJob: Job? = null
 
     // Simple properties - no SecureStorage needed
     var webApiUrl: String = ""
@@ -68,20 +69,13 @@ class ResultsManager private constructor(private var activity: Activity?) {
             return networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
         }
 
-    var isEmailEnabled: Boolean
-        get() = prefs?.getBoolean("email_enabled", false) ?: false
-        set(value) = prefs?.edit { putBoolean("email_enabled", value) } ?: Unit
-
     val canUpload: Boolean
         get() = isNetworkAvailable && isWebUploadEnabled
-
-    val canSendEmail: Boolean
-        get() = isNetworkAvailable && isEmailEnabled
 
     val existResultsToSend: Boolean
         get() {
             return try {
-                val resultsDir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "PsySuite/results")
+                val resultsDir = fileSystemManager.getResultsFolder()
                 resultsDir.exists() && resultsDir.listFiles()?.isNotEmpty() == true
             } catch (e: Exception) {
                 false
@@ -90,69 +84,11 @@ class ResultsManager private constructor(private var activity: Activity?) {
 
     // endregion
 
-    // region Email configuration
-    private val emailAccount: EMailAccount = EMailAccount("antares.psysuite@gmail.com", "uvipapptester19", "antares.psysuite@gmail.com")
-    private var emailRecipients: Array<String> = arrayOf("antares.psysuite@gmail.com")
-
-    private var mailJob: Job? = null
-    private var mailAD: AlertDialog? = null
-
-    // endregion
-
-    private var uploadJob: Job? = null
 
     fun updateContext(newActivity: Activity) {
         this.activity = newActivity
         this.resources = newActivity.resources
         this.prefs = newActivity.getSharedPreferences("psysuite_web_config", Context.MODE_PRIVATE)
-    }
-
-    fun uploadResults(context: Activity?, files: List<File>): Boolean {
-        if (context != null) updateContext(context)
-        return try {
-            if (files.isEmpty()) {
-                context?.let {
-                    Toast.makeText(it, "No files to upload", Toast.LENGTH_SHORT).show()
-                }
-                return false
-            }
-            true
-        } catch (e: Exception) {
-            Log.e("ResultsManager", "Upload failed", e)
-            context?.let {
-                Toast.makeText(it, "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-            false
-        }
-    }
-
-    fun retryFailedUploads(context: Activity?): Boolean {
-        if (context != null) updateContext(context)
-        return try {
-            if (!isNetworkAvailable) {
-                context?.let {
-                    Toast.makeText(it, "No network available", Toast.LENGTH_SHORT).show()
-                }
-                return false
-            }
-            true
-        } catch (e: Exception) {
-            Log.e("ResultsManager", "Retry failed", e)
-            false
-        }
-    }
-
-    fun parseResultFile(file: File): Any? {
-        return try {
-            if (!file.exists()) {
-                Log.e("ResultsManager", "File does not exist: ${file.absolutePath}")
-                return null
-            }
-            JSONObject(file.readText())
-        } catch (e: Exception) {
-            Log.e("ResultsManager", "Error parsing result file", e)
-            null
-        }
     }
 
     fun moveResultFile(source: File, destination: File): Boolean {
@@ -182,59 +118,323 @@ class ResultsManager private constructor(private var activity: Activity?) {
         }
     }
 
-    fun sendResultsViaEmail(recipients: List<String>, files: List<File>): Boolean {
-        return try {
-            if (recipients.isEmpty() || files.isEmpty()) {
-                Log.e("ResultsManager", "Recipients or files list is empty")
-                return false
-            }
-            true
-        } catch (e: Exception) {
-            Log.e("ResultsManager", "Error sending email", e)
-            false
-        }
-    }
-
-    fun batchUpload(context: Activity?, files: List<File>): Map<String, Any> {
-        if (context != null) updateContext(context)
-        return try {
-            val result = BatchUploadResult(
-                totalFiles = files.size,
-                successfulUploads = 0,
-                failedUploads = files.size,
-                errors = emptyList()
-            )
-            mapOf(
-                "totalFiles" to result.totalFiles,
-                "successfulUploads" to result.successfulUploads,
-                "failedUploads" to result.failedUploads,
-                "errors" to result.errors
-            )
-        } catch (e: Exception) {
-            Log.e("ResultsManager", "Batch upload error", e)
-            mapOf(
-                "totalFiles" to files.size,
-                "successfulUploads" to 0,
-                "failedUploads" to files.size,
-                "errors" to listOf(e.message ?: "Unknown error")
-            )
-        }
-    }
-
     fun uploadSelectedResults(
         files: List<Any>,
         callback: (fileItem: Any, success: Boolean, errorMessage: String?) -> Unit
     ) {
-        // Stub implementation - to be completed with actual upload logic
-        Log.d("ResultsManager", "uploadSelectedResults called with ${files.size} files")
-        for (file in files) {
-            callback(file, false, "Upload not yet implemented")
+        uploadJob = CoroutineScope(Dispatchers.Default).launch {
+            try {
+                withContext(Dispatchers.Main) {
+                    uploadAD = show1MethodDialog(activity!!, "Upload", "Preparing upload...", resources?.getString(R.string.abort) ?: "Abort") {
+                        uploadJob?.cancel()
+                        uploadAD?.dismiss()
+                        uploadAD = null
+                    }
+                }
+
+                var successCount = 0
+                val totalCount = files.size
+
+                for ((index, item) in files.withIndex()) {
+                    // Update progress dialog
+                    withContext(Dispatchers.Main) {
+                        val displayName = if (item is org.albaspazio.psysuite.core.utils.filesystem.ResultFileItem) {
+                            item.displayName
+                        } else {
+                            item.toString()
+                        }
+                        uploadAD?.setMessage("Uploading $displayName... (${index + 1}/$totalCount)")
+                    }
+
+                    try {
+                        if (item is org.albaspazio.psysuite.core.utils.filesystem.ResultFileItem) {
+                            // Check if already submitted
+                            val fileSystemManager = org.albaspazio.psysuite.core.utils.filesystem.FileSystemManager.getInstance()
+                            if (fileSystemManager.isAlreadySubmitted(item.exp_uid)) {
+                                Log.i("ResultsManager", "Skipping already submitted file: ${item.displayName}")
+                                withContext(Dispatchers.Main) {
+                                    callback(item, true, "Already submitted")
+                                }
+                                successCount++
+                                continue
+                            }
+
+                            // Parse and upload
+                            val experimentData = parseExperimentFiles(item.jsonFile, item.txtFile)
+                            if (experimentData != null) {
+                                Log.i("ResultsManager", "Uploading experiment: ${experimentData.exp_uid}")
+                                val success = doUploadExperiment(experimentData)
+                                if (success) {
+                                    // Move files to submitted folder
+                                    val filesToMove = listOf(item.jsonFile, item.txtFile)
+                                    val moved = fileSystemManager.moveFilesToSubmitted(filesToMove)
+                                    if (moved) {
+                                        successCount++
+                                        Log.i("ResultsManager", "Successfully uploaded and moved: ${item.displayName}")
+                                        withContext(Dispatchers.Main) {
+                                            callback(item, true, null)
+                                        }
+                                    } else {
+                                        Log.w("ResultsManager", "Upload succeeded but failed to move files: ${item.displayName}")
+                                        withContext(Dispatchers.Main) {
+                                            callback(item, false, "Upload succeeded but failed to move files")
+                                        }
+                                    }
+                                } else {
+                                    Log.w("ResultsManager", "Upload failed: ${item.displayName}")
+                                    withContext(Dispatchers.Main) {
+                                        callback(item, false, "Upload failed")
+                                    }
+                                }
+                            } else {
+                                Log.e("ResultsManager", "Failed to parse experiment data: ${item.displayName}")
+                                withContext(Dispatchers.Main) {
+                                    callback(item, false, "Failed to parse experiment data")
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("ResultsManager", "Error uploading ${if (item is org.albaspazio.psysuite.core.utils.filesystem.ResultFileItem) item.displayName else item}", e)
+                        withContext(Dispatchers.Main) {
+                            callback(item, false, "Error: ${e.message}")
+                        }
+                    }
+                }
+
+                withContext(Dispatchers.Main) {
+                    uploadAD?.dismiss()
+                    Log.i("ResultsManager", "Batch upload completed: $successCount/$totalCount files uploaded successfully")
+                }
+
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    uploadAD?.dismiss()
+                }
+                Log.e("ResultsManager", "Batch upload error", e)
+                files.forEach { item ->
+                    withContext(Dispatchers.Main) {
+                        callback(item, false, "Batch upload error: ${e.message}")
+                    }
+                }
+            }
         }
     }
 
     fun onTestFinished(result: Any) {
         // Stub implementation - to be completed with actual test result processing
         Log.d("ResultsManager", "onTestFinished called with result: $result")
+    }
+
+    private fun parseExperimentFiles(jsonFile: File, resultFile: File): ExperimentUploadData? {
+        return try {
+            val configJson = JSONObject(jsonFile.readText())
+            val classesArray = configJson.getJSONArray("classes")
+            val testClassName = classesArray.getString(0).substringAfterLast(".")
+            val exp_uid = configJson.getString("exp_uid")
+            val validJson = filterJson(configJson)
+            val trials = parseTrialResults(resultFile)
+
+            val deviceManager = DeviceIdentificationManager.getInstance(activity!!)
+            val experimentData = ExperimentUploadData(
+                exp_uid = exp_uid,
+                testClassName = testClassName,
+                configuration = validJson,
+                trials = trials,
+                deviceId = deviceManager.deviceId ?: ""
+            )
+
+            return experimentData
+
+        } catch (e: Exception) {
+            Log.e("ResultsManager", "Error parsing experiment files", e)
+            null
+        }
+    }
+
+    private fun filterJson(configJson: JSONObject): JSONObject {
+        val validFields = listOf(
+            "label", "age", "gender", "population", "session", "type", "project",
+            "device", "vercode", "stimuliDelays", "whitenoise",
+            "trman_type", "showResult", "canRepeat", "doTraining", "date"
+        )
+
+        val validJson = JSONObject()
+        validFields.forEach { field ->
+            if (configJson.has(field)) {
+                var value = configJson.get(field)
+                if (field == "date" && value is String) {
+                    value = normalizeDateFormat(value)
+                }
+                validJson.put(field, value)
+            }
+        }
+        return validJson
+    }
+
+    private fun normalizeDateFormat(dateString: String): String {
+        return try {
+            val formats = listOf(
+                "yyyy-MM-dd HH:mm:ss",
+                "dd/MM/yyyy",
+                "dd-MM-yyyy",
+                "yyyy-MM-dd",
+                "yyyy/MM/dd",
+                "dd.MM.yyyy",
+                "MM/dd/yyyy",
+                "MM-dd-yyyy"
+            )
+
+            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss", java.util.Locale.US)
+            for (format in formats) {
+                try {
+                    val parser = java.text.SimpleDateFormat(format, java.util.Locale.US)
+                    val date = parser.parse(dateString)
+                    val normalizedDate = sdf.format(date)
+                    Log.d("ResultsManager", "Date normalized from '$dateString' (format: $format) to '$normalizedDate'")
+                    return normalizedDate
+                } catch (e: Exception) {
+                    continue
+                }
+            }
+
+            Log.w("ResultsManager", "Could not parse date format: $dateString, returning as-is")
+            dateString
+        } catch (e: Exception) {
+            Log.e("ResultsManager", "Error normalizing date format", e)
+            dateString
+        }
+    }
+
+    private fun parseTrialResults(resultFile: File): List<TrialData> {
+        val trials = mutableListOf<TrialData>()
+        try {
+            val lines = resultFile.readLines()
+            if (lines.isEmpty()) {
+                return trials
+            }
+
+            val headers = lines[0].split("\t")
+            
+            for (i in 1 until lines.size) {
+                val line = lines[i]
+                if (line.isBlank()) {
+                    continue
+                }
+                
+                val values = line.split("\t")
+                
+                if (values.size == headers.size) {
+                    val trialData = mutableMapOf<String, Any>()
+                    for (j in headers.indices) {
+                        val header = headers[j].trim()
+                        val value = values[j].trim()
+                        trialData[header] = when {
+                            value.toIntOrNull() != null -> value.toInt()
+                            value.toDoubleOrNull() != null -> value.toDouble()
+                            value.equals("true", ignoreCase = true) -> true
+                            value.equals("false", ignoreCase = true) -> false
+                            else -> value
+                        }
+                    }
+                    trials.add(TrialData(i, trialData))
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("ResultsManager", "Error parsing trial results", e)
+        }
+        return trials
+    }
+
+    private suspend fun doUploadExperiment(experimentData: ExperimentUploadData): Boolean = withContext(Dispatchers.IO) {
+        var attempt = 0
+        var delay = retryDelayMs
+
+        while (attempt < maxRetryAttempts) {
+            try {
+                if (!isNetworkAvailable) {
+                    Log.w("ResultsManager", "No network available for upload attempt ${attempt + 1}")
+                    delay(delay)
+                    delay = min(delay * 2, 60000)
+                    attempt++
+                    continue
+                }
+
+                Log.d("ResultsManager", "Attempting upload to: $webApiUrl/api/upload/experiment")
+
+                val url = URL("$webApiUrl/api/upload/experiment")
+                val connection = url.openConnection() as HttpURLConnection
+                connection.requestMethod = "POST"
+                connection.setRequestProperty("Content-Type", "application/json")
+                connection.setRequestProperty("Authorization", "Bearer $webApiKey")
+                connection.doOutput = true
+
+                val payload = JSONObject().apply {
+                    put("exp_uid", experimentData.exp_uid)
+                    put("test_class_name", experimentData.testClassName)
+                    put("device_id", experimentData.deviceId)
+                    put("configuration", experimentData.configuration)
+                    put("trials", JSONArray().apply {
+                        experimentData.trials.forEach { trial ->
+                            put(JSONObject().apply {
+                                put("trial_number", trial.trialNumber)
+                                trial.data.forEach { (key, value) -> put(key, value) }
+                            })
+                        }
+                    })
+                }
+
+                try {
+                    connection.outputStream.use { os ->
+                        os.write(payload.toString().toByteArray())
+                        os.flush()
+                    }
+                    Log.d("ResultsManager", "Request payload sent successfully")
+                } catch (e: Exception) {
+                    Log.e("ResultsManager", "Failed to send request payload", e)
+                    throw e
+                }
+
+                val responseCode = connection.responseCode
+                Log.d("ResultsManager", "Received response code: $responseCode")
+
+                when (responseCode) {
+                    HttpURLConnection.HTTP_CREATED -> {
+                        Log.i("ResultsManager", "Experiment uploaded successfully")
+                        return@withContext true
+                    }
+                    HttpURLConnection.HTTP_CONFLICT -> {
+                        Log.i("ResultsManager", "Experiment already exists on server")
+                        return@withContext true
+                    }
+                    HTTP_ERROR_SUBMISSION_NOT_ALLOWED -> {
+                        return@withContext false
+                    }
+                    else -> {
+                        val errorMessage = try {
+                            connection.errorStream?.bufferedReader()?.readText() ?: "Unknown error"
+                        } catch (_: Exception) {
+                            "HTTP $responseCode"
+                        }
+                        Log.w("ResultsManager", "Upload failed with code $responseCode: $errorMessage")
+                    }
+                }
+
+            } catch (e: IOException) {
+                Log.w("ResultsManager", "Upload attempt ${attempt + 1} failed", e)
+            } catch (e: Exception) {
+                Log.e("ResultsManager", "Unexpected error during upload", e)
+                return@withContext false
+            }
+
+            attempt++
+            if (attempt < maxRetryAttempts) {
+                delay(delay)
+                delay = min(delay * 2, 60000)
+            }
+        }
+
+        Log.e("ResultsManager", "Upload failed after $maxRetryAttempts attempts")
+        return@withContext false
     }
 
     // Data classes for upload
