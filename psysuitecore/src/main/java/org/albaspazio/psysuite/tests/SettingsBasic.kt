@@ -42,7 +42,9 @@ import java.util.UUID
  * All tests are intrinsically longitudinal. For non-longitudinal tests, set session_spsel = TEST_NO_LONGITUDINAL
  * to hide the longitudinal UI elements and ignore session functionality.
  *
- * @param classes List of class names, typically used for reflection or identification. Used to find companion object methods.
+ * @param testclass The name of the test class, typically used for reflection or identification. Used to find companion object methods.
+ * @param settingsclass The name of the settings class. Defaults to an empty string.
+ * @param answerclass The name of the answer class. Defaults to an empty string.
  * @param label A descriptive label or identifier for the subject (e.g., name or code). Defaults to an empty string.
  * @param age The age of the subject. Defaults to -1 (unknown).
  * @param gender The gender of the subject (e.g., 0 for male, 1 for female). Defaults to -1 (unknown).
@@ -68,8 +70,10 @@ import java.util.UUID
  * @param date The creation/modification date in ISO 8601 format (yyyy-MM-dd HH:mm:ss). Set automatically in writeJson(). Defaults to empty string.
  * @param exp_uid A unique identifier for the experiment instance, generated automatically in writeJson(). Defaults to empty string.
  */
-abstract class SubjectBasicParcel(
-    open var classes: List<String> = listOf(),
+abstract class SettingsBasic(
+    open var testclass: String = "",
+    open var settingsclass: String = "",
+    open var answerclass: String = "",
     open var label: String = "",
     open var age: Int = -1,
     open var gender: Int = -1,
@@ -145,9 +149,9 @@ abstract class SubjectBasicParcel(
     /**
      * Loads subject data from the default [CURR_SUBJ_FILE] if it exists.
      * If the file exists and is valid JSON for this subject type, it updates the current instance with loaded data.
-     * @return The loaded [SubjectBasicParcel] instance, or the current instance if loading fails or file doesn't exist.
+     * @return The loaded [SettingsBasic] instance, or the current instance if loading fails or file doesn't exist.
      */
-    open fun loadSubject(): SubjectBasicParcel {
+    open fun loadSubject(): SettingsBasic {
         val subj = existFile(CURR_SUBJ_FILE + TestBasic.Companion.SUBJFILE_EXTENSION)
         if (subj.first) {
             val jsontext =
@@ -167,12 +171,12 @@ abstract class SubjectBasicParcel(
     val isDeafUser:Boolean  = Populations.Companion.ai_populations.getIds().contains(population)
 
     /**
-     * Parses JSON text and converts it to a [SubjectBasicParcel] instance of the current object's type.
+     * Parses JSON text and converts it to a [SettingsBasic] instance of the current object's type.
      * @param jsontext The JSON string to parse.
-     * @return A [SubjectBasicParcel] instance populated from the JSON text.
+     * @return A [SettingsBasic] instance populated from the JSON text.
      * @throws com.squareup.moshi.JsonDataException if the JSON is malformed or doesn't match the expected structure.
      */
-    private fun loadJsonText(jsontext: String): SubjectBasicParcel {
+    private fun loadJsonText(jsontext: String): SettingsBasic {
 
         val moshi           = Moshi.Builder().build()
         val jsonAdapter     = moshi.adapter(this.javaClass)
@@ -224,7 +228,7 @@ abstract class SubjectBasicParcel(
      */
     open fun getFilesPrefix(ctx: Context):String {
 
-        val ci                  = getCompanionObjectMethod(classes[0], "getConditionsInfo")
+        val ci                  = getCompanionObjectMethod(testclass, "getConditionsInfo")
         @Suppress("UNCHECKED_CAST")
         val type_label          = (ci.first?.call(ci.second, ctx) as List<ConditionData>).getLabelLog(type)
         val population_label    = Populations.Companion.all_populations.getLabelLog(population)
@@ -319,7 +323,7 @@ abstract class SubjectBasicParcel(
                     ).format(Date())
 
                     // Set unique experiment ID
-                    exp_uid = "${classes[0].substringAfterLast(".")}${System.currentTimeMillis()}_${UUID.randomUUID().toString().substring(0, 8)}"
+                    exp_uid = "${testclass.substringAfterLast(".")}${System.currentTimeMillis()}_${UUID.randomUUID().toString().substring(0, 8)}"
 
                     // want to create subject file always without block info, I want to add block info only renaming it after a block stop
                     subjectFileName = composeSubjectFileName(context)

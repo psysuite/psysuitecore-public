@@ -49,10 +49,17 @@ open class TrialBasic(
         user_answer_extra   = extra_text
     }
 
-    // determine which property (in general: success or user_response) is used to update the ADO model
+    // determine which python wrapper method (in general: set) must be called to update the ADO model
     // HERE trial subclasses, overriding this method, can implement their own logic
-    open fun getAdoUpdatingPropr(): Any {
-        return user_answer  // default behavior
+    open fun getAdoUpdatingMethod(): String {
+        return "set"  // default behavior
+    }
+
+    // Returns a list of parameters to pass to the ADO wrapper's update method
+    // HERE trial subclasses, overriding this method, can implement their own logic
+    // Default: [user_answer, magnitude]
+    open fun getAdoUpdatingParams(): List<Any> {
+        return listOf(user_answer, magnitude)
     }
 
     override fun toString():String{

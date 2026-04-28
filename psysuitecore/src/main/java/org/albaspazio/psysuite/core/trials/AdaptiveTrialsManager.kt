@@ -56,7 +56,8 @@ open class AdaptiveTrialsManager(trials: MutableList<TrialBasic>,
             ioScope.launch {
                 try {
                     val wrapperClass = getOrCreateWrapper(ado)
-                    wrapperClass.callAttr("set", mTrial.getAdoUpdatingPropr(), mTrial.magnitude)
+                    val params = mTrial.getAdoUpdatingParams()
+                    wrapperClass.callAttr(mTrial.getAdoUpdatingMethod(), *params.toTypedArray())
                 } catch (e: Exception) {
                     Log.e("AdaptiveTrialsManager", "Error setting ADO response: ${e.message}")
                 }
@@ -97,7 +98,8 @@ open class AdaptiveTrialsManager(trials: MutableList<TrialBasic>,
             runBlocking(Dispatchers.IO) {
                 try {
                     val wrapperClass    = getOrCreateWrapper(ado)
-                    val magn            = wrapperClass.callAttr("get").toFloat().coerceIn(0.0f, ado.params.range)
+                    var magn            = wrapperClass.callAttr("get").toFloat()
+                    magn = magn.coerceIn(ado.params.min, ado.params.max) // actually not necessary, are already clipped in the python code.
                     Log.d("AdaptiveTrialsManager", "calculated next adaptive stimulus: $magn")
                     mTrial.initTrial(magn) // setupTrial updates and returns the new value
                 } catch (e: Exception) {

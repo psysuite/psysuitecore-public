@@ -104,6 +104,13 @@
     <string name="trials_fixed">fixed</string>
     <string name="trials_adaptive">adaptive</string>
 
+    <string name="rb1_text">first</string>
+    <string name="rb2_text">second</string>
+    <string name="rb3_text">third</string>
+
+    <string name="rb_male_text">M</string>
+    <string name="rb_female_text">F</string>
+
     <string-array name="prepost_sessions3_array">
         <item>select...</item>
         <item>pre test</item>

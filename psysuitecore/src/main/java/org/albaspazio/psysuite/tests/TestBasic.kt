@@ -53,7 +53,7 @@ import org.albaspazio.psysuite.core.utils.filesystem.FileSystemManager
  * @property ctx The application context.
  * @property activity The hosting activity.
  * @property hostfragment The hosting fragment, used for UI interactions like showing alerts.
- * @property subject The [SubjectBasicParcel] containing subject information and test configuration.
+ * @property subject The [SettingsBasic] containing subject information and test configuration.
  * @property vibrator An optional [org.albaspazio.core.accessory.VibrationManager] for tests involving tactile stimuli.
  * @property mImageView An optional [android.widget.ImageView] for tests involving visual stimuli.
  * @property speechManager An optional [org.albaspazio.core.speech.SpeechManager] for tests involving voice input.
@@ -62,7 +62,7 @@ import org.albaspazio.psysuite.core.utils.filesystem.FileSystemManager
 abstract class TestBasic(protected val ctx: Context,
                          protected val activity: Activity,
                          protected val hostfragment: Fragment,
-                         protected val subject: SubjectBasicParcel,
+                         protected val subject: SettingsBasic,
                          protected val vibrator: VibrationManager? = null,
                          protected val mImageView: ImageView? = null,
                          protected val speechManager: SpeechManager? = null,
@@ -138,24 +138,22 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_BISECTION_AUDIO_TACTILE         = 105
         /** Unique code for Bisection test with visual-tactile stimuli. */
         @JvmStatic val TEST_BISECTION_VISUAL_TACTILE        = 106
+        /** Unique code for Bisection test with 200 audio stimuli. */
+        @JvmStatic val TEST_BISECTION_AUDIO_200             = 107
+        /** Unique code for Bisection test with 200 audio stimuli. */
+        @JvmStatic val TEST_BISECTION_VISUAL_200            = 108
         /** Unique code for Bisection test with supra-threshold audio stimulus. */
-        @JvmStatic val TEST_BISECTION_AUDIO_SUPRA           = 107
+        @JvmStatic val TEST_BISECTION_AUDIO_SUPRA           = 109
         /** Unique code for Bisection test with supra-threshold visual stimulus. */
-        @JvmStatic val TEST_BISECTION_VISUAL_SUPRA          = 108
+        @JvmStatic val TEST_BISECTION_VISUAL_SUPRA          = 110
         /** Unique code for Bisection test with supra-threshold tactile stimulus. */
-        @JvmStatic val TEST_BISECTION_TACTILE_SUPRA         = 109
+        @JvmStatic val TEST_BISECTION_TACTILE_SUPRA         = 111
         /** Unique code for Bisection test with supra-threshold audio-visual stimuli. */
-        @JvmStatic val TEST_BISECTION_AUDIO_VISUAL_SUPRA    = 110
+        @JvmStatic val TEST_BISECTION_AUDIO_VISUAL_SUPRA    = 112
         /** Unique code for Bisection test with supra-threshold audio-tactile stimuli. */
-        @JvmStatic val TEST_BISECTION_AUDIO_TACTILE_SUPRA   = 111
+        @JvmStatic val TEST_BISECTION_AUDIO_TACTILE_SUPRA   = 113
 /** Unique code for Bisection test with supra-threshold visual-tactile stimuli. */
-        @JvmStatic val TEST_BISECTION_VISUAL_TACTILE_SUPRA  = 112
-        /** Unique code for Bisection test with audio stimulus comparing SUB vs SUPRA. */
-//        @JvmStatic val TEST_BISECTION_AUDIO_SUBSUPRA        = 113
-        /** Unique code for Bisection test with visual stimulus comparing SUB vs SUPRA. */
-//        @JvmStatic val TEST_BISECTION_VISUAL_SUBSUPRA       = 114
-        /** Unique code for Bisection test with tactile stimulus comparing SUB vs SUPRA. */
-//        @JvmStatic val TEST_BISECTION_TACTILE_SUBSUPRA      = 115
+        @JvmStatic val TEST_BISECTION_VISUAL_TACTILE_SUPRA  = 114
 
 
         /** Unique code for Temporal Integration Window (TID) test with short audio stimulus. */
@@ -327,7 +325,7 @@ abstract class TestBasic(protected val ctx: Context,
         // endregion
         //-----------------------------------------------------------------------------------------
 
-        /** Constant used in SubjectBasicParcel to indicate that test is not longitudinal. session = 1 is automatically assigned. */
+        /** Constant used in SettingsBasic to indicate that test is not longitudinal. session = 1 is automatically assigned. */
         @JvmStatic val TEST_NO_LONGITUDINAL            = -1000
         @JvmStatic val TEST_LONGITUDINAL_TOBESELECTED  = -1
 
@@ -372,14 +370,10 @@ abstract class TestBasic(protected val ctx: Context,
         @JvmStatic val TEST_TRMAN_FIXED                 = 0
         /** Constant indicating that the user can choose, with predetermined trials as the default. */
         @JvmStatic val TEST_TRMAN_CHOOSE_FIXED          = 1
-        /** Constant indicating that the user can choose, with mixed (fixed and adaptive) trials as the default. */
-        @JvmStatic val TEST_TRMAN_CHOOSE_MIXED          = 2
         /** Constant indicating that the user can choose, with adaptive (e.g., Quest) trials as the default. */
-        @JvmStatic val TEST_TRMAN_CHOOSE_ADAPTIVE       = 3
-        /** Constant indicating that some trials are adaptive (e.g., Quest) and others are predetermined. */
-        @JvmStatic val TEST_TRMAN_MIXED                 = 4
+        @JvmStatic val TEST_TRMAN_CHOOSE_ADAPTIVE       = 2
         /** Constant indicating that all trials are adaptive (e.g., Quest). */
-        @JvmStatic val TEST_TRMAN_ADAPTIVE              = 5
+        @JvmStatic val TEST_TRMAN_ADAPTIVE              = 3
 
 
         // endregion

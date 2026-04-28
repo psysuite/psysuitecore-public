@@ -28,7 +28,7 @@ import org.albaspazio.core.ui.showToast
 import org.albaspazio.psysuite.core.R
 import org.albaspazio.psysuite.core.databinding.FragmentTestBinding
 import org.albaspazio.psysuite.core.utils.TestResult
-import org.albaspazio.psysuite.tests.SubjectBasicParcel
+import org.albaspazio.psysuite.tests.SettingsBasic
 import org.albaspazio.psysuite.tests.TestBasic
 import java.lang.reflect.Constructor
 import java.util.Date
@@ -62,7 +62,7 @@ class TestFragment : BaseFragment(
     val binding get() = _binding!!
 
     private lateinit var mTest: TestBasic
-    private lateinit var mSubjectParcel: SubjectBasicParcel
+    private lateinit var mSubjectParcel: SettingsBasic
 
     override val LOG_TAG                            = TestFragment::class.java.simpleName
     private val ANSWER_DIALOG_TAG                   = "ANSWER_DIALOG_TAG"
@@ -142,7 +142,7 @@ class TestFragment : BaseFragment(
         binding.btPause.visibility = View.INVISIBLE
         binding.txtDebugInfo.visibility = View.INVISIBLE
 
-        val subj: SubjectBasicParcel? = arguments?.getParcelable(TestBasic.Companion.TESTINFO_BUNDLE_LABEL)
+        val subj: SettingsBasic? = arguments?.getParcelable(TestBasic.Companion.TESTINFO_BUNDLE_LABEL)
         if (subj == null) {
             showAlert(
                 requireActivity(),
@@ -162,8 +162,8 @@ class TestFragment : BaseFragment(
                 vibrator = VibrationManager(requireContext()).init()
                 speechRecognitionManager = SpeechRecognitionManager(requireContext())
 
-                if (mSubjectParcel.classes[0].isNotBlank()) {
-                    val testClass = Class.forName(mSubjectParcel.classes[0])
+                if (mSubjectParcel.testclass.isNotBlank()) {
+                    val testClass = Class.forName(mSubjectParcel.testclass)
                     val constructor: Constructor<*> = testClass.constructors[0]
                     mTest = constructor.newInstance(
                         requireContext(),
@@ -203,11 +203,9 @@ class TestFragment : BaseFragment(
             val answerDialogClass = if (isBlindUser) {
                 // population is visually impaired. use AnswerGestureDF
                 "org.albaspazio.psysuite.core.ui.fragments.answers.AnswerGestureDialogFragment"
-            } else {
-                if (mSubjectParcel.classes.size > 1 && mSubjectParcel.classes[1].isNotEmpty())
-                    mSubjectParcel.classes[1]
-                else "org.albaspazio.psysuite.core.ui.answers.TwoAFCAnswerDialogFragment"
-            }
+            } else
+                mSubjectParcel.answerclass.ifEmpty { "org.albaspazio.psysuite.core.ui.answers.TwoAFCAnswerDialogFragment" }
+
             answerDialogRef = getCompanionObjectMethod(answerDialogClass, "newInstance")
 
             setTestEventsObservable()
@@ -494,7 +492,7 @@ class TestFragment : BaseFragment(
     // or instruction given (=> startTest)
     private fun setupFragmentResultListener() {
         // Listener for answer results
-        parentFragmentManager.setFragmentResultListener(TRG_REQ_CODE_ANSWER.toString(), viewLifecycleOwner) { requestKey, result ->
+        parentFragmentManager.setFragmentResultListener(TRG_REQ_CODE_ANSWER.toString(), viewLifecycleOwner) { _, result ->
 
             try {
                 when (result.getInt(EVENT_ANSWER_CODE, 0)) {
@@ -520,7 +518,7 @@ class TestFragment : BaseFragment(
         }
 
         // Listener for instructions
-        parentFragmentManager.setFragmentResultListener(TRG_REQ_CODE_INSTRUCTIONS.toString(), viewLifecycleOwner) { requestKey, _ ->
+        parentFragmentManager.setFragmentResultListener(TRG_REQ_CODE_INSTRUCTIONS.toString(), viewLifecycleOwner) { _, _ ->
             mTest.start()
         }
     }

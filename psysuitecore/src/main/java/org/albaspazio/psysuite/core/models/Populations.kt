@@ -54,6 +54,8 @@ class Populations {
         @JvmStatic val POPULATION_MCI_AD                = 52
         /** Identifier for Mild Cognitive Impairment (BLD) population. */
         @JvmStatic val POPULATION_MCI_BLD               = 53
+        /** Identifier for Parkinson Disease population. */
+        @JvmStatic val POPULATION_PD                    = 54
 
         /**
          * List of all defined subject populations.
@@ -79,10 +81,8 @@ class Populations {
             IdLabelData("AD", POPULATION_AD),
             IdLabelData("BLD", POPULATION_BLD),
             IdLabelData("MCI_AD", POPULATION_MCI_AD),
-            IdLabelData("MCI_BLD", POPULATION_MCI_BLD)
-
-
-
+            IdLabelData("MCI_BLD", POPULATION_MCI_BLD),
+            IdLabelData("PD", POPULATION_PD)
         )
 
         /**

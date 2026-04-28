@@ -18,6 +18,7 @@ import org.albaspazio.core.accessory.SingletonHolder
 import org.albaspazio.core.ui.show1MethodDialog
 import org.albaspazio.psysuite.core.R
 import org.albaspazio.psysuite.core.utils.filesystem.FileSystemManager
+import org.albaspazio.psysuite.core.utils.filesystem.ResultFileItem
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.File
@@ -147,9 +148,9 @@ class ResultsManager private constructor(private var activity: Activity?) {
                     }
 
                     try {
-                        if (item is org.albaspazio.psysuite.core.utils.filesystem.ResultFileItem) {
+                        if (item is ResultFileItem) {
                             // Check if already submitted
-                            val fileSystemManager = org.albaspazio.psysuite.core.utils.filesystem.FileSystemManager.getInstance()
+                            val fileSystemManager = FileSystemManager.getInstance()
                             if (fileSystemManager.isAlreadySubmitted(item.exp_uid)) {
                                 Log.i("ResultsManager", "Skipping already submitted file: ${item.displayName}")
                                 withContext(Dispatchers.Main) {
@@ -194,7 +195,7 @@ class ResultsManager private constructor(private var activity: Activity?) {
                             }
                         }
                     } catch (e: Exception) {
-                        Log.e("ResultsManager", "Error uploading ${if (item is org.albaspazio.psysuite.core.utils.filesystem.ResultFileItem) item.displayName else item}", e)
+                        Log.e("ResultsManager", "Error uploading ${if (item is ResultFileItem) item.displayName else item}", e)
                         withContext(Dispatchers.Main) {
                             callback(item, false, "Error: ${e.message}")
                         }
@@ -227,20 +228,26 @@ class ResultsManager private constructor(private var activity: Activity?) {
 
     private fun parseExperimentFiles(jsonFile: File, resultFile: File): ExperimentUploadData? {
         return try {
-            val configJson = JSONObject(jsonFile.readText())
-            val classesArray = configJson.getJSONArray("classes")
-            val testClassName = classesArray.getString(0).substringAfterLast(".")
-            val exp_uid = configJson.getString("exp_uid")
-            val validJson = filterJson(configJson)
-            val trials = parseTrialResults(resultFile)
+            val configJson      = JSONObject(jsonFile.readText())
+            var testClassName   = configJson.optJSONArray("classes")?.optString(0) ?: configJson.optString("testclass")
+            
+            if(testClassName.isNullOrEmpty())
+                throw Exception("testClassName could not be retrieved")
 
-            val deviceManager = DeviceIdentificationManager.getInstance(activity!!)
-            val experimentData = ExperimentUploadData(
-                exp_uid = exp_uid,
-                testClassName = testClassName,
-                configuration = validJson,
-                trials = trials,
-                deviceId = deviceManager.deviceId ?: ""
+            testClassName = testClassName.substringAfterLast(".")
+            // transient code, remove in future
+
+            val exp_uid         = configJson.getString("exp_uid")
+            val validJson       = filterJson(configJson)
+            val trials          = parseTrialResults(resultFile)
+
+            val deviceManager   = DeviceIdentificationManager.getInstance(activity!!)
+            val experimentData  = ExperimentUploadData(
+                exp_uid         = exp_uid,
+                testClassName   = testClassName,
+                configuration   = validJson,
+                trials          = trials,
+                deviceId        = deviceManager.deviceId ?: ""
             )
 
             return experimentData
