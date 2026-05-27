@@ -104,6 +104,12 @@
     <string name="trials_fixed">fissi</string>
     <string name="trials_adaptive">adattativi</string>
 
+    <string name="rb1_text">primo</string>
+    <string name="rb2_text">secondo</string>
+    <string name="rb3_text">terzo</string>
+
+    <string name="rb_male_text">M</string>
+    <string name="rb_female_text">F</string>
 
     <string-array name="trial_manager_types">
         <item>@string/trials_fixed</item>

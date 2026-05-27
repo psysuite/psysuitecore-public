@@ -4,7 +4,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.fragments.answers.TwoAFCAnswerDialogFragment">
+        tools:context=".ui.answers.TwoAFCAnswerDialogFragment">
 
     <TextView
         android:id="@+id/labName"
@@ -73,13 +73,13 @@
             android:id="@+id/rb_male"
             android:layout_width="65dp"
             android:layout_height="match_parent"
-            android:text="@string/tid_rb_male_text" />
+            android:text="@string/rb_male_text" />
 
         <RadioButton
                 android:id="@+id/rb_female"
                 android:layout_width="69dp"
                 android:layout_height="match_parent"
-                android:text="@string/tid_rb_female_text" />
+                android:text="@string/rb_female_text" />
     </RadioGroup>
 
     <TextView

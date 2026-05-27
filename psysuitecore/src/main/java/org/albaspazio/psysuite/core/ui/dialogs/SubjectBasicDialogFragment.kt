@@ -17,7 +17,7 @@ import org.albaspazio.psysuite.core.R
 import org.albaspazio.psysuite.core.databinding.FragmentSubjectInfoBasicBinding
 import org.albaspazio.psysuite.core.utils.ConditionData
 import org.albaspazio.psysuite.core.utils.IdLabelData
-import org.albaspazio.psysuite.tests.SubjectBasicParcel
+import org.albaspazio.psysuite.tests.SettingsBasic
 import org.albaspazio.psysuite.tests.TestBasic
 
 open class SubjectBasicDialogFragment: DialogFragment(){
@@ -36,7 +36,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
 
     protected lateinit var mTaskCodeLabels: List<ConditionData>
     private lateinit var mNextTrialModes:List<List<Int>>
-    protected lateinit var subject: SubjectBasicParcel
+    protected lateinit var subject: SettingsBasic
 
     // Longitudinal functionality
     private var sessionsData:Array<String> = emptyArray()
@@ -62,7 +62,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
     }
 
     protected open fun initData() {
-        val subj: SubjectBasicParcel? = arguments?.getParcelable(SUBJECT_PARCEL)
+        val subj: SettingsBasic? = arguments?.getParcelable(SUBJECT_PARCEL)
         if (subj == null) {
             showAlert(
                 requireActivity(),
@@ -73,10 +73,10 @@ open class SubjectBasicDialogFragment: DialogFragment(){
             return
         } else subject = subj
 
-        val ntm         = getCompanionObjectMethod(subject.classes[0], "getNextTrialModes")
+        val ntm         = getCompanionObjectMethod(subject.testclass, "getNextTrialModes")
         mNextTrialModes = ntm.first?.call(ntm.second, requireContext()) as List<List<Int>>
 
-        val ci          = getCompanionObjectMethod(subject.classes[0], "getConditionsInfo")
+        val ci          = getCompanionObjectMethod(subject.testclass, "getConditionsInfo")
         mTaskCodeLabels = ci.first?.call(ci.second, requireContext()) as List<ConditionData>
 
         //------------------------------------------------------
@@ -445,7 +445,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
     protected open fun checkData():List<String>{
         val errors = mutableListOf<String>()
 
-        if(SubjectBasicParcel.Companion.validate(binding.txtName.text.toString(), binding.txtAge.text.toString()).isNotBlank())
+        if(SettingsBasic.Companion.validate(binding.txtName.text.toString(), binding.txtAge.text.toString()).isNotBlank())
                                                                     errors.add(" - " + resources.getString(
                                                                         R.string.select_subject_info))
 
@@ -479,7 +479,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
     }
 
     // subject has been already validated
-    protected open fun updateSubject(): SubjectBasicParcel {
+    protected open fun updateSubject(): SettingsBasic {
         val gender:Int              = binding.radioGroupGender.indexOfChild(binding.radioGroupGender.findViewById(
             binding.radioGroupGender.checkedRadioButtonId))
 
@@ -539,7 +539,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
     // subj.block is by default always -1
     // check whether subject's "label_type_Date" file exists, ask user whether continue or change name
     // -1 no file exist, 0 just one file without block, > 0  id of the next block (if it found _blk1 => returns 2)
-    private fun sendSubjectOrChangeData(subj: SubjectBasicParcel){
+    private fun sendSubjectOrChangeData(subj: SettingsBasic){
         val nextblock = subj.existSubjectFile(requireContext())
         when(nextblock){
             -1 -> { // file is unique
@@ -583,7 +583,7 @@ open class SubjectBasicDialogFragment: DialogFragment(){
         }
     }
 
-    private fun sendResult(subj: SubjectBasicParcel?) {
+    private fun sendResult(subj: SettingsBasic?) {
         val bundle = Bundle().apply {
             putParcelable(SUBJECT_PARCEL, subj)
         }

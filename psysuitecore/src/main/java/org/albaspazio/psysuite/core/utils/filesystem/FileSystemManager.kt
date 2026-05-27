@@ -38,7 +38,8 @@ class FileSystemManager private constructor() {
     }
 
     init {
-        initializeFolders()
+        // Don't initialize folders here - wait for permissions to be granted
+        // initializeFolders()
     }
     // Cached folder references - initialized once and reused
     @Volatile
@@ -112,7 +113,9 @@ class FileSystemManager private constructor() {
      * @throws IOException if folder creation fails
      */
     fun getResultsFolder(): File {
-        initializeFolders()
+        if (!foldersInitialized) {
+            initializeFolders()
+        }
         return resultsDir ?: throw IOException("Results folder not initialized")
     }
     
@@ -122,7 +125,9 @@ class FileSystemManager private constructor() {
      * @throws IOException if folder creation fails
      */
     fun getSubmittedFolder(): File {
-        initializeFolders()
+        if (!foldersInitialized) {
+            initializeFolders()
+        }
         return submittedDir ?: throw IOException("Submitted folder not initialized")
     }
     
