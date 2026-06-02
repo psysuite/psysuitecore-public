@@ -21,7 +21,6 @@ open class TrialBasic(
     var prev_trial: TrialBasic?     = null
     var user_answer_extra:String    = ""
     open var correct_answer:Int     = 0 // TODO: should become Any. so i can store also durations (e.g. TTC e TSP),
-                                        // TODO: must solve the fact that in 2AFC task the int regulates also
     var success:Boolean             = false    // result of comparison between correct and user answer
 
     // - update the magnitude value
@@ -68,7 +67,7 @@ open class TrialBasic(
 
     // data exported to log file
     open fun Log():String{
-        return id.toString() +  "\t" + label + "\t" + success.toString() + "\t" + correct_answer + "\t" + user_answer + "\t" + elapsed.toString() + "\t" + repetitions.toString() + "\n"
+        return "$id\t$label\t$success\t$correct_answer\t$user_answer\t$elapsed\t$repetitions\n"
     }
 
     open fun debugInfo():String{

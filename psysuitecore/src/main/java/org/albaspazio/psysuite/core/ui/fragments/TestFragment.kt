@@ -581,7 +581,7 @@ class TestFragment : BaseFragment(
     }
 
     // called by: 1) onActivityResult after answer, 2) speechrecognition result
-    // => mTest.setAnswer & mTest.onNextTrial()
+    // => mTest.setResponse & mTest.onNextTrial()
     private fun onAnswerGiven(result:Int = -1, elapsed:Long = -1, extra_text:String=""){
 
         // dont' know whether an answer dialog was present or it was listening for vocal response or it was playbacking something. stop all!
@@ -592,7 +592,7 @@ class TestFragment : BaseFragment(
         }
         closeAnswerDialog()
 
-        mTest.setAnswer(result, elapsed, extra_text)
+        mTest.setResponse(result, elapsed, extra_text)
         // close trial (e.g. set answer) & check whether it was the last => test ended
         mTest.onTrialTerminated()
     }

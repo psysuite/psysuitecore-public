@@ -630,7 +630,7 @@ abstract class TestBasic(protected val ctx: Context,
      * @param elapsed The time elapsed for the answer in milliseconds. Defaults to -1.
      * @param extra_text Any additional text associated with the answer. Defaults to an empty string.
      */
-    open fun setAnswer(result: Int = -1, elapsed: Long = -1L, extra_text: String = ""){
+    open fun setResponse(result: Int = -1, elapsed: Long = -1L, extra_text: String = ""){
 
         if(mTrial.isTraining)   return
 
