@@ -56,6 +56,9 @@ object Versions {
     const val coroutines = "1.6.4"
     const val testRunner = "1.5.2"
     const val testEspressoCore = "3.5.1"
+    const val junitKtx = "1.2.1"
+    const val junitExt = "1.1.5"
+
 }
 
 object Dependencies {
@@ -87,6 +90,9 @@ object Dependencies {
 
         const val testRunner        = "androidx.test:runner:${Versions.testRunner}"
         const val testEspressoCore  = "androidx.test.espresso:espresso-core:${Versions.testEspressoCore}"
+        const val junitKtx          = "androidx.test.ext:junit-ktx:${Versions.junitKtx}"
+        const val junitExt          = "androidx.test.ext:junit:${Versions.junitExt}"
+
     }
 
     object Kotlin {
@@ -116,7 +122,6 @@ object Dependencies {
         const val okhttp        = "com.squareup.okhttp3:okhttp:${Versions.okhttp}"
         const val gson          = "com.google.code.gson:gson:${Versions.gson}"
     }
-
 
     const val junit         = "junit:junit:${Versions.junit}"
 }
