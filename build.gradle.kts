@@ -5,6 +5,8 @@ plugins {
     id(libs.plugins.chaquopy.get().pluginId) version libs.versions.chaquopyPlugin.get() apply(false)
 }
 
+ext["javaVersion"] = libs.versions.javaVersion.get()
+
 tasks.register("clean", Delete::class){
     description = "Deletes the build directory"
     delete(rootProject.layout.buildDirectory)
