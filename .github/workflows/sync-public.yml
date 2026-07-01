@@ -15,8 +15,6 @@ jobs:
           ref: master
 
       - name: Push master to public repo
-        env:
-          TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
-          git remote add public https://$TOKEN@github.com/psysuite/psysuitecore-public.git
+          git remote add public https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/psysuite/psysuitecore-public.git
           git push public master:master --force-with-lease
