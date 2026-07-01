@@ -22,38 +22,9 @@ jobs:
           git config --global user.name "Sync Bot"
           git config --global user.email "sync@psysuite.org"
 
-      - name: Check secret
-        env:
-          TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
-        run: |
-          if [ -z "$TOKEN" ]; then
-            echo "ERROR: PUBLIC_REPO_TOKEN is empty"
-            exit 1
-          fi
-          echo "PUBLIC_REPO_TOKEN is present"
-
-      - name: Debug Git configuration
-        run: |
-          echo "===== REMOTES ====="
-          git remote -v
-
-          echo
-          echo "===== GIT CONFIG ====="
-          git config --list --show-origin
-
-          echo
-          echo "===== CURRENT BRANCH ====="
-          git branch --show-current
-
-          echo
-          echo "===== LAST COMMIT ====="
-          git log --oneline -1
-
       - name: Push to public repository
         env:
           TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
-          GIT_TRACE: 1
-          GIT_CURL_VERBOSE: 1
         run: |
           git push \
             https://x-access-token:${TOKEN}@github.com/psysuite/psysuitecore-public.git \
