@@ -8,20 +8,53 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout private repository
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
           ref: master
 
-      - name: Configure git
+      - name: Configure Git
         run: |
-          git config user.email "sync@psysuite.org"
-          git config user.name "Sync Bot"
+          git config --global user.name "Sync Bot"
+          git config --global user.email "sync@psysuite.org"
 
-      - name: Push master to public repo
+      - name: Check secret
         env:
           TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
         run: |
-          git remote add public https://${TOKEN}@github.com/psysuite/psysuitecore-public.git
-          git push public master:master
+          if [ -z "$TOKEN" ]; then
+            echo "ERROR: PUBLIC_REPO_TOKEN is empty"
+            exit 1
+          fi
+          echo "PUBLIC_REPO_TOKEN is present"
+
+      - name: Debug Git configuration
+        run: |
+          echo "===== REMOTES ====="
+          git remote -v
+
+          echo
+          echo "===== GIT CONFIG ====="
+          git config --list --show-origin
+
+          echo
+          echo "===== CURRENT BRANCH ====="
+          git branch --show-current
+
+          echo
+          echo "===== LAST COMMIT ====="
+          git log --oneline -1
+
+      - name: Push to public repository
+        env:
+          TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          GIT_TRACE: 1
+          GIT_CURL_VERBOSE: 1
+        run: |
+          git push \
+            https://x-access-token:${TOKEN}@github.com/psysuite/psysuitecore-public.git \
+            master:master
