@@ -40,6 +40,3 @@ fun AudioTrack.dummyUse(vol:Float){
 }
 
 
-class AudioResourceException(msg:String):Exception(msg)
-class VibratorNotDefinedException(msg:String):Exception(msg)
-class ImageViewDefinedException(msg:String):Exception(msg)

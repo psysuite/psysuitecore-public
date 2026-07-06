@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Handler
 import org.albaspazio.psysuite.core.R
 import org.albaspazio.nativeaudio.PlaybackEngine
+import org.albaspazio.psysuite.core.exceptions.AudioResourceException
 import java.io.IOException
 import java.io.InputStream
 
