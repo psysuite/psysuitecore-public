@@ -246,10 +246,15 @@ class AudioManager(
                     }
                 })
                 mAT?.play()
+                // Schedule automatic stop as fallback if marker isn't reached
+                if (d != Double.POSITIVE_INFINITY.toLong()) {
+                    handler.postDelayed({ stop() }, d as Long)
+                }
             }
             StimuliManager.STIM_TYPE_A4 -> {
 //                Log.d(TAG,"${getOnsetDate()}: STARTED in thread, id=$id")
                 PlaybackEngine.deliver(id)
+                handler.postDelayed({ stop(id) }, d as Long)
             }
         }
     }
