@@ -12,6 +12,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import androidx.navigation.findNavController
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.rxkotlin.addTo
 import io.reactivex.rxkotlin.subscribeBy
@@ -582,7 +585,7 @@ class TestFragment : BaseFragment(
 
     // called by: 1) onActivityResult after answer, 2) speechrecognition result
     // => mTest.setResponse & mTest.onNextTrial()
-    private fun onAnswerGiven(result:Int = -1, elapsed:Long = -1, extra_text:String=""){
+    private fun onAnswerGiven(result:Int = -1, elapsed:Long = -1, extra_text:String="") {
 
         // dont' know whether an answer dialog was present or it was listening for vocal response or it was playbacking something. stop all!
         abortRecognition = true
@@ -592,9 +595,13 @@ class TestFragment : BaseFragment(
         }
         closeAnswerDialog()
 
-        mTest.setResponse(result, elapsed, extra_text)
-        // close trial (e.g. set answer) & check whether it was the last => test ended
-        mTest.onTrialTerminated()
+        // Process response and trial termination on background (IO) thread to avoid blocking main thread
+        // Both setResponse and onTrialTerminated are now synchronous and execute off main thread
+        lifecycleScope.launch(Dispatchers.IO) {
+            mTest.setResponse(result, elapsed, extra_text)
+            // close trial (e.g. set answer) & check whether it was the last => test ended
+            mTest.onTrialTerminated()
+        }
     }
     //#endregion
 

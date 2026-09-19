@@ -25,9 +25,6 @@ open class AdaptiveTrialsManager(trials: MutableList<TrialBasic>,
 
     private val sPy: SPython = SPython.getInstance(null)        // singleton already initialized in TestFragment
     private val wrapperCache = mutableMapOf<ADOWrapper, PyObject>()  // Cache PyObject wrappers per ADOWrapper instance
-    
-    // Coroutine scope for background operations
-    private val ioScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private fun getOrCreateWrapper(adoWrapper: ADOWrapper): PyObject {
         return wrapperCache.getOrPut(adoWrapper) {
@@ -41,9 +38,14 @@ open class AdaptiveTrialsManager(trials: MutableList<TrialBasic>,
     }
 
     /**
-     * Sets the response for the current trial asynchronously. Even If the trial is not adaptive, it updates the model with the response / magnitude pair.
-     * The Python call is executed on a background thread to avoid blocking the UI.
-     * TestBasic::OnAnswerGiven -> TrialsManager::setResponse
+     * Sets the response for the current trial synchronously.
+     * Even if the trial is not adaptive, it updates the model with the response / magnitude pair.
+     * 
+     * IMPORTANT: This method assumes it is called from a background (IO) thread context via coroutine dispatcher.
+     * The caller (TestFragment.onAnswerGiven) is responsible for launching this on Dispatchers.IO.
+     * 
+     * TestFragment::onAnswerGiven (via lifecycleScope.launch(Dispatchers.IO)) -> TrialsManager::setResponse
+     * 
      * @param result The result of the trial.
      * @param elapsedms The time taken to complete the trial.
      * @param extra_text Additional text or information related to the response.
@@ -51,16 +53,14 @@ open class AdaptiveTrialsManager(trials: MutableList<TrialBasic>,
     override fun setResponse(result: Int, elapsedms: Long, extra_text: String) {
         mTrial.setResponse(result, elapsedms, mPrevTrial, extra_text)
         
-        // Run Python call asynchronously on background thread (fire and forget)
+        // Run Python call synchronously (assumes caller is on IO thread, not main thread)
         mTrial.adoWrapper?.let { ado ->
-            ioScope.launch {
-                try {
-                    val wrapperClass = getOrCreateWrapper(ado)
-                    val params = mTrial.getAdoUpdatingParams()
-                    wrapperClass.callAttr(mTrial.getAdoUpdatingMethod(), *params.toTypedArray())
-                } catch (e: Exception) {
-                    Log.e("AdaptiveTrialsManager", "Error setting ADO response: ${e.message}")
-                }
+            try {
+                val wrapperClass = getOrCreateWrapper(ado)
+                val params = mTrial.getAdoUpdatingParams()
+                wrapperClass.callAttr(mTrial.getAdoUpdatingMethod(), *params.toTypedArray())
+            } catch (e: Exception) {
+                Log.e("AdaptiveTrialsManager", "Error setting ADO response: ${e.message}")
             }
         }
     }
@@ -84,37 +84,26 @@ open class AdaptiveTrialsManager(trials: MutableList<TrialBasic>,
     }
 
     /**
-     * Get the next stimulus value synchronously but efficiently.
+     * Get the next stimulus value synchronously.
      * If the trial is adaptive, get it from the adaptive model and update the current trial.
      * 
-     * NOTE: This is called from doNextTrial() which is on the main thread.
-     * We use runBlocking with IO dispatcher to move Python call off main thread.
+     * IMPORTANT: This method assumes it is called from a background (IO) thread context via coroutine dispatcher.
+     * The caller (TestFragment via lifecycleScope.launch(Dispatchers.IO)) is responsible for ensuring this runs off main thread.
      * 
      * @return The next stimulus value.
      */
     override fun getStimulus(): Long {
         return mTrial.adoWrapper?.let { ado ->
-            // Use runBlocking with IO dispatcher to run Python call off main thread
-            runBlocking(Dispatchers.IO) {
-                try {
-                    val wrapperClass    = getOrCreateWrapper(ado)
-                    var magn            = wrapperClass.callAttr("get").toFloat()
-                    magn = magn.coerceIn(ado.params.min, ado.params.max) // actually not necessary, are already clipped in the python code.
-                    Log.d("AdaptiveTrialsManager", "calculated next adaptive stimulus: $magn")
-                    mTrial.initTrial(magn) // setupTrial updates and returns the new value
-                } catch (e: Exception) {
-                    Log.e("AdaptiveTrialsManager", "Error getting adaptive stimulus: ${e.message}")
-                    mTrial.stim_value  // Fallback to current value on error
-                }
+            try {
+                val wrapperClass    = getOrCreateWrapper(ado)
+                var magn            = wrapperClass.callAttr("get").toFloat()
+                magn = magn.coerceIn(ado.params.min, ado.params.max) // actually not necessary, are already clipped in the python code.
+                Log.d("AdaptiveTrialsManager", "calculated next adaptive stimulus: $magn")
+                mTrial.initTrial(magn) // setupTrial updates and returns the new value
+            } catch (e: Exception) {
+                Log.e("AdaptiveTrialsManager", "Error getting adaptive stimulus: ${e.message}")
+                mTrial.stim_value  // Fallback to current value on error
             }
         } ?: mTrial.stim_value  // If adoWrapper was null, return the default stimulus value
-    }
-
-    /**
-     * Clean up coroutine scope when manager is no longer needed.
-     * Call this from TestBasic.terminateTest() or similar cleanup method.
-     */
-    fun cleanup() {
-        ioScope.cancel()
     }
 }
