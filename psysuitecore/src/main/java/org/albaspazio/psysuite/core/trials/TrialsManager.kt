@@ -12,31 +12,33 @@ type:
 
 abstract class TrialsManager(
     val type: Int = 0, 
-    private val testTrials: MutableList<TrialBasic>,
-    private val trainingTrials: MutableList<TrialBasic> = mutableListOf()
+    private val testTrials: List<TrialBasic>,
+    private val trainingTrials: List<TrialBasic> = emptyList()
 ) {
 
     companion object {
         val ADAPTIVE_VALUE:Float = -99999999.9F
     }
 
-    var currTrialID: Int = -1
+    var currTrialID: Int = -1       // 0-based index of current trial
     var isTrainingPhase: Boolean = false
 
-    private var currentTrialsList: MutableList<TrialBasic> = mutableListOf()
+    private var currentTrialsList: List<TrialBasic> = emptyList()
 
     val nTrials: Int
         get() = currentTrialsList.size
 
-    var mTrial: TrialBasic
+    val mTrial: TrialBasic
         get() = currentTrialsList[currTrialID]
-        set(value) {
-            currentTrialsList[currTrialID] = value
-        }
 
     val mPrevTrial: TrialBasic?
         get() = if (currTrialID == 0) null
                 else currentTrialsList[currTrialID - 1]
+
+    val mNextTrial: TrialBasic?
+        get() = if (currTrialID == currentTrialsList.size-1) null
+                else currentTrialsList[currTrialID + 1]
+
 
     init {
         if (testTrials.isEmpty())

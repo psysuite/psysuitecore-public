@@ -8,13 +8,22 @@ import android.os.Build
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.jakewharton.rxrelay2.PublishRelay
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.albaspazio.core.accessory.VibrationManager
 import org.albaspazio.core.accessory.logLastTwo
 import org.albaspazio.core.filesystem.deleteFile
+import org.albaspazio.core.filesystem.deleteFilesStartingWith
 import org.albaspazio.core.filesystem.getAbsoluteFilePath
 import org.albaspazio.core.filesystem.notifyFile
 import org.albaspazio.core.filesystem.renameFile
@@ -23,17 +32,19 @@ import org.albaspazio.core.speech.SpeechManager
 import org.albaspazio.core.ui.showAlert
 import org.albaspazio.psysuite.core.R
 import org.albaspazio.psysuite.core.models.summary.Summary
+import org.albaspazio.psysuite.core.performance.PerformanceMonitor
 import org.albaspazio.psysuite.core.stimuli.StimuliManager
+import org.albaspazio.psysuite.core.trials.TrialsManager
+import org.albaspazio.psysuite.core.utils.filesystem.FileSystemManager
 import org.albaspazio.psysuite.tests.TestBasic.Companion.BLOCK_COMPLETED
+import org.albaspazio.psysuite.tests.TestBasic.Companion.EVENT_BLOCK_END
 import org.albaspazio.psysuite.tests.TestBasic.Companion.EVENT_GIVE_ANSWER
 import org.albaspazio.psysuite.tests.TestBasic.Companion.EVENT_TEST_COMPLETED
 import org.albaspazio.psysuite.tests.TestBasic.Companion.EVENT_TEST_END
-import org.albaspazio.psysuite.tests.TestBasic.Companion.EVENT_TEST_ERROR
+import org.albaspazio.psysuite.tests.TestBasic.Companion.EVENT_TRIAL_STARTED
 import org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_ABORTED_KEEP_RESULT
 import org.albaspazio.psysuite.tests.TestBasic.Companion.TEST_COMPLETED
-import org.albaspazio.psysuite.core.trials.AdaptiveTrialsManager
-import org.albaspazio.psysuite.core.trials.TrialsManager
-import org.albaspazio.psysuite.core.utils.filesystem.FileSystemManager
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Base class for all psychophysical tests within the Psysuite framework.
@@ -70,11 +81,24 @@ abstract class TestBasic(protected val ctx: Context,
                          protected val outResultsDir:String= "${Environment.DIRECTORY_DOWNLOADS}/${FileSystemManager.Companion.RESULTS_FOLDER_NAME}")
 {
 
+    /** List of training trials for this test session. */
+    protected val trainingTrials: MutableList<TrialBasic> = mutableListOf()
+
+    /** List of main test trials for this test session. */
+    protected val testTrials: MutableList<TrialBasic> = mutableListOf()
+
     /**
      * The log tag used for logging messages from this test instance.
      * Defaults to the simple name of the concrete test class.
      */
     open var LOG_TAG:String = TestBasic::class.java.simpleName
+
+    /**
+     * Performance monitor instance (if enabled) for collecting timing and resource metrics.
+     * Initialized in start() via getInstanceOrNull().
+     * Can be null if monitoring is disabled or not initialized.
+     */
+    protected var performanceMonitor: PerformanceMonitor? = PerformanceMonitor.getInstanceOrNull()
 
     /**
      * Companion object for [TestBasic], containing constants and static utility members
@@ -553,12 +577,12 @@ abstract class TestBasic(protected val ctx: Context,
     var validAnswers: MutableList<String>       = mutableListOf()
 
     // Stimulus type constants that can be overridden by subclasses
-    /** Protected value representing the primary audio stimulus type for this test. Defaults to [StimuliManager.Companion.STIM_TYPE_A4]. */
-    protected open val STIM_A: Int      = StimuliManager.Companion.STIM_TYPE_A4
-    /** Protected value representing the primary visual stimulus type for this test. Defaults to [StimuliManager.Companion.STIM_TYPE_V1]. */
-    protected open val STIM_V: Int      = StimuliManager.Companion.STIM_TYPE_V1
-    /** Protected value representing the primary tactile stimulus type for this test. Defaults to [StimuliManager.Companion.STIM_TYPE_T1]. */
-    protected open val STIM_T: Int      = StimuliManager.Companion.STIM_TYPE_T1
+    /** Protected value representing the primary audio stimulus type for this test. Defaults to [StimuliManager.STIM_TYPE_A4]. */
+    protected open val STIM_A: Int      = StimuliManager.STIM_TYPE_A4
+    /** Protected value representing the primary visual stimulus type for this test. Defaults to [StimuliManager.STIM_TYPE_V1]. */
+    protected open val STIM_V: Int      = StimuliManager.STIM_TYPE_V1
+    /** Protected value representing the primary tactile stimulus type for this test. Defaults to [StimuliManager.STIM_TYPE_T1]. */
+    protected open val STIM_T: Int      = StimuliManager.STIM_TYPE_T1
     /** Combined stimulus type for Audio, Tactile, and Visual. */
     protected open val STIM_ATV: Int    = STIM_A or STIM_T or STIM_V
     /** Combined stimulus type for Tactile and Visual. */
@@ -579,9 +603,43 @@ abstract class TestBasic(protected val ctx: Context,
     abstract fun initTest()
 
     /**
+     * Asynchronously initializes the test on testScope (Dispatchers.IO)
+     * to prevent blocking the Main UI thread during heavy resource/Python ADO loading.
+     */
+    fun initTestAsync() {
+        testScope.launch {
+            try {
+                initTest()
+            } catch (e: Exception) {
+                e.logLastTwo(LOG_TAG)
+                withContext(Dispatchers.Main) {
+                    onCriticalError(e.toString())
+                }
+            }
+        }
+    }
+
+    /** Coroutine scope bound to test execution for background processing off the main UI thread. */
+    protected var testScope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    protected var setResponseJob: Job? = null
+
+    init {
+        initializePerformanceMonitoring(subject.trman_type == TEST_TRMAN_ADAPTIVE)
+    }
+
+    private fun initializePerformanceMonitoring(isAda:Boolean) {
+        // if it was not  instanciated in MainApplication, skip init. following calls with ? won't do anything
+        performanceMonitor?.let{ perf ->
+            val filesPrefix = "${subject.getFilesPrefix(ctx)}_${subject.getSessionDateString()}"
+            perf.initializeMonitor(filesPrefix, isAda)
+            Log.d("TestBasic", "Performance monitoring initialized with prefix: $filesPrefix")
+        }
+    }
+
+    /**
      * Starts the test execution.
      * This method checks if the [StimuliManager] and [TrialsManager] are valid and initialized.
-     * If in debug mode, it emits debug information. Then, it calls [show] to present the first trial.
+     * If in debug mode, it emits debug information. Then, it presents the first trial.
      *
      * @return `true` if the test started successfully, `false` if there was a critical error.
      */
@@ -592,8 +650,7 @@ abstract class TestBasic(protected val ctx: Context,
                 return false
             }
 
-            doNextTrial()   // TrialManager.currTrialID is set to -1, here goes to 0
-                            // internally the valid list is already set
+            doNextTrial()
             true
         }
         catch(e:Exception){
@@ -622,6 +679,17 @@ abstract class TestBasic(protected val ctx: Context,
     }
 
     /**
+     * Called by TestFragment when an answer is provided by the user.
+     * Sequentially sets the response and terminates/advances the trial in testScope.
+     */
+    open fun onAnswerGiven(result: Int = -1, elapsed: Long = -1L, extra_text: String = "") {
+        setResponseJob = testScope.launch {
+            setResponse(result, elapsed, extra_text)
+            onTrialTerminated()
+        }
+    }
+
+    /**
      * Handles the event when an answer is given by the user.
      * If a valid result or extra text is provided, it sets the response in the [TrialsManager]
      * and adds the current trial data to the [Summary].
@@ -630,13 +698,24 @@ abstract class TestBasic(protected val ctx: Context,
      * @param elapsed The time elapsed for the answer in milliseconds. Defaults to -1.
      * @param extra_text Any additional text associated with the answer. Defaults to an empty string.
      */
-    open fun setResponse(result: Int = -1, elapsed: Long = -1L, extra_text: String = ""){
+    open suspend fun setResponse(result: Int = -1, elapsed: Long = -1L, extra_text: String = ""){
 
         if(mTrial.isTraining)   return
 
         if (result != -1 || extra_text.isNotEmpty()){
+
+            // START peri-trial monitoring 200ms BEFORE UPDATE_START
+            performanceMonitor?.let{ perf ->
+                perf.triggerEvent("PERITRIAL_MONITORING_START")
+                delay(200L.milliseconds)
+            }
+
+            performanceMonitor?.triggerEvent("UPDATE_START")
+
             mTrialsManager.setResponse(result, elapsed, extra_text)
             mSummary?.add(mTrial)
+
+            performanceMonitor?.triggerEvent("UPDATE_END")
         }
         saveText(mTrial.Log())
     }
@@ -653,20 +732,27 @@ abstract class TestBasic(protected val ctx: Context,
      *               else, If the test continues,                   => emits an [EVENT_TRIAL_STARTED] and calls [doNextTrial].
      */
     open fun onTrialTerminated() {
+        testScope.launch {
+            when {
+                mTrialsManager.isLastTrainingTrial -> {
+                    withContext(Dispatchers.Main) {
+                        testEvent.accept(Triple(EVENT_TRAINING_END, null, listOf()))
+                    }
+                }
 
-        when {
-            mTrialsManager.isLastTrainingTrial ->
-                testEvent.accept(Triple(EVENT_TRAINING_END, null, listOf()))
+                mListBlocks.contains(currTrialID) -> {
+                    withContext(Dispatchers.Main) {
+                        testEvent.accept(Triple(EVENT_BLOCK_END, null, listOf()))
+                    }
+                }
 
-            mListBlocks.contains(currTrialID) ->
-                testEvent.accept(Triple(EVENT_BLOCK_END, null, listOf()))
-
-            currTrialID == (nTrials - 1) -> {
-                terminateTest(TEST_COMPLETED)
-                testEvent.accept(Triple(EVENT_TEST_END, null, listOf()))            // END !
-            }
-            else -> {
-                mStimuliHandler.postDelayed({ doNextTrial()}, (0..1000L).random())
+                currTrialID == (nTrials - 1) -> {
+                    withContext(Dispatchers.Main) {
+                        terminateTest(TEST_COMPLETED)
+                        testEvent.accept(Triple(EVENT_TEST_END, null, listOf()))
+                    }
+                }
+                else -> doNextTrial()
             }
         }
     }
@@ -685,39 +771,43 @@ abstract class TestBasic(protected val ctx: Context,
      * @param code The termination code, e.g., [TEST_COMPLETED], [TEST_ABORTED_KEEP_RESULT], [BLOCK_COMPLETED].
      */
     fun terminateTest(code:Int){
+        testScope.launch {
+            setResponseJob?.cancel()     // cancel any pending response coroutine
 
-        var filesToReturn = listOf( absoluteResultFilePath,
-                                    subject.absoluteSubjectFilePath,
-                                    closeSummary())
-        unloadStimuli()
+            var filesToReturn = listOf( absoluteResultFilePath,
+                                        subject.absoluteSubjectFilePath,
+                                        closeSummary())
 
-        // Cleanup adaptive trials manager if needed
-        if (this::mTrialsManager.isInitialized && mTrialsManager is AdaptiveTrialsManager)  (mTrialsManager as AdaptiveTrialsManager).cleanup()
+            when(code){
+                TEST_COMPLETED -> {
+                    closeSummary()
+                    notifyFile(mResultFile, ctx, outResultsDir)
+                }
+                BLOCK_COMPLETED -> {
+                    val renamedfiles = stopTestAfterBlock()        // change output files names and notify them
+                    filesToReturn = listOf(renamedfiles.first, renamedfiles.second, renamedfiles.third)
+                    notifyFile(renamedfiles.first, ctx, outResultsDir)
 
-        when(code){
-
-            TEST_COMPLETED -> {
-                closeSummary()
-                notifyFile(mResultFile, ctx, outResultsDir)
+                }
+                TEST_ABORTED_KEEP_RESULT -> {
+                    closeSummary()
+                    notifyFile(mResultFile, ctx, outResultsDir)
+                }
+                TEST_ABORTED_DEL_RESULT -> {
+                    deleteFile(mResultFile, outResultsDir)
+                    deleteFile(subject.subjectFileName, outResultsDir)
+                    deleteFile(mSummaryFile, outResultsDir)
+                    deleteFilesStartingWith("${subject.getFilesPrefix(ctx)}_${subject.getSessionDateString()}", outResultsDir)
+                    filesToReturn = listOf()
+                }
             }
-            BLOCK_COMPLETED -> {
-                val renamedfiles = stopTestAfterBlock()        // change output files names and notify them
-                filesToReturn = listOf(renamedfiles.first, renamedfiles.second, renamedfiles.third)
-                notifyFile(renamedfiles.first, ctx, outResultsDir)
+            performanceMonitor?.finalize()
 
-            }
-            TEST_ABORTED_KEEP_RESULT -> {
-                closeSummary()
-                notifyFile(mResultFile, ctx, outResultsDir)
-            }
-            TEST_ABORTED_DEL_RESULT -> {
-                deleteFile(mResultFile)
-                deleteFile(subject.subjectFileName)
-                deleteFile(mSummaryFile)
-                filesToReturn = listOf()
+            withContext(Dispatchers.Main) {
+                unloadStimuli()
+                testEvent.accept(Triple(EVENT_TEST_COMPLETED, code, filesToReturn))
             }
         }
-        testEvent.accept(Triple(EVENT_TEST_COMPLETED, code, filesToReturn))
     }
 
     /**
@@ -842,9 +932,27 @@ abstract class TestBasic(protected val ctx: Context,
      * stopping stimuli, preparing for the next trial, or triggering events.
      */
     protected open fun onStimuliEnd(){
+        onStimuliEnd(-1, -1L, "")
+    }
+
+    protected open fun onStimuliEnd(result: Int){
+        onStimuliEnd(result, -1L, "")
+    }
+
+    protected open fun onStimuliEnd(result: Int, elapsed: Long){
+        onStimuliEnd(result, elapsed, "")
+    }
+
+    protected open fun onStimuliEnd(result: Int, elapsed: Long, extra_text: String){
 
         mNoise?.stop()
         mNoise?.prepare()
+
+        if (result != -1 || extra_text.isNotEmpty()) {
+            setResponseJob = testScope.launch {
+                setResponse(result, elapsed, extra_text)
+            }
+        }
 
         // wait for 50 ms (was 500 but I added 0-1000, @19032026, at the end of onNextTrial) and then decide what to do
         mStimuliHandler.postDelayed({
@@ -861,24 +969,43 @@ abstract class TestBasic(protected val ctx: Context,
             }
         }, 50L)
     }
+
     /**
-     * Proceeds to the next trial by fetching it from [mTrialsManager] and then displaying it using [show].
-     * If in debug mode, it emits debug information.
-     *
-     * @return The index of the current trial, or [EVENT_TEST_ERROR] if an exception occurs.
+     * unique Entry point to calcolate and present next trial.
+     * Get stimulus magnitude in background (IO) and present it on UI Thread.
      */
-    protected fun doNextTrial():Int{
-        return  try {
-            testEvent.accept(Triple(EVENT_TRIAL_STARTED, null, listOf()))
-            show(mTrialsManager.getNewTrial())
-            if (subject.isDebug) testEvent.accept(Triple(EVENT_SHOW_DEBUGINFO, mTrial.debugInfo(), listOf()))
-            currTrialID
+    protected fun doNextTrial() {
+
+        testScope.launch {
+            try {
+                setResponseJob?.join()
+
+                performanceMonitor?.triggerEvent("GETSTIM_START", mTrialsManager.mNextTrial)  // can get algorithm/label/id of next trial
+                val nextTrial = mTrialsManager.getNewTrial()
+                performanceMonitor?.triggerEvent("GETSTIM_END")
+
+                val iti = (0..600L).random()
+                delay(iti.milliseconds)
+
+                withContext(Dispatchers.Main) {
+                    presentTrial(nextTrial)
+                }
+            } catch (e: Exception) {
+                e.logLastTwo(LOG_TAG)
+                withContext(Dispatchers.Main) {
+                    onCriticalError(e.toString())
+                }
+            }
         }
-        catch(e:Exception){
-            e.logLastTwo(LOG_TAG)
-            onCriticalError(e.toString())
-            EVENT_TEST_ERROR
-        }
+    }
+
+    /**
+     * Displays stimulus and emits UI events on the Main Thread.
+     */
+    private fun presentTrial(trial: TrialBasic) {
+        testEvent.accept(Triple(EVENT_TRIAL_STARTED, null, listOf()))
+        show(trial)
+        if (subject.isDebug)    testEvent.accept(Triple(EVENT_SHOW_DEBUGINFO, mTrial.debugInfo(), listOf()))
     }
 
     /**

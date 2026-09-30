@@ -3,13 +3,16 @@ package org.albaspazio.psysuite.tests
 import org.albaspazio.psysuite.adaptive.ado.ADOWrapper
 
 open class TrialBasic(
-    var id: Int = -1,
+    var id: Int = -1,  // 0-based index of the trial
     val type: Int,
-    protected val label: String = "",
+    open val label: String = "",
     open var magnitude: Float = 0F,
     val adoWrapper: ADOWrapper? = null,
     val isTraining: Boolean = false
 ) {
+
+    open val algorithm: String
+        get() = if (adoWrapper == null) "FIX" else "ADA"
 
     companion object {
         @JvmStatic val LOG_HEADER           = "id\tlabel\tres\tcor_ans\tuser_ans\telapsed\trep\n"

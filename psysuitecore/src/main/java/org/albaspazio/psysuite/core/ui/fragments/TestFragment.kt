@@ -77,7 +77,7 @@ class TestFragment : BaseFragment(
     private var isDeafUser:Boolean                  = false
 
     private var isPaused:Boolean                    = false
-    private var mHandler: Handler = Handler(Looper.getMainLooper())
+    private var mHandler: Handler                   = Handler(Looper.getMainLooper())
     private var mRunnable: Runnable?                = null      // runnable to be cancelled while confirming abort
 
     private var abortRecognition:Boolean            = false  // set true when I answer manually and speech rec is going to be restarted (e.g. rec busy or error)
@@ -92,7 +92,6 @@ class TestFragment : BaseFragment(
     var showResult:Boolean                          = false
 
     private lateinit var answerDialogRef:Pair<KFunction<*>?, Any?>
-
 
     companion object {
 
@@ -145,7 +144,7 @@ class TestFragment : BaseFragment(
         binding.btPause.visibility = View.INVISIBLE
         binding.txtDebugInfo.visibility = View.INVISIBLE
 
-        val subj: SettingsBasic? = arguments?.getParcelable(TestBasic.Companion.TESTINFO_BUNDLE_LABEL)
+        val subj: SettingsBasic? = arguments?.getParcelable(TestBasic.TESTINFO_BUNDLE_LABEL)
         if (subj == null) {
             showAlert(
                 requireActivity(),
@@ -213,7 +212,7 @@ class TestFragment : BaseFragment(
 
             setTestEventsObservable()
 
-            mTest.initTest()    // then wait for EVENT_TEST_SETUP_COMPLETED. while the Test asynchronously load the needed resources
+            mTest.initTestAsync()    // asynchronously load resources on testScope (Dispatchers.IO) then wait for EVENT_TEST_SETUP_COMPLETED
         }
     }
 
@@ -283,40 +282,40 @@ class TestFragment : BaseFragment(
             .subscribe {
                 when(it.first){
                     // test can start
-                    TestBasic.Companion.EVENT_TEST_SETUP_COMPLETED -> onTestSetupComplete()        // Test asynchronously loaded all its needed resources and is fully ready
+                    TestBasic.EVENT_TEST_SETUP_COMPLETED -> onTestSetupComplete()        // Test asynchronously loaded all its needed resources and is fully ready
 
                     // called every trials by Test.onNextTrial()
-                    TestBasic.Companion.EVENT_TRIAL_STARTED        -> showTrial()
+                    TestBasic.EVENT_TRIAL_STARTED        -> showTrial()
 
-                    TestBasic.Companion.EVENT_SHOW_INFO            -> {
+                    TestBasic.EVENT_SHOW_INFO            -> {
                                                             val info = (it.second ?: "INFO_MISSING") as String
                                                             showInfo(info)}
                     // events sent after last stimulus
-                    TestBasic.Companion.EVENT_GIVE_ANSWER          -> showAnswerDialog(TRG_REQ_CODE_ANSWER)
-                    TestBasic.Companion.EVENT_GIVE_VOCAL_ANSWER    -> {
+                    TestBasic.EVENT_GIVE_ANSWER          -> showAnswerDialog(TRG_REQ_CODE_ANSWER)
+                    TestBasic.EVENT_GIVE_VOCAL_ANSWER    -> {
                                                             binding.btAbort.visibility = View.VISIBLE
                                                             listenForVocalAnswer(mTest.validAnswers)}
-                    TestBasic.Companion.EVENT_SHOW_NEXT_ABORT      -> pause2NextTrial()
-                    TestBasic.Companion.EVENT_SHOW_PAUSE_ABORT     -> {
+                    TestBasic.EVENT_SHOW_NEXT_ABORT      -> pause2NextTrial()
+                    TestBasic.EVENT_SHOW_PAUSE_ABORT     -> {
                                                             val dur = (it.second ?: DEFAULT_ABORT_TIME) as Long
 
                                                             if(dur > 0L)    continue2NextTrial(dur,{ mTest.onTrialTerminated() })
                                                             else            mTest.onTrialTerminated()}
-                    TestBasic.Companion.EVENT_TRAINING_END         -> onTrainingEnded()
+                    TestBasic.EVENT_TRAINING_END         -> onTrainingEnded()
 
-                    TestBasic.Companion.EVENT_BLOCK_END            -> onBlockEnded()
-                    TestBasic.Companion.EVENT_TEST_END             -> onTestEnded()
+                    TestBasic.EVENT_BLOCK_END            -> onBlockEnded()
+                    TestBasic.EVENT_TEST_END             -> onTestEnded()
 
-                    TestBasic.Companion.EVENT_TEST_COMPLETED       -> navigateBack(it.second as Int, it.third)
+                    TestBasic.EVENT_TEST_COMPLETED       -> navigateBack(it.second as Int, it.third)
 
-                    TestBasic.Companion.EVENT_SHOW_DEBUGINFO       -> {
+                    TestBasic.EVENT_SHOW_DEBUGINFO       -> {
                                                             val info = (it.second ?: "DEBUG_INFO_MISSING") as String
                                                             showDebugInfo(info)}
-                    TestBasic.Companion.EVENT_TEST_ERROR           -> onTestError(it.second as String, it.third)
+                    TestBasic.EVENT_TEST_ERROR           -> onTestError(it.second as String, it.third)
 
                     // unused
-                    TestBasic.Companion.EVENT_STIMULI_START        -> {}
-                    TestBasic.Companion.EVENT_STIMULI_END          -> {}
+                    TestBasic.EVENT_STIMULI_START        -> {}
+                    TestBasic.EVENT_STIMULI_END          -> {}
                 }
             }
             .addTo(disposable)
@@ -349,8 +348,8 @@ class TestFragment : BaseFragment(
             requireContext().resources.getString(R.string.test_aborted),
             requireContext().resources.getString(R.string.keep),         // ok
             requireContext().resources.getString(R.string.delete),       // cancel
-            { mTest.terminateTest(TestBasic.Companion.TEST_ABORTED_KEEP_RESULT)     /* okClb */ },
-            { mTest.terminateTest(TestBasic.Companion.TEST_ABORTED_DEL_RESULT)      /* cancelClb*/ }
+            { mTest.terminateTest(TestBasic.TEST_ABORTED_KEEP_RESULT)     /* okClb */ },
+            { mTest.terminateTest(TestBasic.TEST_ABORTED_DEL_RESULT)      /* cancelClb*/ }
         )
     }
 
@@ -371,7 +370,7 @@ class TestFragment : BaseFragment(
             { /* okClb */       mTest.startNewBlock() },
             { /* cancelClb*/
                 mHandler.removeCallbacksAndMessages(null)
-                mTest.terminateTest(TestBasic.Companion.BLOCK_COMPLETED)
+                mTest.terminateTest(TestBasic.BLOCK_COMPLETED)
             })
     }
 
@@ -404,7 +403,7 @@ class TestFragment : BaseFragment(
         if(isBlindUser)     speechManager.speak(resources.getString(R.string.critical_error))
 
         showAlert(requireActivity(), resources.getString(R.string.critical_error), msg)
-        navigateBack(TestBasic.Companion.TEST_ABORTED_WITH_ERROR, files)
+        navigateBack(TestBasic.TEST_ABORTED_WITH_ERROR, files)
     }
 
     /* called by:
@@ -425,7 +424,7 @@ class TestFragment : BaseFragment(
                 mSubjectParcel.composeSubjectFileName(requireContext()),
                 files_list,
                 mTest.javaClass.name
-            ), TestBasic.Companion.TEST_BUNDLE_RESULT_LABEL)
+            ), TestBasic.TEST_BUNDLE_RESULT_LABEL)
         requireView().findNavController().popBackStack()
     }
     // endregion
@@ -448,14 +447,14 @@ class TestFragment : BaseFragment(
         b.putInt("correct_answer", mTest.getTrialCorrectAnswer())
 
         when(mSubjectParcel.doTraining) {
-            TestBasic.Companion.TEST_SWITCH_CHOOSE_ON, TestBasic.Companion.TEST_SWITCH_ENABLED -> {         // look current trial whether is training or not
+            TestBasic.TEST_SWITCH_CHOOSE_ON, TestBasic.TEST_SWITCH_ENABLED -> {         // look current trial whether is training or not
 
                 if(mTest.mTrial.isTraining) {
-                    b.putInt("can_repeat_trial", TestBasic.Companion.TEST_SWITCH_ENABLED)
-                    b.putInt("show_result",      TestBasic.Companion.TEST_SWITCH_ENABLED)
+                    b.putInt("can_repeat_trial", TestBasic.TEST_SWITCH_ENABLED)
+                    b.putInt("show_result",      TestBasic.TEST_SWITCH_ENABLED)
                 }else{
-                    b.putInt("can_repeat_trial", TestBasic.Companion.TEST_SWITCH_DISABLED)
-                    b.putInt("show_result",      TestBasic.Companion.TEST_SWITCH_DISABLED)
+                    b.putInt("can_repeat_trial", TestBasic.TEST_SWITCH_DISABLED)
+                    b.putInt("show_result",      TestBasic.TEST_SWITCH_DISABLED)
                 }
             }
             else -> {                                                                   // look what was designed by developer
@@ -499,14 +498,14 @@ class TestFragment : BaseFragment(
 
             try {
                 when (result.getInt(EVENT_ANSWER_CODE, 0)) {
-                    TestBasic.Companion.EVENT_ANSWER_GIVEN -> {
+                    TestBasic.EVENT_ANSWER_GIVEN -> {
                         val res         = result.getInt(EVENT_ANSWER_RESULT, -1)
                         val elapsedTime = result.getLong(EVENT_TIME_TO_ANSWER, -1)
                         val result_extra= result.getString(EVENT_ANSWER_RESULT_EXTRA) ?: ""
                         onAnswerGiven(res, elapsedTime, result_extra)
                     }
-                    TestBasic.Companion.EVENT_TRIAL_REPEAT -> mTest.repeatTrial()
-                    TestBasic.Companion.EVENT_TRIAL_ABORT -> onAskIfAbortTest()
+                    TestBasic.EVENT_TRIAL_REPEAT -> mTest.repeatTrial()
+                    TestBasic.EVENT_TRIAL_ABORT -> onAskIfAbortTest()
                 }
             }
             catch (e: Exception) {
@@ -584,7 +583,7 @@ class TestFragment : BaseFragment(
     }
 
     // called by: 1) onActivityResult after answer, 2) speechrecognition result
-    // => mTest.setResponse & mTest.onNextTrial()
+    // => mTest.onAnswerGiven
     private fun onAnswerGiven(result:Int = -1, elapsed:Long = -1, extra_text:String="") {
 
         // dont' know whether an answer dialog was present or it was listening for vocal response or it was playbacking something. stop all!
@@ -595,13 +594,7 @@ class TestFragment : BaseFragment(
         }
         closeAnswerDialog()
 
-        // Process response and trial termination on background (IO) thread to avoid blocking main thread
-        // Both setResponse and onTrialTerminated are now synchronous and execute off main thread
-        lifecycleScope.launch(Dispatchers.IO) {
-            mTest.setResponse(result, elapsed, extra_text)
-            // close trial (e.g. set answer) & check whether it was the last => test ended
-            mTest.onTrialTerminated()
-        }
+        mTest.onAnswerGiven(result, elapsed, extra_text)
     }
     //#endregion
 
@@ -617,9 +610,9 @@ class TestFragment : BaseFragment(
         binding.btPause.visibility     = View.INVISIBLE
 
         binding.txtTrialId.visibility = View.INVISIBLE
-        if (mSubjectParcel.showTrialID == TestBasic.Companion.TEST_SHOWTRIALS_ALWAYS) showTrialId()
+        if (mSubjectParcel.showTrialID == TestBasic.TEST_SHOWTRIALS_ALWAYS) showTrialId()
 
-        binding.btAbort.visibility = if (mSubjectParcel.abortMode == TestBasic.Companion.TEST_ABORT_ALWAYS)   View.VISIBLE
+        binding.btAbort.visibility = if (mSubjectParcel.abortMode == TestBasic.TEST_ABORT_ALWAYS)   View.VISIBLE
                                      else                                                           View.INVISIBLE
     }
 

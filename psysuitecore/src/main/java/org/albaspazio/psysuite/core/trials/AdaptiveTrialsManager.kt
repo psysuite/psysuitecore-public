@@ -19,12 +19,25 @@ import org.albaspazio.psysuite.python.SPython
 //          1- get = retrieve the dynamic value
 //          2- set = set subject's answer
 //
-open class AdaptiveTrialsManager(trials: MutableList<TrialBasic>,
-                                 training_trials: MutableList<TrialBasic> = mutableListOf<TrialBasic>())
-                                : TrialsManager(TestBasic.TEST_TRMAN_ADAPTIVE, trials, training_trials) {
+open class AdaptiveTrialsManager(
+    trials: List<TrialBasic>,
+    training_trials: List<TrialBasic> = emptyList(),
+    adoWrappers: List<ADOWrapper> = emptyList()
+) : TrialsManager(TestBasic.TEST_TRMAN_ADAPTIVE, trials, training_trials) {
 
-    private val sPy: SPython = SPython.getInstance(null)        // singleton already initialized in TestFragment
+    private val sPy: SPython = SPython.getInstance(null)        // singleton already initialized in MainApplication
     private val wrapperCache = mutableMapOf<ADOWrapper, PyObject>()  // Cache PyObject wrappers per ADOWrapper instance
+
+    init {
+        // Pre-initialize all provided ADOWrappers during manager creation (ADOPY_INIT)
+        adoWrappers.forEach { ado ->
+            try {
+                getOrCreateWrapper(ado)
+            } catch (e: Exception) {
+                Log.e("AdaptiveTrialsManager", "Error pre-initializing ADOWrapper: ${e.message}")
+            }
+        }
+    }
 
     private fun getOrCreateWrapper(adoWrapper: ADOWrapper): PyObject {
         return wrapperCache.getOrPut(adoWrapper) {

@@ -237,12 +237,24 @@ abstract class SettingsBasic(
                                     else            "f"
 
         val trmantype_str       = when (trman_type) {
-            TestBasic.Companion.TEST_TRMAN_ADAPTIVE -> "AD"
-            TestBasic.Companion.TEST_TRMAN_FIXED -> "FX"
+            TestBasic.TEST_TRMAN_ADAPTIVE -> "AD"
+            TestBasic.TEST_TRMAN_FIXED -> "FX"
             else -> "MX" // Mixed
         }
 
-        return "${label}_${age}_${gender_str}_${type_label}_${trmantype_str}_${population_label}_sess$session"
+        val sess_str =  if(session.isBlank())   ""
+                        else                    "_sess$session"
+
+        return "${label}_${age}_${gender_str}_${type_label}_${trmantype_str}_${population_label}$sess_str"
+    }
+
+    open var sessionTimestamp: String = ""
+
+    fun getSessionDateString(): String {
+        if (sessionTimestamp.isBlank()) {
+            sessionTimestamp = getFullDateString()
+        }
+        return sessionTimestamp
     }
 
     /**
@@ -257,7 +269,7 @@ abstract class SettingsBasic(
 
         val blkstr =    if(blk > -1)    "_blk$blk"
                         else           ""
-        return "${getFilesPrefix(ctx)}_${getFullDateString()}${blkstr}${TestBasic.Companion.RES_EXTENSION}"
+        return "${getFilesPrefix(ctx)}_${getSessionDateString()}${blkstr}${TestBasic.RES_EXTENSION}"
     }
 
     /**
@@ -272,7 +284,7 @@ abstract class SettingsBasic(
 
         val blkstr =    if(blk > -1)    "_blk$blk"
                         else           ""
-        return "${getFilesPrefix(ctx)}_${getFullDateString()}_summary${blkstr}${TestBasic.Companion.RES_EXTENSION}"
+        return "${getFilesPrefix(ctx)}_${getSessionDateString()}_summary${blkstr}${TestBasic.RES_EXTENSION}"
     }
 
     /**
@@ -289,7 +301,7 @@ abstract class SettingsBasic(
 
         val blkstr =    if(blk > -1)    "_blk$blk"
                         else           ""
-        return "${getFilesPrefix(ctx)}_${getDateString()}${blkstr}${TestBasic.Companion.SUBJFILE_EXTENSION}"
+        return "${getFilesPrefix(ctx)}_${getSessionDateString()}${blkstr}${TestBasic.SUBJFILE_EXTENSION}"
     }
 
     /**
